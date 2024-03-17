@@ -1,1 +1,1 @@
-A TUI game set includes Othello(Reversi).
+A TUI game set including Othello(Reversi).
