@@ -152,6 +152,7 @@ namespace bw::online::components {
 				}
 				else {
 					return hbox(ui::autolines(msg.content) | borderRounded, but->Render());
+
 				}
 			});
 			temp->Add(ui::Focusable());
