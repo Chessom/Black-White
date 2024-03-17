@@ -1,0 +1,246 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="头文件\ataxx">
+      <UniqueIdentifier>{6e7887d4-3823-4c0e-b190-6ce3f3273fb7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\bw">
+      <UniqueIdentifier>{ba9fb557-40a4-4fed-88b5-521bf50f1d6f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\external">
+      <UniqueIdentifier>{79a43d3a-d127-44bd-98ee-bb6f6e89c334}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\gobang">
+      <UniqueIdentifier>{206fd01a-0a01-4414-b6cf-ba19c3df86ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\othello">
+      <UniqueIdentifier>{25f1b83a-c36b-470d-bf97-a9cb6d988fc0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\tools">
+      <UniqueIdentifier>{9f20a0b5-3683-4c87-8cba-57a29a873765}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\othello\othello.gamer">
+      <UniqueIdentifier>{eadb5f03-2dce-4e66-bc67-11761158ec09}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\bw\net">
+      <UniqueIdentifier>{5e5a75db-4da3-40f4-a493-6c349d628906}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\bw\online">
+      <UniqueIdentifier>{165fef35-352e-4f4a-9715-53402e54f1b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\bw\shared">
+      <UniqueIdentifier>{9c9baeaf-e541-42a7-9e9d-fd90ad55a9fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\bw\tui">
+      <UniqueIdentifier>{463fa0f9-1953-4d7d-b4bc-f1aa3b479384}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\othello\othello.ai">
+      <UniqueIdentifier>{673f5d45-a379-4376-a580-aaee5a67a56e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\external">
+      <UniqueIdentifier>{2ba751ef-0cb6-413e-bed9-38cbdec33683}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\bw\practical">
+      <UniqueIdentifier>{5a47d2e7-d985-4db5-9e0f-95d67b865d2f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\bw\online\online.gamers">
+      <UniqueIdentifier>{3ae387c5-6f81-40fd-b80a-d3239dfa7c28}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\tictactoe">
+      <UniqueIdentifier>{12ae308a-823c-493b-9d23-9f95bf659c65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\tictactoe\tictactoe.gamers">
+      <UniqueIdentifier>{ffa48882-8a81-4409-93e6-2a36a39f4686}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\othello\othello.online">
+      <UniqueIdentifier>{4a091b4a-9267-4cb5-8716-9e24a74a2541}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\bw\coroutine">
+      <UniqueIdentifier>{ebe907ed-b9d9-4a24-913b-05316ece5de1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="utility.hpp">
+      <Filter>头文件\bw\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="globals.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="othello.ai.practise.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ataxx.move.hpp">
+      <Filter>头文件\ataxx</Filter>
+    </ClCompile>
+    <ClCompile Include="ataxx.moves.hpp">
+      <Filter>头文件\ataxx</Filter>
+    </ClCompile>
+    <ClCompile Include="online.simple.hpp">
+      <Filter>头文件\bw\online</Filter>
+    </ClCompile>
+    <ClCompile Include="components.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ipv4.hpp">
+      <Filter>头文件\external</Filter>
+    </ClCompile>
+    <ClCompile Include="ipv4.cpp">
+      <Filter>源文件\external</Filter>
+    </ClCompile>
+    <ClCompile Include="online.basic_gamer.hpp">
+      <Filter>头文件\bw\online\online.gamers</Filter>
+    </ClCompile>
+    <ClCompile Include="tictactoe.gamer.hpp">
+      <Filter>头文件\tictactoe</Filter>
+    </ClCompile>
+    <ClCompile Include="tictactoe.move.hpp">
+      <Filter>头文件\tictactoe</Filter>
+    </ClCompile>
+    <ClCompile Include="tictactoe.game.hpp">
+      <Filter>头文件\tictactoe</Filter>
+    </ClCompile>
+    <ClCompile Include="tictactoe.gamer.human.hpp">
+      <Filter>头文件\tictactoe\tictactoe.gamers</Filter>
+    </ClCompile>
+    <ClCompile Include="gamer.lua.hpp">
+      <Filter>头文件\bw\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="othello.online.game.hpp">
+      <Filter>头文件\othello\othello.online</Filter>
+    </ClCompile>
+    <ClCompile Include="othello.gamer.online.hpp">
+      <Filter>头文件\othello\othello.gamer</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="tools.hpp">
+      <Filter>头文件\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="config.hpp">
+      <Filter>头文件\bw\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="core.hpp">
+      <Filter>头文件\bw\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="env.hpp">
+      <Filter>头文件\bw\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="game.hpp">
+      <Filter>头文件\bw\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="gamer.hpp">
+      <Filter>头文件\bw\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="move.hpp">
+      <Filter>头文件\bw\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="online.gamer.hpp">
+      <Filter>头文件\bw\online</Filter>
+    </ClInclude>
+    <ClInclude Include="online.room.hpp">
+      <Filter>头文件\bw\online</Filter>
+    </ClInclude>
+    <ClInclude Include="online.hpp">
+      <Filter>头文件\bw\online</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>头文件\external</Filter>
+    </ClInclude>
+    <ClInclude Include="components.h">
+      <Filter>头文件\bw\tui</Filter>
+    </ClInclude>
+    <ClInclude Include="ui.hpp">
+      <Filter>头文件\bw\tui</Filter>
+    </ClInclude>
+    <ClInclude Include="bwlocale.hpp">
+      <Filter>头文件\bw\tui</Filter>
+    </ClInclude>
+    <ClInclude Include="initialize.hpp">
+      <Filter>头文件\bw\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="practise.hpp">
+      <Filter>头文件\bw</Filter>
+    </ClInclude>
+    <ClInclude Include="othello.board.hpp">
+      <Filter>头文件\othello</Filter>
+    </ClInclude>
+    <ClInclude Include="othello.components.hpp">
+      <Filter>头文件\othello</Filter>
+    </ClInclude>
+    <ClInclude Include="othello.game.hpp">
+      <Filter>头文件\othello</Filter>
+    </ClInclude>
+    <ClInclude Include="othello.gamer.hpp">
+      <Filter>头文件\othello</Filter>
+    </ClInclude>
+    <ClInclude Include="othello.hpp">
+      <Filter>头文件\othello</Filter>
+    </ClInclude>
+    <ClInclude Include="othello.move.hpp">
+      <Filter>头文件\othello</Filter>
+    </ClInclude>
+    <ClInclude Include="othello.moves.hpp">
+      <Filter>头文件\othello</Filter>
+    </ClInclude>
+    <ClInclude Include="othello.gamer.computer.hpp">
+      <Filter>头文件\othello\othello.gamer</Filter>
+    </ClInclude>
+    <ClInclude Include="othello.gamer.human.hpp">
+      <Filter>头文件\othello\othello.gamer</Filter>
+    </ClInclude>
+    <ClInclude Include="othello.gamer.remote.hpp">
+      <Filter>头文件\othello\othello.gamer</Filter>
+    </ClInclude>
+    <ClInclude Include="othello.ai.practise.hpp">
+      <Filter>头文件\othello\othello.ai</Filter>
+    </ClInclude>
+    <ClInclude Include="othello.ai.hpp">
+      <Filter>头文件\othello\othello.ai</Filter>
+    </ClInclude>
+    <ClInclude Include="ataxx.board.hpp">
+      <Filter>头文件\ataxx</Filter>
+    </ClInclude>
+    <ClInclude Include="globals.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ataxx.components.hpp">
+      <Filter>头文件\ataxx</Filter>
+    </ClInclude>
+    <ClInclude Include="message.hpp">
+      <Filter>头文件\bw\net</Filter>
+    </ClInclude>
+    <ClInclude Include="othello.online.hpp">
+      <Filter>头文件\othello</Filter>
+    </ClInclude>
+    <ClInclude Include="online.gamer_info.hpp">
+      <Filter>头文件\bw\online</Filter>
+    </ClInclude>
+    <ClInclude Include="online.components.hpp">
+      <Filter>头文件\bw\online</Filter>
+    </ClInclude>
+    <ClInclude Include="tictactoe.board.hpp">
+      <Filter>头文件\tictactoe</Filter>
+    </ClInclude>
+    <ClInclude Include="tictactoe.components.hpp">
+      <Filter>头文件\tictactoe</Filter>
+    </ClInclude>
+    <ClInclude Include="othello.online.gamer.hpp">
+      <Filter>头文件\othello\othello.online</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
