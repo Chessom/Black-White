@@ -58,6 +58,9 @@ namespace bw::othello {
 			pmvdq->q.push_back({ .mvtype = move::quit });
 			pmvdq->tim.cancel();
 		}
+		void set_move_queue(timdq_ptr move_queue) {
+			pmvdq = std::move(move_queue);
+		}
 		timdq_ptr pmvdq;
 	};
 }

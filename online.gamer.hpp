@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include"stdafx.h"
 #include"message.hpp"
 #include"online.room.hpp"
@@ -10,13 +10,11 @@ namespace bw::online {
 		using socket_ptr = std::shared_ptr<socket_t>;
 		using endpoint = boost::asio::ip::tcp::endpoint;
 		using context = boost::asio::io_context;
-		gamer() {
+		gamer() :chat_mutex(0) {
 			context_ptr = std::make_shared<context>();
 			socket = std::make_shared<socket_t>(*context_ptr);
 			timer_ = std::make_shared<boost::asio::steady_timer>(*context_ptr);
 			timer_->expires_at(std::chrono::steady_clock::time_point::max());
-			mutex_ = std::make_shared<std::mutex>();
-			conv = std::make_shared<std::condition_variable>();
 		};
 		inline std::string gbk2utf8(std::string_view s) {
 			return boost::locale::conv::to_utf<char>(s.data(), "gbk");
@@ -67,13 +65,10 @@ namespace bw::online {
 		void safe_deliver(const message& msg) {
 			context_ptr->post([this, &msg] {deliver(msg); });
 		}
-		void start()
-		{
-			/*boost::asio::co_spawn(*context_ptr, [this] {return reader(); }, boost::asio::detached);
-			boost::asio::co_spawn(*context_ptr, [this] {return writer(); }, boost::asio::detached);*/
-
+		void start() {
 			boost::cobalt::spawn(*context_ptr, reader(), boost::asio::detached);
 			boost::cobalt::spawn(*context_ptr, writer(), boost::asio::detached);
+			chat_mutex.release();
 			thread_ptr = std::make_shared<std::jthread>([this] {context_ptr->run(); });
 		}
 		inline void handle_msg(const message& msg);//Implement below
@@ -207,12 +202,14 @@ namespace bw::online {
 		hall_info hall;
 		int roomid = 0;
 		std::vector<std::string> notices;
-		std::shared_ptr<std::condition_variable> conv;
 		const int sizelen = 5;
 		ftxui::ScreenInteractive* screen_ptr = nullptr;
 		enum { outdated, updated };
 		int infostate = outdated;
 		std::deque<str_msg> chat_msg_queue;
+		std::binary_semaphore chat_mutex;
+		basic_game_ptr game_ptr;
+
 	private:
 		boost::cobalt::task<void> reader()
 		{
@@ -268,7 +265,8 @@ namespace bw::online {
 					{
 						write_str = "";
 						iguana::to_json(write_msg_queue.front(), write_str);
-						co_await boost::asio::async_write(*socket, boost::asio::buffer(std::format("{0:<{1}}", write_str.size(), sizelen), sizelen), boost::cobalt::use_op);
+						co_await boost::asio::async_write(*socket, 
+							boost::asio::buffer(std::format("{0:<{1}}", write_str.size(), sizelen), sizelen), boost::cobalt::use_op);
 						co_await boost::asio::async_write(*socket, boost::asio::dynamic_buffer(write_str, write_str.size()), boost::cobalt::use_op);
 						write_msg_queue.pop_front();
 					}
@@ -276,9 +274,7 @@ namespace bw::online {
 			}
 			catch (std::exception& e)
 			{
-				//std::print(stderr, "{}", e.what());
 				ui::msgbox("Failed to send ... Error: "s + e.what());
-				conv->notify_all();
 				stop();
 			}
 		}
@@ -288,7 +284,6 @@ namespace bw::online {
 		std::shared_ptr<context> context_ptr;
 		std::shared_ptr<std::jthread> thread_ptr;
 		std::shared_ptr<boost::asio::steady_timer> timer_;
-		std::shared_ptr<std::mutex> mutex_;
 		std::deque<message> write_msg_queue;
 	};
 	inline void gamer::handle_msg(const message& msg){
@@ -348,13 +343,17 @@ namespace bw::online {
 			else if (con_m.type == control_msg::leave) {
 				if (roomid > 0) {
 					roomid = 0;
+					chat_mutex.acquire();
 					chat_msg_queue.clear();
+					chat_mutex.release();
 				}
 				else {
 					roomid = -1;
 				}
 				screen_ptr->PostEvent(ftxui::Event::Special("RefreshRoomInfo"));
+				chat_mutex.acquire();
 				chat_msg_queue.clear();
+				chat_mutex.release();
 			}
 			else if (con_m.type == control_msg::none) {
 
@@ -381,7 +380,9 @@ namespace bw::online {
 				}
 			}
 			else {
+				chat_mutex.acquire();
 				chat_msg_queue.push_back(std::move(strmsg));
+				chat_mutex.release();
 				screen_ptr->PostEvent(ftxui::Event::Special("AddChat"));
 				refresh_screen();
 			}

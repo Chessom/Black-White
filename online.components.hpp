@@ -3,62 +3,6 @@
 #include"components.h"
 #include"online.gamer.hpp"
 namespace bw::online::components {
-	//generate a scrollable chat window
-	class ChatMsgComBase : public ftxui::ComponentBase {
-	public:
-		ChatMsgComBase(gamer& gmr) :g(gmr), selector_(std::max(gmr.chat_msg_queue.size() - 1, 0ull)) {}
-		ftxui::Component MakeAvatarButton(const str_msg& msg) {
-			using namespace ftxui;
-			return Button(msg.name, [&, this] {
-				selector_ = msg.id1;
-				}, ButtonOption::Animated(Color::Orange1, Color::White, Color::Orange4, Color::White));
-		}
-		virtual ftxui::Element Render() override {
-			using namespace ftxui;
-			Elements es;
-			for (int i = 0; i < g.chat_msg_queue.size(); ++i) {
-				auto& msg = g.chat_msg_queue[i];
-				auto but = MakeAvatarButton(msg);
-				if (msg.id1 == g.id) {
-					es.push_back(hbox(ui::autolines(msg.content) | borderRounded, but->Render()) | align_right);
-				}
-				else {
-					es.push_back(hbox(ui::autolines(msg.content) | borderRounded, but->Render()));
-				}
-			}
-			return vbox(es) | ftxui::vscroll_indicator;
-		}
-		virtual bool OnEvent(ftxui::Event e) override {
-			if (e == ftxui::Event::ArrowUp) {
-				selector_ = std::max(selector_ - 1, 0);
-				return true;
-			}
-			else if (e == ftxui::Event::ArrowDown) {
-				selector_ = std::min(selector_ + 1, int(g.chat_msg_queue.size() - 1));
-				return true;
-			}
-			return false;
-		}
-		virtual bool Focusable() const override { return true; }
-	private:
-		int selector_;
-		gamer& g;
-	};
-	
-	/*class ChatMsgComBase :ftxui::ComponentBase {
-	public:
-		ChatMsgComBase(gamer& gmr) :g(gmr), selector_(std::max(gmr.chat_msg_queue.size() - 1, 0ull)) {}
-		virtual ftxui::Element Render() override {
-
-		}
-		virtual bool OnEvent(ftxui::Event e) override {
-
-		}
-		virtual bool Focusable() const override { return true; }
-	private:
-		int selector_;
-		gamer& g;
-	};*/
 	class HallPages {
 	public:
 		ftxui::Component Taskbar = ftxui::Container::Horizontal({});
@@ -105,7 +49,7 @@ namespace bw::online::components {
 		}
 		ftxui::Component MakeRoomInfoEntry(int room_id) {
 			using namespace ftxui;
-			auto but = room_id != self.roomid ? MakeRoomInfoJoinButton(room_id) | center : MakeRoomInfoQuitButton() | center;
+			auto but = (room_id != self.roomid ? MakeRoomInfoJoinButton(room_id) : MakeRoomInfoQuitButton()) | center;
 			return Renderer(but, [but, room_id, this] {
 				auto& rinfo = self.hall.rooms[room_id];
 				return vbox(hbox(
@@ -137,51 +81,78 @@ namespace bw::online::components {
 		}
 
 
+
+
 		ftxui::Component MakeAvatarButton(const str_msg& msg) {
 			using namespace ftxui;
 			return Button(msg.name, [&, this] {
 				selectedPlayerID = msg.id1;
-				}, ButtonOption::Animated(Color::Orange1, Color::White, Color::Orange4, Color::White));
+				}, ButtonOption::Border());
 		}
 		ftxui::Component MakeChatMsg(const str_msg& msg) {
 			using namespace ftxui;
 			auto but = MakeAvatarButton(msg);
-			auto temp = Renderer([this, but, msg] {
+			auto temp = Renderer(but, [this, but, msg] {
 				if (msg.id1 == self.id) {
 					return hbox(ui::autolines(msg.content) | borderRounded, but->Render()) | align_right;
 				}
 				else {
-					return hbox(ui::autolines(msg.content) | borderRounded, but->Render());
-
+					return hbox(but->Render(), ui::autolines(msg.content) | borderRounded);
 				}
-			});
-			temp->Add(ui::Focusable());
-			return temp;
+				});
+			//temp->Add(ui::Focusable());
+			return temp | vcenter;
 			//return Button(msg.content, [] {});
 		}
 		void RefreshRoomChatMsgs() {
 			if (RoomChatMsgs->ChildCount())
 				RoomChatMsgs->DetachAllChildren();
-			for (int i = 0; i < self.chat_msg_queue.size() - 1; ++i) {
-				RoomChatMsgs->Add(MakeChatMsg(self.chat_msg_queue[i]));
+			self.chat_mutex.acquire();
+			auto msgq = self.chat_msg_queue;
+			self.chat_mutex.release();
+			for (int i = 0; i < msgq.size() - 1; ++i) {
+				RoomChatMsgs->Add(MakeChatMsg(msgq[i]));
 			}
-			RoomChatMsgs->Add(MakeChatMsg(self.chat_msg_queue.back()) | ftxui::focus);
+			RoomChatMsgs->Add(MakeChatMsg(msgq.back())/* | ftxui::focus*/);
 			RoomChatMsgs->TakeFocus();
 		}
 		void AddRoomChatMsg() {
 			using namespace ftxui;
+			self.chat_mutex.acquire();
 			auto msg = self.chat_msg_queue.back();
-			RoomChatMsgs->Add(MakeChatMsg(self.chat_msg_queue.back()) | ftxui::focus);
+			self.chat_mutex.release();
+			RoomChatMsgs->Add(MakeChatMsg(msg)/* | ftxui::focus*/);
 			RoomChatMsgs->TakeFocus();
 		}
 		ftxui::Component MakeStartGameButtons() {
 			using namespace ftxui;
 			return ftxui::Container::Vertical({
 				Button("Refresh",[this] {RefreshRoomChatMsgs(); },ButtonOption::Animated(Color::Blue,Color::White,Color::BlueLight,Color::White)),
-				Button("Othello",[] {},ButtonOption::Animated()),
+				Button("Othello",[this] {
+					auto pctx = self.get_executor();
+					/*
+					* 1. add the component to the window
+					* 2. spawn the task coroutine to run in the executor
+					* ----Q:how to make the channel connected to the user?
+					* ----A:we register the channel in the handle_msg function of the user?
+					* ----we only forward the raw move string(json format) to the gamer, 
+					* ----and the gamer will handle the move string on their own.(or perhaps we can use the std::any?)
+					* 
+					* 
+					* 3.
+					* the false code:
+					* GamePageCom = ftxui::Container::Vertical({});
+					* GamePageCom->DetachAllChildren();
+					* GamePageCom->Add(game_type::components::GamePageComp());
+					* 
+					*/
+					},ButtonOption::Animated()),
 				Button("TicTacToe",[] {},ButtonOption::Animated())
 				});
 		}
+
+
+
 
 		void startHallPages(){
 			using namespace ftxui;
@@ -372,23 +343,20 @@ namespace bw::online::components {
 						showRoomChatPage = false;
 						showRoomChatTaskBar = false;
 					}
-					RoomChatMsgs->TakeFocus();
 					}, ButtonOption::Animated(Color::Orange1));
 				auto SendChatCom = ftxui::Container::Vertical({ 
 					InputChatComp,
 					Renderer(SendChatBut, [&] {
-						return hbox(text("Press enter to line feed.") | center, SendChatBut->Render() | center);
+						return hbox(text("Press enter to line feed."_l) | center, SendChatBut->Render() | center);
 					})
 					});
-				int ChatRightSize = 16;
-				int SendChatSize = 10;
-				////////////////////////////////////////////////////
-				/*auto RoomPageLeft = ResizableSplitBottom(SendChatCom | size(HEIGHT, GREATER_THAN, 3), 
-					RoomChatMsgs | vscroll_indicator | frame | flex | size(HEIGHT, GREATER_THAN, 15), &ChatLeftSize);*/
-				////////////////////////////////////////////////////
-				auto RoomPageLeft = RoomChatMsgs | vscroll_indicator | frame | size(HEIGHT, GREATER_THAN, 15);
-				auto RoomPageRight = ResizableSplitBottom(SendChatCom, MakeStartGameButtons(), &SendChatSize);
-				RoomChatPageCom = ResizableSplitRight(RoomPageRight, RoomPageLeft, &ChatRightSize)| CatchEvent([this](Event e) {
+				int ChatLeftSize = 60;
+				int SendChatSize = 7;
+				//auto RoomPageLeft = RoomChatMsgs | vscroll_indicator | frame | flex;
+				//auto RoomPageRight = ResizableSplitBottom(SendChatCom, MakeStartGameButtons(), &SendChatSize);
+				auto RoomPageRight = MakeStartGameButtons();
+				auto RoomPageLeft = ResizableSplitBottom(SendChatCom, RoomChatMsgs | vscroll_indicator | frame | flex, &SendChatSize);
+				RoomChatPageCom = ResizableSplitLeft(RoomPageLeft, RoomPageRight, &ChatLeftSize) | CatchEvent([this](Event e) {
 					if (e == Event::Special("AddChat"_l)) {
 						AddRoomChatMsg();
 						return true;
@@ -408,7 +376,7 @@ namespace bw::online::components {
 					.height = 30,
 					});
 				Windows->Add(Maybe(RoomChatWindow, &showRoomChatPage));
-				Taskbar->Add(Maybe(MakeTaskBut(showRoomChatPage, "Chat"), &showRoomChatTaskBar));
+				Taskbar->Add(Maybe(MakeTaskBut(showRoomChatPage, "Chat"_l), &showRoomChatTaskBar));
 				/*END*/
 
 				

@@ -10,21 +10,25 @@
 namespace bw::othello::components {
 	class BoardBase : public ftxui::ComponentBase {
 	public:
-		BoardBase() {
+		using context_ptr = std::shared_ptr<boost::asio::io_context>;
+		BoardBase(context_ptr pctx, game_ptr gm_ptr) :brd(gm_ptr->brd), game_ptr(gm_ptr) {
 			col2str[col0] = "●";
 			col2str[col1] = "○";
 			col2str[none] = "  ";
+			pmvdq = std::make_shared<timdq>(pctx);
+			if (game_ptr->g[col0] == nullptr) {
+				throw std::runtime_error("Invalid gamer[0]!");
+			}
+			if (game_ptr->g[col0]->is_human()) {
+				std::dynamic_pointer_cast<human_gamer>(game_ptr->g[col0])->set_move_queue(pmvdq);
+			}
+			if (game_ptr->g[col1] == nullptr) {
+				throw std::runtime_error("Invalid gamer[1]!");
+			}
+			if (game_ptr->g[col1]->is_human()) {
+				std::dynamic_pointer_cast<human_gamer>(game_ptr->g[col1])->set_move_queue(pmvdq);
+			}
 			brd.initialize();
-		}
-		BoardBase(int board_size) :brd(board_size) {
-			col2str[col0] = "●";
-			col2str[col1] = "○";
-			col2str[none] = "  ";
-		}
-		BoardBase(dynamic_brd& Board) :brd(Board) {
-			col2str[col0] = "●";
-			col2str[col1] = "○";
-			col2str[none] = "  ";
 		}
 		ftxui::Element Render() override {
 			using namespace ftxui;
@@ -152,8 +156,10 @@ namespace bw::othello::components {
 			}
 			return false;
 		}
-
 		bool Focusable() const override { return true; }
+		void set_move_queue(timdq_ptr move_queue) {
+			pmvdq = std::move(move_queue);
+		}
 		std::map<int, std::string> col2str;
 		timdq_ptr pmvdq;
 		std::shared_ptr<game> game_ptr = nullptr;
@@ -163,8 +169,77 @@ namespace bw::othello::components {
 		ftxui::Box box;
 	};
 	using Board = std::shared_ptr<BoardBase>;
+	inline ftxui::Component GamePageComp(othello::game_ptr gm_ptr, std::shared_ptr<boost::asio::io_context> pctx) {
+		using namespace ftxui;
+
+		ui::auto_close_modal _f;
+		ScreenInteractive screen = ScreenInteractive::Fullscreen();
+		Board brd_ptr = Make<BoardBase>(gm_ptr->current_board().size);
+		brd_ptr->pmvdq = std::make_shared<timdq>(pctx);
+		brd_ptr->brd.initialize();
+		if (gptr[0] == nullptr) {
+			throw std::runtime_error("Invalid gamer[0]!");
+		}
+		else if (gptr[0]->is_human()) {
+			std::dynamic_pointer_cast<human_gamer>(gptr[0])->pmvdq = brd_ptr->pmvdq;
+		}
+		if (gptr[1] == nullptr) {
+			throw std::runtime_error("Invalid gamer[1]!");
+		}
+		else if (gptr[1]->is_human()) {
+			std::dynamic_pointer_cast<human_gamer>(gptr[1])->pmvdq = brd_ptr->pmvdq;
+		}
+		std::shared_ptr<game> gm = Make<game>(game::ready, board_size);
+		gm->screen_ptr = &screen;
+		brd_ptr->game_ptr = gm;
+
+		Component buttons = Container::Vertical({
+			Button(censtr("退出", 8), [&] {brd_ptr->TakeFocus(); screen.PostEvent(Event::Special("EndLoop")); if (gm->state == game::ended) { screen.Exit(); } }, ButtonOption::Animated()) | center,
+			Renderer([] {return separator(); }),
+			Button(censtr("悔棋", 8), [&] {brd_ptr->TakeFocus(); screen.PostEvent(Event::Special("Regret")); }, ButtonOption::Animated()) | center,
+			Renderer([] {return separator(); }),
+			Button(censtr("暂停", 8), [&] {brd_ptr->TakeFocus(); screen.PostEvent(Event::Special("Suspend")); }, ButtonOption::Animated()) | center,
+			Renderer([] {return separator(); }),
+			Button(censtr("保存", 8), [&] {brd_ptr->TakeFocus(); screen.PostEvent(Event::Special("Save")); }, ButtonOption::Animated()) | center,
+			}) | ftxui::border | ui::EnableMessageBox();
+		Component brd = Container::Horizontal({ brd_ptr }) | center;
+		Component layout = Container::Vertical({
+			Container::Horizontal({
+				buttons,
+				brd,
+			}),
+			Container::Vertical({
+				Renderer([&] {return text(std::format("Current player:{}",gptr[gm->current_color()]->get_name())) | center; }),
+				Renderer([&] {return text(std::format("Black-{}:{}",gptr[col0]->get_name(),brd_ptr->brd.countpiece(col0))) | center; }),
+				Renderer([&] {return text(std::format("White-{}:{}",gptr[col1]->get_name(),brd_ptr->brd.countpiece(col1))) | center; }),
+				Renderer([&] {return text(std::format("Black-{} state:{}",gptr[col0]->get_name(),
+				gptr[col0]->is_remote() ?
+					(std::dynamic_pointer_cast<remote_gamer>(gptr[col0])->connected() ? "Good" : "Disconnetced")
+					: "Good")) | center; }),
+				Renderer([&] {return text(std::format("White-{} state:{}",gptr[col1]->get_name(),
+				gptr[col1]->is_remote() ?
+					(std::dynamic_pointer_cast<remote_gamer>(gptr[col1])->connected() ? "Good" : "Disconnetced")
+					: "Good")) | center; }),
+			}) | center | border
+			});
+		std::jthread j([this, gm, &screen] {
+			try
+			{
+				boost::cobalt::spawn(*pctx, gm->start(gptr[0], gptr[1]), boost::asio::detached);
+				pctx->run();
+			}
+			catch (const std::exception& e)
+			{
+				ui::msgbox(gbk2utf8(e.what()));
+				screen.Exit();
+			}
+			});
+		screen.Loop(layout | center);
+		pctx->stop();
+	}
 	class Game {
 	public:
+		Game() { pctx = std::make_shared<boost::asio::io_context>(); }
 		inline std::string censtr(const std::string& str, int width) {
 			return std::format("{0:^{1}}", str, width);
 		}
@@ -172,8 +247,6 @@ namespace bw::othello::components {
 			return boost::locale::conv::to_utf<char>(s.data(), "gbk");
 		}
 		bool GamePreparing() {
-			pctx = std::make_shared<boost::asio::io_context>();
-
 			using namespace ftxui;
 			bool ret = true;
 			ScreenInteractive screen = ftxui::ScreenInteractive::Fullscreen();
@@ -295,13 +368,13 @@ namespace bw::othello::components {
 				runningtim.cancel();
 				co_return;
 				};
-			
+
 			auto co_running = [&]()->boost::cobalt::task<void> {
 				runningtim.expires_from_now(boost::posix_time::hours(24));
 				boost::system::error_code ec;
 				co_await runningtim.async_wait(boost::asio::redirect_error(boost::cobalt::use_op, ec));
 				co_return;
-			};
+				};
 			auto wait_for_connect = Container::Vertical({
 				Container::Horizontal({
 						Renderer([] {return text("Listening port:") | border; }),
@@ -334,7 +407,7 @@ namespace bw::othello::components {
 											remote_ptr->context_ptr->stop();
 										}
 										remote_ptr->context_ptr->reset();
-										remote_ptr->context_ptr->run(); 
+										remote_ptr->context_ptr->run();
 									});*/
 							}
 							catch (const std::exception& e)
@@ -409,7 +482,7 @@ namespace bw::othello::components {
 
 			boost::cobalt::spawn(*remote_ptr->context_ptr, co_running(), boost::asio::detached);
 			remote_ptr->thread_ptr = std::make_shared<std::jthread>([remote_ptr] {remote_ptr->context_ptr->run(); });
-			
+
 			screen.Loop(layout | center | ui::EnableMessageBox());
 
 			if (remote_ptr->acceptor_ptr) {
@@ -533,27 +606,12 @@ namespace bw::othello::components {
 		}
 		void GamePageLocal() {
 			using namespace ftxui;
-			
+
 			ui::auto_close_modal _f;
 			ScreenInteractive screen = ScreenInteractive::Fullscreen();
-			Board brd_ptr = Make<BoardBase>(board_size);
-			brd_ptr->pmvdq = std::make_shared<timdq>(pctx);
-			brd_ptr->brd.initialize();
-			if (gptr[0] == nullptr) {
-				throw std::runtime_error("Invalid gamer[0]!");
-			}
-			else if(gptr[0]->is_human()){
-				std::dynamic_pointer_cast<human_gamer>(gptr[0])->pmvdq = brd_ptr->pmvdq;
-			}
-			if (gptr[1] == nullptr) {
-				throw std::runtime_error("Invalid gamer[1]!");
-			}
-			else if (gptr[1]->is_human()) {
-				std::dynamic_pointer_cast<human_gamer>(gptr[1])->pmvdq = brd_ptr->pmvdq;
-			}
-			std::shared_ptr<game> gm = Make<game>(game::ready, board_size);
+			std::shared_ptr<game> gm = std::make_shared<game>(gptr[col0], gptr[col1]);
 			gm->screen_ptr = &screen;
-			brd_ptr->game_ptr = gm;
+			Board brd_ptr = Make<BoardBase>(pctx, gm);
 
 			Component buttons = Container::Vertical({
 				Button(censtr("退出", 8), [&] {brd_ptr->TakeFocus(); screen.PostEvent(Event::Special("EndLoop")); if (gm->state == game::ended) { screen.Exit(); } }, ButtonOption::Animated()) | center,

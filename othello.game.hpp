@@ -7,7 +7,9 @@
 #include"othello.board.hpp"
 #include"components.h"
 namespace bw::othello {
-	
+	namespace components {
+		class BoardBase;
+	};
 	struct aspect {
 		dynamic_brd brd;
 		color col;
@@ -17,11 +19,10 @@ namespace bw::othello {
 		}
 	};
 	using aspects = std::vector<aspect>;
-	class game {
-		friend class BoardBase;
+	class game :public basic_game {
+		friend class components::BoardBase;
 	public:
 		game() = default;
-		game(int state, int brd_size = default_size) :state(state), brd(brd_size) {};
 		game(basic_gamer_ptr g0, basic_gamer_ptr g1, int brd_size = default_size) :state(ready), brd(brd_size) {
 			g[col0] = std::move(std::dynamic_pointer_cast<gamer>(g0));
 			g[col1] = std::move(std::dynamic_pointer_cast<gamer>(g1));
@@ -112,7 +113,7 @@ namespace bw::othello {
 					break;
 				case move::quit:
 					state = ended;
-					screen_ptr->ExitLoopClosure()();
+					if(screen_ptr)screen_ptr->ExitLoopClosure()();
 					co_return;
 					break;
 				case move::str:
@@ -120,7 +121,7 @@ namespace bw::othello {
 					break;
 				case move::invalid:
 					ui::msgbox(std::format("Invalid move:pos:{},type:{},\nmsg:{}", mv.pos, mv.mvtype, mv.msg));
-					screen_ptr->ExitLoopClosure()();
+					if (screen_ptr)screen_ptr->ExitLoopClosure()();
 					state = ended;
 					co_return;
 					break;
@@ -138,10 +139,10 @@ namespace bw::othello {
 			return mvs[c].find(crd) != moves::npos;
 		}
 		void announce(std::string_view s) {
-			screen_ptr->PostEvent(ftxui::Event::Special(s.data()));
+			if (screen_ptr)screen_ptr->PostEvent(ftxui::Event::Special(s.data()));
 		}
 		void refresh_screen() {
-			screen_ptr->PostEvent(ftxui::Event::Custom);
+			if (screen_ptr)screen_ptr->PostEvent(ftxui::Event::Custom);
 		}
 		void wait_for_gamer(color c) {
 
@@ -178,6 +179,7 @@ namespace bw::othello {
 		aspects game_aspects;
 
 	};
+	using game_ptr = std::shared_ptr<game>;
 	template<typename Board>
 	class light_human_game {
 	public:
