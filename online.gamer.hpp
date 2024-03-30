@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include"stdafx.h"
+#include"game.hpp"
 #include"message.hpp"
 #include"online.room.hpp"
 #include"components.h"
@@ -208,7 +209,9 @@ namespace bw::online {
 		int infostate = outdated;
 		std::deque<str_msg> chat_msg_queue;
 		std::binary_semaphore chat_mutex;
+
 		basic_game_ptr game_ptr;
+		
 
 	private:
 		boost::cobalt::task<void> reader()
@@ -388,7 +391,7 @@ namespace bw::online {
 			}
 		}
 		else if (type == msg_t::game) {
-
+			
 		}
 		else if (type == msg_t::ret) {
 			ret_msg rmsg;
@@ -406,9 +409,22 @@ namespace bw::online {
 				screen_ptr->PostEvent(ftxui::Event::Special("RefreshRoomInfo"));
 				refresh_screen();
 			}
+			else if (rmsg.ret_type == "gamer_info") {
+				std::vector<basic_gamer> infos;
+				
+			}
+			else if (rmsg.ret_type == "notices") {
+				std::vector<std::string> notices;
+				struct_json::from_json(notices, rmsg.ret_str);
+				this->notices = notices;//thread_safe?
+			}
+			else {
+
+			}
 		}
 		else {
 
 		}
 	}
+	using user = gamer;
 };

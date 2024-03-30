@@ -17,7 +17,8 @@ namespace bw::online::components {
 		int selectedPlayerID = 0;
 
 		ftxui::Component GamePageCom;
-
+		bool showRoomGamePage = false;
+		bool showRoomGameTaskBar = false;
 
 		gamer self;
 		ftxui::Component MakeRoomInfoJoinButton(int room_id) {
@@ -129,7 +130,9 @@ namespace bw::online::components {
 			return ftxui::Container::Vertical({
 				Button("Refresh",[this] {RefreshRoomChatMsgs(); },ButtonOption::Animated(Color::Blue,Color::White,Color::BlueLight,Color::White)),
 				Button("Othello",[this] {
-					auto pctx = self.get_executor();
+					using namespace othello;
+					move mv{.mvtype=move::preparaed,.c=col0};
+					//gm_ptr=std::make_shared<othello::game>();
 					/*
 					* 1. add the component to the window
 					* 2. spawn the task coroutine to run in the executor
@@ -147,10 +150,15 @@ namespace bw::online::components {
 					* 
 					*/
 					},ButtonOption::Animated()),
-				Button("TicTacToe",[] {},ButtonOption::Animated())
+				Button("TicTacToe",[this] {
+					using namespace tictactoe;
+					move mv{ .mvtype = move::preparaed,.col = col0 };
+					
+					},ButtonOption::Animated())
 				});
 		}
-
+		
+		
 
 
 
@@ -229,9 +237,9 @@ namespace bw::online::components {
 					showEditNameWindow = false;
 					screen.PostEvent(Event::Custom);
 					}, ButtonOption::Animated(Color::Green, Color::White, Color::GreenLight, Color::White));
-				auto CancelSubmitName = Button("Cancel"_l, [&]{
-						showEditNameWindow = false;
-						screen.PostEvent(Event::Custom);
+				auto CancelSubmitName = Button("Cancel"_l, [&] {
+					showEditNameWindow = false;
+					screen.PostEvent(Event::Custom);
 					}, ButtonOption::Animated(Color::Red, Color::White, Color::RedLight, Color::White));
 				auto EditNameInput = Input(&NameBuf, "Enter your name"_l, InputOption::Spacious());
 				auto EditName = Renderer(EditNameInput, [&] {return hbox(text("Name: "_l) | center, EditNameInput->Render() | center) | center; });
@@ -255,18 +263,21 @@ namespace bw::online::components {
 				Windows->Add(Maybe(EditNameWindow, &showEditNameWindow));
 				auto EditBut = Button("Edit Name"_l, [&] {
 					showEditNameWindow = true;
+					EditNameWindow->TakeFocus();
 					screen.PostEvent(Event::Custom);
 					}, ButtonOption::Animated(Color::GrayLight)) | center;
 				/*END*/
-				
+
 				/*Bulletin*/
-				auto Bulletin = Renderer([this] {
+				auto RefreshNoticesBut = Button("Refresh Notices", [this] {self.get("notices"); }, ButtonOption::Animated(Color::Blue)) | center;
+				auto BulletinComp = Renderer([this] {
 					Elements es;
 					for (auto& s : self.notices) {
 						es.push_back(paragraphAlignJustify(s));
 					}
-					return window(text("Notices"_l) | center, vbox(es) | vscroll_indicator | yframe | flex );
+					return window(text("Notices"_l) | center, vbox(es) | vscroll_indicator | yframe | flex);
 					});
+				auto Bulletin = Container::Vertical({ RefreshNoticesBut ,BulletinComp });
 				/*END*/
 
 				/*Room info*/
@@ -332,7 +343,7 @@ namespace bw::online::components {
 					}, ButtonOption::Animated()));
 				/*END*/
 
-				/*Room Page*/
+				/*Room Chat Page*/
 				std::string chatmsg;
 				auto InputChatComp = Input(&chatmsg, "Enter your message here"_l, InputOption::Spacious());
 				auto SendChatBut = Button("Send"_l, [this, &chatmsg] {
@@ -350,13 +361,8 @@ namespace bw::online::components {
 						return hbox(text("Press enter to line feed."_l) | center, SendChatBut->Render() | center);
 					})
 					});
-				int ChatLeftSize = 60;
 				int SendChatSize = 7;
-				//auto RoomPageLeft = RoomChatMsgs | vscroll_indicator | frame | flex;
-				//auto RoomPageRight = ResizableSplitBottom(SendChatCom, MakeStartGameButtons(), &SendChatSize);
-				auto RoomPageRight = MakeStartGameButtons();
-				auto RoomPageLeft = ResizableSplitBottom(SendChatCom, RoomChatMsgs | vscroll_indicator | frame | flex, &SendChatSize);
-				RoomChatPageCom = ResizableSplitLeft(RoomPageLeft, RoomPageRight, &ChatLeftSize) | CatchEvent([this](Event e) {
+				RoomChatPageCom = ResizableSplitBottom(SendChatCom, RoomChatMsgs | vscroll_indicator | frame | flex, &SendChatSize) | CatchEvent([this](Event e) {
 					if (e == Event::Special("AddChat"_l)) {
 						AddRoomChatMsg();
 						return true;
@@ -379,6 +385,9 @@ namespace bw::online::components {
 				Taskbar->Add(Maybe(MakeTaskBut(showRoomChatPage, "Chat"_l), &showRoomChatTaskBar));
 				/*END*/
 
+				/*Room Game Page*/
+
+				/*END*/
 				
 				SideCom = ftxui::Container::Vertical({
 					ShowName,

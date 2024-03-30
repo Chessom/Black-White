@@ -26,7 +26,7 @@ namespace bw {
 	protected:
 		virtual void suspend() {};
 		int st = unready;
-		std::chrono::time_point<std::chrono::system_clock> begin, end;
+		//std::chrono::time_point<std::chrono::system_clock> begin, end;
 	};
 	using basic_game_ptr = std::shared_ptr<basic_game>;
 }

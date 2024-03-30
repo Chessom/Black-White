@@ -49,10 +49,7 @@ namespace bw::othello {
 			if (mv.mvtype == move::str) {
 				co_await pass_msg(mv.msg);
 			}
-			/*else {
-				pmvdq->q.push_back(mv);
-				pmvdq->tim.cancel_one();
-			}*/
+			co_return;
 		};
 		virtual void cancel() {
 			pmvdq->q.push_back({ .mvtype = move::quit });

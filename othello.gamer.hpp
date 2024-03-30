@@ -17,13 +17,7 @@ namespace bw {
 	template<typename T>
 	using mtxdq_ptr = std::shared_ptr<mtxdeque_t<T>>;
 
-	template<typename T>
-	struct timer_deque_t {
-		timer_deque_t(std::shared_ptr<boost::asio::io_context> ctx) :tim(*ctx) {}
-		std::deque<T> q;
-		boost::asio::steady_timer tim;
-	};
-	using timdq = timer_deque_t<bw::othello::move>;
+	using timdq = core::timer_deque_t<bw::othello::move>;
 	using timdq_ptr = std::shared_ptr<timdq>;
 }
 namespace bw::othello {
@@ -42,15 +36,6 @@ namespace bw::othello {
 		virtual boost::cobalt::task<void> pass_move(move mv) = 0;
 		virtual void cancel() = 0;//cancel getmove
 		virtual ~gamer() = default;
-		bool is_human() const {
-			return gamertype == human;
-		}
-		bool is_computer() const {
-			return gamertype == computer;
-		}
-		bool is_remote() const {
-			return gamertype == remote;
-		}
 		moves mvs;
 	};
 	using gamer_ptr = std::shared_ptr<gamer>;

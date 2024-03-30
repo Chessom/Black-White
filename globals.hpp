@@ -39,3 +39,6 @@ namespace bw::othello {
 namespace bw::ataxx {
 
 };
+namespace bw::tictactoe {
+	inline std::vector<std::string> gamer_list = { "Human","Computer Random" };
+}

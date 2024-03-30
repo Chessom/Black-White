@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include"gamer.hpp"
 #include"online.gamer.hpp"
 namespace bw::online {

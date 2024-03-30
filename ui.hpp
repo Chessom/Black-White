@@ -7,6 +7,7 @@
 #include"components.h"
 #include"othello.components.hpp"
 #include"online.components.hpp"
+#include"tictactoe.components.hpp"
 namespace bw {
 	inline std::string censtr(const std::string& str, int width) {
 		return std::format("{0:^{1}}", str, width);
@@ -78,6 +79,12 @@ namespace bw {
 					Game.GamePageLocal();
 				}
 				},ButtonOption::Animated()) | center,
+			Button("井字棋",[&,this] {
+				bw::tictactoe::components::Game Game;
+				if (Game.GamePreparing()) {
+					Game.GamePageLocal();
+				}
+				},ButtonOption::Animated()) | center,
 			Button("同化棋",[&,this] { 
 				
 				},ButtonOption::Animated()) | center,
@@ -87,6 +94,7 @@ namespace bw {
 			Button(" 围棋 ",[&,this] { 
 			
 				},ButtonOption::Animated()) | center,
+
 			/*Button(" Premsg ",[&,this] {
 				ui::premsgbox();
 				},ButtonOption::Animated()) | center,*/

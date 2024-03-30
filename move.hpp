@@ -1,10 +1,10 @@
 ﻿#pragma once
 #include"stdafx.h"
 namespace bw {
-	class baisc_move {
+	class basic_move {
 	public:
-		baisc_move() = default;
-		virtual ~baisc_move() = default;
+		basic_move() = default;
+		virtual ~basic_move() = default;
 
 	private:
 

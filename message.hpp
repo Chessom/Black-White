@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include"stdafx.h"
 namespace bw {
 	enum { success, failed };
@@ -20,10 +20,11 @@ namespace bw {
 	};
 	REFLECTION(str_msg, content, target_type, id1, id2, name);
 	struct game_msg {
-		int mode;
+		enum { prepare, start, move, end };
+		int type;
 		std::string movestr, board;
 	};
-	REFLECTION(game_msg, mode, movestr, board);
+	REFLECTION(game_msg, type, movestr, board);
 	struct get_msg {
 		std::string get_type;
 		std::vector<int> ids;

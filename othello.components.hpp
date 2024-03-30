@@ -12,9 +12,6 @@ namespace bw::othello::components {
 	public:
 		using context_ptr = std::shared_ptr<boost::asio::io_context>;
 		BoardBase(context_ptr pctx, game_ptr gm_ptr) :brd(gm_ptr->brd), game_ptr(gm_ptr) {
-			col2str[col0] = "●";
-			col2str[col1] = "○";
-			col2str[none] = "  ";
 			pmvdq = std::make_shared<timdq>(pctx);
 			if (game_ptr->g[col0] == nullptr) {
 				throw std::runtime_error("Invalid gamer[0]!");
@@ -99,7 +96,7 @@ namespace bw::othello::components {
 			if (e.is_mouse()) {
 				return OnMouseEvent(e);
 			}
-			else if (e == Event::Special("flush")) {
+			else if (e == Event::Special("Flush")) {
 				brd = game_ptr->current_board();
 				pmvdq->tim.cancel_one();
 				game_ptr->refresh_screen();
@@ -160,7 +157,6 @@ namespace bw::othello::components {
 		void set_move_queue(timdq_ptr move_queue) {
 			pmvdq = std::move(move_queue);
 		}
-		std::map<int, std::string> col2str;
 		timdq_ptr pmvdq;
 		std::shared_ptr<game> game_ptr = nullptr;
 		dynamic_brd brd;
@@ -169,7 +165,7 @@ namespace bw::othello::components {
 		ftxui::Box box;
 	};
 	using Board = std::shared_ptr<BoardBase>;
-	inline ftxui::Component GamePageComp(othello::game_ptr gm_ptr, std::shared_ptr<boost::asio::io_context> pctx) {
+	/*inline ftxui::Component GamePageComp(othello::game_ptr gm_ptr, std::shared_ptr<boost::asio::io_context> pctx) {
 		using namespace ftxui;
 
 		ui::auto_close_modal _f;
@@ -236,7 +232,7 @@ namespace bw::othello::components {
 			});
 		screen.Loop(layout | center);
 		pctx->stop();
-	}
+	}*/
 	class Game {
 	public:
 		Game() { pctx = std::make_shared<boost::asio::io_context>(); }
@@ -609,19 +605,19 @@ namespace bw::othello::components {
 
 			ui::auto_close_modal _f;
 			ScreenInteractive screen = ScreenInteractive::Fullscreen();
-			std::shared_ptr<game> gm = std::make_shared<game>(gptr[col0], gptr[col1]);
+			std::shared_ptr<game> gm = std::make_shared<game>(gptr[col0], gptr[col1], board_size);
 			gm->screen_ptr = &screen;
 			Board brd_ptr = Make<BoardBase>(pctx, gm);
 
 			Component buttons = Container::Vertical({
-				Button(censtr("退出", 8), [&] {brd_ptr->TakeFocus(); screen.PostEvent(Event::Special("EndLoop")); if (gm->state == game::ended) { screen.Exit(); } }, ButtonOption::Animated()) | center,
+				Button(censtr("退出", 8), [&] {screen.PostEvent(Event::Special("EndLoop")); if (gm->state() == game::ended) { screen.Exit(); } }, ButtonOption::Animated()) | center,
 				Renderer([] {return separator(); }),
-				Button(censtr("悔棋", 8), [&] {brd_ptr->TakeFocus(); screen.PostEvent(Event::Special("Regret")); }, ButtonOption::Animated()) | center,
+				Button(censtr("悔棋", 8), [&] {screen.PostEvent(Event::Special("Regret")); }, ButtonOption::Animated()) | center,
 				Renderer([] {return separator(); }),
-				Button(censtr("暂停", 8), [&] {brd_ptr->TakeFocus(); screen.PostEvent(Event::Special("Suspend")); }, ButtonOption::Animated()) | center,
+				Button(censtr("暂停", 8), [&] {screen.PostEvent(Event::Special("Suspend")); }, ButtonOption::Animated()) | center,
 				Renderer([] {return separator(); }),
-				Button(censtr("保存", 8), [&] {brd_ptr->TakeFocus(); screen.PostEvent(Event::Special("Save")); }, ButtonOption::Animated()) | center,
-				}) | ftxui::border | ui::EnableMessageBox();
+				Button(censtr("保存", 8), [&] {screen.PostEvent(Event::Special("Save")); }, ButtonOption::Animated()) | center,
+				}) | ftxui::border;
 			Component brd = Container::Horizontal({ brd_ptr }) | center;
 			Component layout = Container::Vertical({
 				Container::Horizontal({
@@ -654,7 +650,7 @@ namespace bw::othello::components {
 					screen.Exit();
 				}
 				});
-			screen.Loop(layout | center);
+			screen.Loop(layout | center | ui::EnableMessageBox());
 			pctx->stop();
 		}
 
@@ -663,4 +659,7 @@ namespace bw::othello::components {
 		std::shared_ptr<boost::asio::io_context> pctx;
 		int board_size = 8;
 	};
+	inline ftxui::Component OnlinePrepareComp() {
+		
+	}
 }

@@ -141,6 +141,7 @@
       <MinimalRebuild>false</MinimalRebuild>
       <AdditionalOptions>/utf-8 /bigobj %(AdditionalOptions)</AdditionalOptions>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -188,9 +189,12 @@
     <ClCompile Include="othello.gamer.online.hpp" />
     <ClCompile Include="othello.online.game.hpp" />
     <ClCompile Include="tictactoe.game.hpp" />
+    <ClCompile Include="tictactoe.gamer.computer.hpp" />
     <ClCompile Include="tictactoe.gamer.hpp" />
     <ClCompile Include="tictactoe.gamer.human.hpp" />
+    <ClCompile Include="tictactoe.gamer.online.hpp" />
     <ClCompile Include="tictactoe.move.hpp" />
+    <ClCompile Include="tictactoe.moves.hpp" />
     <ClCompile Include="utility.hpp" />
   </ItemGroup>
   <ItemGroup>

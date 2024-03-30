@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include"stdafx.h"
-#include<boost/tti/has_member_data.hpp>
 namespace bw::core {
 	using ll = long long;
 	using ull = unsigned long long;
@@ -173,6 +172,13 @@ namespace bw::core {
 	template <std::integral Int>
 	using vec = _coord<Int>;
 	REFLECTION(coord, x, y);
+
+	template<typename T>
+	struct timer_deque_t {
+		timer_deque_t(std::shared_ptr<boost::asio::io_context> ctx) :tim(*ctx) {}
+		std::deque<T> q;
+		boost::asio::steady_timer tim;
+	};
 };
 namespace std {
 	template<std::integral Int, typename CharT>

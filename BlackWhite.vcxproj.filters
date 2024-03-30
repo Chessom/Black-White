@@ -126,6 +126,15 @@
     <ClCompile Include="othello.gamer.online.hpp">
       <Filter>头文件\othello\othello.gamer</Filter>
     </ClCompile>
+    <ClCompile Include="tictactoe.gamer.online.hpp">
+      <Filter>头文件\tictactoe\tictactoe.gamers</Filter>
+    </ClCompile>
+    <ClCompile Include="tictactoe.gamer.computer.hpp">
+      <Filter>头文件\tictactoe\tictactoe.gamers</Filter>
+    </ClCompile>
+    <ClCompile Include="tictactoe.moves.hpp">
+      <Filter>头文件\tictactoe</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="tools.hpp">

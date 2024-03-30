@@ -16,6 +16,15 @@ namespace bw {
 		int id = 0;
 		int gamertype = invalid;
 		int gametype = core::gameid::unspecific;
+		bool is_human() const {
+			return gamertype == human;
+		}
+		bool is_computer() const {
+			return gamertype == computer;
+		}
+		bool is_remote() const {
+			return gamertype == remote;
+		}
 	};
 	
 	using basic_gamer_ptr = std::shared_ptr<basic_gamer>;

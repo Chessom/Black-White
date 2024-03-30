@@ -13,21 +13,17 @@ namespace bw::othello {
 	struct aspect {
 		dynamic_brd brd;
 		color col;
-		template<typename Archive>
-		void serialize(Archive& ar) {
-			ar(brd, col);
-		}
 	};
 	using aspects = std::vector<aspect>;
 	class game :public basic_game {
 		friend class components::BoardBase;
 	public:
-		game() = default;
-		game(basic_gamer_ptr g0, basic_gamer_ptr g1, int brd_size = default_size) :state(ready), brd(brd_size) {
+		game() = delete;
+		game(basic_gamer_ptr g0, basic_gamer_ptr g1, int brd_size = default_size) :basic_game(ready), brd(brd_size) {
 			g[col0] = std::move(std::dynamic_pointer_cast<gamer>(g0));
 			g[col1] = std::move(std::dynamic_pointer_cast<gamer>(g1));
 			brd.initialize();
-			state = ready;
+			st = ready;
 		}
 		string gbk2utf8(std::string_view s) {
 			return boost::locale::conv::to_utf<char>(s.data(), "gbk");
@@ -43,7 +39,7 @@ namespace bw::othello {
 				ui::msgbox("Invalid color!");
 				co_return;
 			}
-			state = ongoing;
+			st = ongoing;
 			brd.initialize();
 			color op = core::op_col(col);
 			game_aspects.emplace_back(brd, none);//用来处理第一次悔棋情况
@@ -56,7 +52,7 @@ namespace bw::othello {
 						//对局结束
 						//公布比分(由components完成)
 						announce("End");
-						state = ended;
+						st = ended;
 						break;
 					}
 					else {
@@ -73,7 +69,7 @@ namespace bw::othello {
 				}
 				catch (const std::exception& e) {
 					ui::msgbox(gbk2utf8(e.what()));
-					state = game::ended;
+					st = game::ended;
 				}
 
 				co_await g[col]->pass_move(mv);
@@ -82,7 +78,7 @@ namespace bw::othello {
 				switch (mv.mvtype) {
 				case move::mv:
 					brd.applymove(mv.pos, col);
-					announce("flush");
+					announce("Flush");
 					break;
 				case move::regret:
 					if (brd.count(col0) + brd.count(col1) < 6) {
@@ -102,17 +98,17 @@ namespace bw::othello {
 						game_aspects.pop_back();
 						brd = game_aspects.back().brd;
 					}
-					announce("flush");
+					announce("Flush");
 					wait_for_gamer(col);
 					continue;
 					break;
 				case move::suspend:
-					state = suspended;
+					st = suspended;
 					suspend();
 					co_return;
 					break;
 				case move::quit:
-					state = ended;
+					st = ended;
 					if(screen_ptr)screen_ptr->ExitLoopClosure()();
 					co_return;
 					break;
@@ -122,12 +118,12 @@ namespace bw::othello {
 				case move::invalid:
 					ui::msgbox(std::format("Invalid move:pos:{},type:{},\nmsg:{}", mv.pos, mv.mvtype, mv.msg));
 					if (screen_ptr)screen_ptr->ExitLoopClosure()();
-					state = ended;
+					st = ended;
 					co_return;
 					break;
 				default:
 					ui::msgbox(std::format("move type id:{}", mv.mvtype));
-					state = ended;
+					st = ended;
 					std::unreachable();
 				}
 				game_aspects.emplace_back(brd, col);
@@ -158,16 +154,14 @@ namespace bw::othello {
 			return g[col];
 		}
 		void endgame() {
-			if (state == ongoing) {
-				state = ended;
+			if (st == ongoing) {
+				st = ended;
 				g[col]->cancel();
 				g[col ^ 1]->cancel();
 			}
 		}
 		virtual ~game() = default;
 		ftxui::ScreenInteractive* screen_ptr = nullptr;
-		enum { unready, ready, ongoing, ended, suspended };
-		int state;
 	protected:
 		void suspend() {
 

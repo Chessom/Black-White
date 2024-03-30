@@ -5,7 +5,7 @@ namespace bw::othello {
 	using namespace bw::core;
 	enum { max_move_num = 100 };
 	struct move {
-		enum { mv, pass, lose, win, draw, suspend, regret, quit, invalid, str, start };
+		enum { mv, pass, lose, win, draw, suspend, regret, quit, invalid, str, start, preparaed };
 		int mvtype;
 		coord pos;
 		color c;
