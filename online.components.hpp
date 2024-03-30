@@ -131,7 +131,7 @@ namespace bw::online::components {
 				Button("Refresh",[this] {RefreshRoomChatMsgs(); },ButtonOption::Animated(Color::Blue,Color::White,Color::BlueLight,Color::White)),
 				Button("Othello",[this] {
 					using namespace othello;
-					move mv{.mvtype=move::preparaed,.c=col0};
+					//move mv{.mvtype=move::preparaed,.c=col0};
 					//gm_ptr=std::make_shared<othello::game>();
 					/*
 					* 1. add the component to the window
@@ -152,7 +152,7 @@ namespace bw::online::components {
 					},ButtonOption::Animated()),
 				Button("TicTacToe",[this] {
 					using namespace tictactoe;
-					move mv{ .mvtype = move::preparaed,.col = col0 };
+					//move mv{ .mvtype = move::preparaed,.col = col0 };
 					
 					},ButtonOption::Animated())
 				});

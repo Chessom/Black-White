@@ -3,7 +3,6 @@
 #include"core.hpp"
 #include"tictactoe.moves.hpp"
 #include"tictactoe.gamer.hpp"
-#include"tictactoe.components.hpp"
 namespace bw::tictactoe {
 	using namespace std::chrono_literals;
 	class computer_gamer :public gamer {

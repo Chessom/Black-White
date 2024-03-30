@@ -93,7 +93,6 @@ namespace bw::tictactoe::components {
 				else if (brd.cnt == 9) {
 					ui::msgbox("Draw!");
 				}
-				game_ptr->screen_ptr->Exit();
 				return true;
 			}
 			else if (e == Event::Special("Regret")) {
@@ -173,7 +172,7 @@ namespace bw::tictactoe::components {
 			switch (selected_1)
 			{
 			case 0:gptr[col0] = std::make_shared<human_gamer>(col0); break;
-			case 1:gptr[col0] = std::make_shared<computer_gamer>(col0); break;
+			case 1:gptr[col0] = std::make_shared<computer_gamer_random>(col0); break;
 				break;
 			default:
 				break;
@@ -181,7 +180,7 @@ namespace bw::tictactoe::components {
 			switch (selected_2)
 			{
 			case 0:gptr[col1] = std::make_shared<human_gamer>(col1); break;
-			case 1:gptr[col1] = std::make_shared<computer_gamer>(col1); break;
+			case 1:gptr[col1] = std::make_shared<computer_gamer_random>(col1); break;
 			default:
 				break;
 			}
@@ -197,7 +196,7 @@ namespace bw::tictactoe::components {
 			Board brd_ptr = Make<BoardBase>(pctx, gm);
 
 			Component buttons = Container::Vertical({
-				Button(censtr("退出", 8), [&] {screen.PostEvent(Event::Special("EndLoop")); if (gm->state() == game::ended) { screen.Exit(); } }, ButtonOption::Animated()) | center,
+				Button(censtr("退出", 8), [&] {if (!pctx->stopped()) { pctx->stop(); } screen.Exit(); }, ButtonOption::Animated()) | center,
 				Renderer([] {return separator(); }),
 				Button(censtr("悔棋", 8), [&] {screen.PostEvent(Event::Special("Regret")); }, ButtonOption::Animated()) | center,
 				Renderer([] {return separator(); }),
