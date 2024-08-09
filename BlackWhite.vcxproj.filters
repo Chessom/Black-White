@@ -67,189 +67,201 @@
     <Filter Include="头文件\othello\othello.online">
       <UniqueIdentifier>{4a091b4a-9267-4cb5-8716-9e24a74a2541}</UniqueIdentifier>
     </Filter>
-    <Filter Include="头文件\bw\coroutine">
-      <UniqueIdentifier>{ebe907ed-b9d9-4a24-913b-05316ece5de1}</UniqueIdentifier>
+    <Filter Include="头文件\bw\shared\gamer">
+      <UniqueIdentifier>{4c02371a-78dc-4ce1-b169-71ff3842e932}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="src\main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="utility.hpp">
-      <Filter>头文件\bw\shared</Filter>
-    </ClCompile>
-    <ClCompile Include="globals.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="othello.ai.practise.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="ataxx.move.hpp">
-      <Filter>头文件\ataxx</Filter>
-    </ClCompile>
-    <ClCompile Include="ataxx.moves.hpp">
-      <Filter>头文件\ataxx</Filter>
-    </ClCompile>
-    <ClCompile Include="online.simple.hpp">
-      <Filter>头文件\bw\online</Filter>
-    </ClCompile>
-    <ClCompile Include="components.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="ipv4.hpp">
-      <Filter>头文件\external</Filter>
-    </ClCompile>
-    <ClCompile Include="ipv4.cpp">
+    <ClCompile Include="src\ipv4.cpp">
       <Filter>源文件\external</Filter>
     </ClCompile>
-    <ClCompile Include="online.basic_gamer.hpp">
-      <Filter>头文件\bw\online\online.gamers</Filter>
-    </ClCompile>
-    <ClCompile Include="tictactoe.gamer.hpp">
-      <Filter>头文件\tictactoe</Filter>
-    </ClCompile>
-    <ClCompile Include="tictactoe.move.hpp">
-      <Filter>头文件\tictactoe</Filter>
-    </ClCompile>
-    <ClCompile Include="tictactoe.game.hpp">
-      <Filter>头文件\tictactoe</Filter>
-    </ClCompile>
-    <ClCompile Include="tictactoe.gamer.human.hpp">
-      <Filter>头文件\tictactoe\tictactoe.gamers</Filter>
-    </ClCompile>
-    <ClCompile Include="gamer.lua.hpp">
-      <Filter>头文件\bw\shared</Filter>
-    </ClCompile>
-    <ClCompile Include="othello.online.game.hpp">
-      <Filter>头文件\othello\othello.online</Filter>
-    </ClCompile>
-    <ClCompile Include="othello.gamer.online.hpp">
-      <Filter>头文件\othello\othello.gamer</Filter>
-    </ClCompile>
-    <ClCompile Include="tictactoe.gamer.online.hpp">
-      <Filter>头文件\tictactoe\tictactoe.gamers</Filter>
-    </ClCompile>
-    <ClCompile Include="tictactoe.gamer.computer.hpp">
-      <Filter>头文件\tictactoe\tictactoe.gamers</Filter>
-    </ClCompile>
-    <ClCompile Include="tictactoe.moves.hpp">
-      <Filter>头文件\tictactoe</Filter>
+    <ClCompile Include="src\grid-container.cpp">
+      <Filter>源文件\external</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="tools.hpp">
-      <Filter>头文件\tools</Filter>
-    </ClInclude>
-    <ClInclude Include="config.hpp">
-      <Filter>头文件\bw\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="core.hpp">
-      <Filter>头文件\bw\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="env.hpp">
-      <Filter>头文件\bw\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="game.hpp">
-      <Filter>头文件\bw\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="gamer.hpp">
-      <Filter>头文件\bw\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="move.hpp">
-      <Filter>头文件\bw\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="online.gamer.hpp">
-      <Filter>头文件\bw\online</Filter>
-    </ClInclude>
-    <ClInclude Include="online.room.hpp">
-      <Filter>头文件\bw\online</Filter>
-    </ClInclude>
-    <ClInclude Include="online.hpp">
-      <Filter>头文件\bw\online</Filter>
-    </ClInclude>
-    <ClInclude Include="stdafx.h">
-      <Filter>头文件\external</Filter>
-    </ClInclude>
-    <ClInclude Include="components.h">
-      <Filter>头文件\bw\tui</Filter>
-    </ClInclude>
-    <ClInclude Include="ui.hpp">
-      <Filter>头文件\bw\tui</Filter>
-    </ClInclude>
-    <ClInclude Include="bwlocale.hpp">
-      <Filter>头文件\bw\tui</Filter>
-    </ClInclude>
-    <ClInclude Include="initialize.hpp">
-      <Filter>头文件\bw\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="practise.hpp">
-      <Filter>头文件\bw</Filter>
-    </ClInclude>
-    <ClInclude Include="othello.board.hpp">
-      <Filter>头文件\othello</Filter>
-    </ClInclude>
-    <ClInclude Include="othello.components.hpp">
-      <Filter>头文件\othello</Filter>
-    </ClInclude>
-    <ClInclude Include="othello.game.hpp">
-      <Filter>头文件\othello</Filter>
-    </ClInclude>
-    <ClInclude Include="othello.gamer.hpp">
-      <Filter>头文件\othello</Filter>
-    </ClInclude>
-    <ClInclude Include="othello.hpp">
-      <Filter>头文件\othello</Filter>
-    </ClInclude>
-    <ClInclude Include="othello.move.hpp">
-      <Filter>头文件\othello</Filter>
-    </ClInclude>
-    <ClInclude Include="othello.moves.hpp">
-      <Filter>头文件\othello</Filter>
-    </ClInclude>
-    <ClInclude Include="othello.gamer.computer.hpp">
-      <Filter>头文件\othello\othello.gamer</Filter>
-    </ClInclude>
-    <ClInclude Include="othello.gamer.human.hpp">
-      <Filter>头文件\othello\othello.gamer</Filter>
-    </ClInclude>
-    <ClInclude Include="othello.gamer.remote.hpp">
-      <Filter>头文件\othello\othello.gamer</Filter>
-    </ClInclude>
-    <ClInclude Include="othello.ai.practise.hpp">
-      <Filter>头文件\othello\othello.ai</Filter>
-    </ClInclude>
-    <ClInclude Include="othello.ai.hpp">
-      <Filter>头文件\othello\othello.ai</Filter>
-    </ClInclude>
-    <ClInclude Include="ataxx.board.hpp">
-      <Filter>头文件\ataxx</Filter>
-    </ClInclude>
-    <ClInclude Include="globals.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="ataxx.components.hpp">
-      <Filter>头文件\ataxx</Filter>
-    </ClInclude>
-    <ClInclude Include="message.hpp">
+    <ClInclude Include="include\net\message.hpp">
       <Filter>头文件\bw\net</Filter>
     </ClInclude>
-    <ClInclude Include="othello.online.hpp">
+    <ClInclude Include="include\online\basic_gamer.hpp">
+      <Filter>头文件\bw\online\online.gamers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\online\components.hpp">
+      <Filter>头文件\bw\online</Filter>
+    </ClInclude>
+    <ClInclude Include="include\online\gamer.hpp">
+      <Filter>头文件\bw\online</Filter>
+    </ClInclude>
+    <ClInclude Include="include\online\gamer_info.hpp">
+      <Filter>头文件\bw\online</Filter>
+    </ClInclude>
+    <ClInclude Include="include\online\room.hpp">
+      <Filter>头文件\bw\online</Filter>
+    </ClInclude>
+    <ClInclude Include="include\online\simple.hpp">
+      <Filter>头文件\bw\online</Filter>
+    </ClInclude>
+    <ClInclude Include="include\othello\ai.hpp">
+      <Filter>头文件\othello\othello.ai</Filter>
+    </ClInclude>
+    <ClInclude Include="include\othello\ai\practise.hpp">
+      <Filter>头文件\othello\othello.ai</Filter>
+    </ClInclude>
+    <ClInclude Include="include\othello\gamer\computer.hpp">
+      <Filter>头文件\othello\othello.gamer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\othello\gamer\human.hpp">
+      <Filter>头文件\othello\othello.gamer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\othello\gamer\online.hpp">
+      <Filter>头文件\othello\othello.gamer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\othello\gamer\remote.hpp">
+      <Filter>头文件\othello\othello.gamer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\othello\online\gamer.hpp">
+      <Filter>头文件\othello\othello.online</Filter>
+    </ClInclude>
+    <ClInclude Include="include\othello\board.hpp">
       <Filter>头文件\othello</Filter>
     </ClInclude>
-    <ClInclude Include="online.gamer_info.hpp">
-      <Filter>头文件\bw\online</Filter>
+    <ClInclude Include="include\othello\components.hpp">
+      <Filter>头文件\othello</Filter>
     </ClInclude>
-    <ClInclude Include="online.components.hpp">
-      <Filter>头文件\bw\online</Filter>
+    <ClInclude Include="include\othello\game.hpp">
+      <Filter>头文件\othello</Filter>
     </ClInclude>
-    <ClInclude Include="tictactoe.board.hpp">
+    <ClInclude Include="include\othello\gamer.hpp">
+      <Filter>头文件\othello</Filter>
+    </ClInclude>
+    <ClInclude Include="include\othello\move.hpp">
+      <Filter>头文件\othello</Filter>
+    </ClInclude>
+    <ClInclude Include="include\othello\moves.hpp">
+      <Filter>头文件\othello</Filter>
+    </ClInclude>
+    <ClInclude Include="include\othello\online.hpp">
+      <Filter>头文件\othello</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tictactoe\gamer\computer.hpp">
+      <Filter>头文件\tictactoe\tictactoe.gamers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tictactoe\gamer\human.hpp">
+      <Filter>头文件\tictactoe\tictactoe.gamers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tictactoe\gamer\online.hpp">
+      <Filter>头文件\tictactoe\tictactoe.gamers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tictactoe\board.hpp">
       <Filter>头文件\tictactoe</Filter>
     </ClInclude>
-    <ClInclude Include="tictactoe.components.hpp">
+    <ClInclude Include="include\tictactoe\components.hpp">
       <Filter>头文件\tictactoe</Filter>
     </ClInclude>
-    <ClInclude Include="othello.online.gamer.hpp">
-      <Filter>头文件\othello\othello.online</Filter>
+    <ClInclude Include="include\tictactoe\game.hpp">
+      <Filter>头文件\tictactoe</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tictactoe\gamer.hpp">
+      <Filter>头文件\tictactoe</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tictactoe\move.hpp">
+      <Filter>头文件\tictactoe</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tictactoe\moves.hpp">
+      <Filter>头文件\tictactoe</Filter>
+    </ClInclude>
+    <ClInclude Include="include\config.hpp">
+      <Filter>头文件\bw\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="include\core.hpp">
+      <Filter>头文件\bw\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="include\env.hpp">
+      <Filter>头文件\bw\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="include\game.hpp">
+      <Filter>头文件\bw\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gamer.hpp">
+      <Filter>头文件\bw\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gamer\lua.hpp">
+      <Filter>头文件\bw\shared\gamer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\initialize.hpp">
+      <Filter>头文件\bw\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="include\move.hpp">
+      <Filter>头文件\bw\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="include\utility.hpp">
+      <Filter>头文件\bw\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tui\bwlocale.hpp">
+      <Filter>头文件\bw\tui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tui\ui.hpp">
+      <Filter>头文件\bw\tui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\practise.hpp">
+      <Filter>头文件\bw\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ipv4.hpp">
+      <Filter>头文件\external</Filter>
+    </ClInclude>
+    <ClInclude Include="include\stdafx.h">
+      <Filter>头文件\external</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tools.hpp">
+      <Filter>头文件\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tui\components.hpp">
+      <Filter>头文件\bw\tui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ataxx\board.hpp">
+      <Filter>头文件\ataxx</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ataxx\components.hpp">
+      <Filter>头文件\ataxx</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ataxx\move.hpp">
+      <Filter>头文件\ataxx</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ataxx\moves.hpp">
+      <Filter>头文件\ataxx</Filter>
+    </ClInclude>
+    <ClInclude Include="include\grid-container.hpp">
+      <Filter>头文件\external</Filter>
+    </ClInclude>
+    <ClInclude Include="include\safe_vector.hpp">
+      <Filter>头文件\external</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tictactoe.hpp">
+      <Filter>头文件\tictactoe</Filter>
+    </ClInclude>
+    <ClInclude Include="include\othello.hpp">
+      <Filter>头文件\othello</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tui\screen.hpp">
+      <Filter>头文件\bw\tui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tui\ftxui_screen.hpp">
+      <Filter>头文件\bw\tui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\macros.hpp">
+      <Filter>头文件\bw\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="include\basic_Game.hpp">
+      <Filter>头文件\bw\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="include\globals.hpp">
+      <Filter>头文件\bw\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="include\games.hpp">
+      <Filter>头文件\bw\shared</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

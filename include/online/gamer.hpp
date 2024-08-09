@@ -1,0 +1,643 @@
+﻿#pragma once
+#include"stdafx.h"
+#include"game.hpp"
+#include"net/message.hpp"
+#include"online/room.hpp"
+#include"safe_vector.hpp"
+#include"tui/components.hpp"
+#include"basic_Game.hpp"
+#include"boost/container/flat_map.hpp"
+namespace bw::online {
+	class gamer :public gamer_info, public std::enable_shared_from_this<gamer> {
+	public:
+		using socket_t = boost::asio::ip::tcp::socket;
+		using socket_ptr = std::shared_ptr<socket_t>;
+		using endpoint = boost::asio::ip::tcp::endpoint;
+		using context = boost::asio::io_context;
+		using str_channel = boost::cobalt::channel<std::string>;
+		using channel_ptr = std::shared_ptr<str_channel>;
+		using filter_func = std::function<void(const message&)>;
+		gamer() :context_ptr(std::make_shared<context>()), socket(*context_ptr), timer_(*context_ptr),  chat_mutex(0), _gen(0, INT_MAX) {
+			timer_.expires_at(std::chrono::steady_clock::time_point::max());
+			stop_flag.clear();
+		};
+		std::string gbk2utf8(std::string_view s) {
+			return boost::locale::conv::to_utf<char>(s.data(), "gbk");
+		}
+		int rand() {
+			return _gen(_rnd);
+		}
+		std::string rand_str() {
+			return std::to_string(rand());
+		}
+
+		std::tuple<endpoint, boost::system::error_code>
+			make_endpoint(std::string address, int port) {
+			using namespace boost::asio::ip;
+			tcp::resolver res(*context_ptr);
+			boost::system::error_code ec;
+			const auto& eps = res.resolve(tcp::v4(), address, std::to_string(port), ec);
+			if (ec) {
+				ui::msgbox(gbk2utf8(ec.what()));
+				return { {},ec };
+			}
+			const auto& ep = (*eps.begin()).endpoint();
+			auto ipstr = ep.address().to_string();
+			auto port_n = ep.port();
+			return std::make_tuple(ep, ec);
+		}
+		bool connect(std::string_view Address, int Port) {
+			using namespace boost::asio::ip;
+			hall.address = Address;
+			hall.port = Port;
+			socket = socket_t(*context_ptr);
+			auto [ep, ec] = make_endpoint(hall.address, hall.port);
+			if (ec) {
+				socket.close();
+				ui::msgbox(std::format("{}:{}",gettext("Server not found. Please check the address or your network connection. Error code:"), ec.value()));
+				return false;
+			}
+			else {
+				socket.connect(ep, ec);
+			}
+			if (ec) {
+				socket.close();
+				ui::msgbox(std::format("{}:{}", gettext("The server response is abnormal. Please check the address or your network connection. Error code:"), ec.value()));
+				return false;
+			}
+			return true;
+		}
+		inline bool connected() const {
+			return socket.is_open();
+		}
+		auto get_executor() { return context_ptr; }
+
+		void post(std::function<void()> handler) {
+			context_ptr->post(std::move(handler));
+		}
+
+		void deliver(const message& msg)
+		{
+			write_msg_queue.push_back(msg);
+			timer_.cancel_one();
+		}
+		void safe_deliver(const message& msg) {
+			context_ptr->post([this, &msg] {deliver(msg); });
+		}
+
+		void start() {
+			boost::cobalt::spawn(*context_ptr, cobalt_reader(shared_from_this()), boost::asio::detached);
+			boost::cobalt::spawn(*context_ptr, cobalt_writer(shared_from_this()), boost::asio::detached);
+			/*boost::asio::co_spawn(*context_ptr, asio_reader(), boost::asio::detached);
+			boost::asio::co_spawn(*context_ptr, asio_writer(), boost::asio::detached);*/
+			chat_mutex.release();
+			thread_ptr = std::make_shared<std::jthread>([this] {context_ptr->run(); });
+		}
+		inline void handle_msg(const message& msg);//Implement below
+		void login() {
+			std::string jsonstr;
+			iguana::to_json(static_cast<gamer_info>(*this), jsonstr);
+			boost::system::error_code ec;
+			socket.wait(socket_t::wait_write, ec);
+			if (!ec) {
+				deliver(wrap(control_msg{
+				.type = control_msg::create,
+				.content = jsonstr,
+				.target_type = control_msg::g,
+					}, msg_t::control));
+				infostate = outdated;
+			}
+		}
+		void try_update_info(const gamer_info& info) {
+			std::string infostr;
+			struct_json::to_json(info, infostr);
+			deliver(wrap(control_msg{
+				.type = control_msg::update,
+				.content = infostr,
+				.id1 = id,
+				.target_type = control_msg::g
+				}, msg_t::control));
+			infostate = outdated;
+		}
+		void try_update_name(std::string new_name) {
+			gamer_info info = *this;
+			info.name = std::move(new_name);
+			try_update_info(info);
+		}
+		void try_join_room(int roomID) {
+			if (roomID > 0 && roomID < hall.rooms.size()) {
+				deliver(wrap(control_msg{
+					.type = control_msg::join,
+					.id1 = id,
+					.id2 = roomID,
+					},
+					msg_t::control
+				));
+				infostate = outdated;
+			}
+		}
+		void get(std::string gettype, std::vector<int> ids = {}) {
+			if (gettype == "room_info") {
+				deliver(wrap(
+					get_msg{
+						.get_type = gettype,
+						.ids = std::move(ids)
+					},
+					msg_t::get
+				));
+			}
+			else if (gettype == "gamer_info") {
+				deliver(wrap(
+					get_msg{
+						.get_type = gettype,
+						.ids = std::move(ids)
+					},
+					msg_t::get
+				));
+			}
+			else if (gettype == "notices") {
+				deliver(wrap(
+					get_msg{
+						.get_type = gettype,
+					},
+					msg_t::get
+				));
+			}
+			else {
+
+			}
+			return;
+		}
+		void try_leave() {
+			deliver(wrap(
+				control_msg{
+					.type = control_msg::leave,
+					.id1 = id,
+					.target_type = control_msg::g
+				},
+				msg_t::control
+			));
+			infostate = outdated;
+		}
+		void broadcast(std::string str) {
+			if ((roomid == 0 && authority == admin) || roomid > 0) {
+				deliver(wrap(
+					str_msg{
+						.content = str,
+						.target_type = str_msg::r,
+						.id1 = id,
+						.id2 = roomid,
+						.name = name
+					},
+					msg_t::str
+				));
+			}
+		}
+		void refresh_screen() const {
+			if (scr_ptr && scr_ptr->good()) {
+				scr_ptr->refresh();
+			}
+		}
+		void add_filter(const std::string& tag, filter_func pred) {
+			filters[tag] = (std::move(pred));
+		}
+		void del_filter(const string& tag) {
+			filters.erase(tag);
+		}
+		void clear_filter() {
+			filters.clear();
+		}
+		void stop() {
+			if (socket.is_open()) {
+				socket.close();
+			}
+			timer_.cancel();
+			if (!context_ptr->stopped()) {
+				context_ptr->stop();
+			}
+		}
+		~gamer() {
+			if (socket.is_open()) {
+				socket.close();
+			}
+			timer_.cancel();
+			if (context_ptr && !context_ptr->stopped()) {
+				context_ptr->stop();
+			}
+		};
+		
+		using ID = int;
+		
+		hall_info hall;
+		int roomid = 0;
+
+		std::atomic_flag stop_flag;
+
+		thread_safe::vector<std::string> notices;
+
+		const int sizelen = 5;
+
+		bw::components::ftxui_screen_ptr scr_ptr = nullptr;
+
+		enum { outdated, latest };
+		int infostate = outdated;
+
+		std::deque<str_msg> chat_msg_queue;
+		std::binary_semaphore chat_mutex;
+
+		std::unordered_map<std::string, filter_func> filters;
+
+		basic_Game_ptr Game_ptr;
+		std::string game_type, game_info_str;
+		using chan_gamer_ptr = std::pair<channel_ptr, basic_gamer_ptr>;
+		std::unordered_map<ID, chan_gamer_ptr> chan_gamer_map;
+	private:
+		//boost::asio::awaitable<void> asio_reader(socket_ptr socket)
+		//{
+		//	using namespace boost::asio;
+		//	std::string read_str, read_size_str;
+		//	msg_t msg;
+		//	while (true) {
+		//		try {
+		//			co_await async_read(*socket, dynamic_buffer(read_size_str, sizelen), boost::asio::use_awaitable);
+		//			co_await async_read(*socket, dynamic_buffer(read_str, std::stoi(read_size_str)), boost::asio::use_awaitable);
+		//		}
+		//		catch (const std::exception& e) {
+		//			ui::msgbox(fmt::format("{}:{}", gettext("Error"), gbk2utf8(e.what())));
+		//			stop();
+		//			co_return;
+		//		}
+		//		try {
+		//			struct_json::from_json(msg, read_str);
+		//		}
+		//		catch (const std::exception& e)
+		//		{
+		//			ui::msgbox(fmt::format("{}:{}",gettext("Data structure damaged. msg"), gbk2utf8(e.what())));
+		//			read_size_str = "";
+		//			read_str = "";
+		//			continue;
+		//		}
+		//		try {
+		//			for (auto& [_, p] : filters) {
+		//				p(msg);
+		//			}
+		//		}
+		//		catch (const std::exception& e)
+		//		{
+		//			ui::msgbox(std::format("{}:{}", gettext("Bad Filter. msg"), gbk2utf8(e.what())));
+		//		}
+		//		try {
+		//			handle_msg(msg);
+		//		}
+		//		catch (const std::exception& e)
+		//		{
+		//			ui::msgbox(std::format("{}:{}",gettext("Failed to process data. msg"), gbk2utf8(e.what())));
+		//		}
+		//		read_size_str = "";
+		//		read_str = "";
+		//	}
+		//}
+		//boost::asio::awaitable<void> asio_writer(socket_ptr socket)
+		//{
+		//	using namespace boost::asio;
+		//	using namespace std::string_literals;
+		//	
+		//	try
+		//	{
+		//		while (socket.is_open())
+		//		{
+		//			if (write_msg_queue.empty())
+		//			{
+		//				boost::system::error_code ec;
+		//				co_await timer_->async_wait(redirect_error(boost::asio::use_awaitable, ec));
+		//			}
+		//			else
+		//			{
+		//				write_str = "";
+		//				write_size_str = "";
+		//				struct_json::to_json(write_msg_queue.front(), write_str);
+		//				/*size_str = std::to_string(write_str.size());
+		//				size_str = size_str + std::string(sizelen - size_str.size(), ' ');*/
+		//				//size_str = std::format("{0:<{1}}", write_str.size(), sizelen);
+		//				write_size_str = fmt::format("{:<{}}", write_str.size(), sizelen);
+		//				co_await boost::asio::async_write(*socket, boost::asio::dynamic_buffer(write_size_str, sizelen), boost::asio::use_awaitable);
+		//				co_await boost::asio::async_write(*socket, boost::asio::dynamic_buffer(write_str, write_str.size()), boost::asio::use_awaitable);
+		//				write_msg_queue.pop_front();
+		//			}
+		//		}
+		//	}
+		//	catch (std::exception& e)
+		//	{
+		//		ui::msgbox(std::string(gettext("Failed to send ... Error: ")) + e.what());
+		//		stop();
+		//	}
+		//}
+		
+		boost::cobalt::task<void> cobalt_reader(std::shared_ptr<gamer>);
+		boost::cobalt::task<void> cobalt_writer(std::shared_ptr<gamer>);
+
+		boost::cobalt::task<void> heart_beat() {//unused
+			boost::asio::steady_timer t(*context_ptr);
+			while (socket.is_open()) {
+				using namespace std;
+				t.expires_after(2min);
+				co_await t.async_wait(boost::cobalt::use_op);
+			}
+		}
+
+		void handle_game_msg(const message&);
+		std::random_device _rnd;
+		std::uniform_int_distribution<int> _gen;
+		std::shared_ptr<context> context_ptr;
+		socket_t socket;
+		std::shared_ptr<std::jthread> thread_ptr;
+		boost::asio::steady_timer timer_;
+		std::deque<message> write_msg_queue;
+	};
+	inline void gamer::handle_game_msg(const message& msg){
+
+	}
+	inline void gamer::handle_msg(const message& msg){
+		int type = msg.type;
+		if (type == msg_t::invalid)
+			throw std::runtime_error("Invalid Control Message");
+		if (type == msg_t::control) {
+			control_msg con_m;
+			struct_json::from_json(con_m, msg.jsonstr);
+			if (con_m.type == control_msg::create) {
+				if (con_m.target_type == control_msg::g) {
+					gamer_info newinfo;
+					struct_json::from_json(newinfo, con_m.content);
+					gamer_info& self = *this;
+					self = newinfo;
+					assert(newinfo.id == con_m.id1);
+					infostate = latest;
+					del_filter("wait_response");
+				}
+			}
+			else if (con_m.type == control_msg::update) {
+				if (con_m.target_type == control_msg::g) {//修改gamer信息
+					gamer_info newinfo;
+					struct_json::from_json(newinfo, con_m.content);
+					gamer_info& self = *this;
+					self = newinfo;
+					assert(newinfo.id == con_m.id1);
+					infostate = latest;
+				}
+				else if (con_m.target_type == control_msg::r) {//修改room信息
+					if (con_m.id2 == 0) {
+						
+					}
+					else {
+
+					}
+				}
+				else {
+
+				}
+			}
+			else if (con_m.type == control_msg::del) {//删除
+				if (con_m.target_type == control_msg::r) {//删除room
+
+				}
+				else if (con_m.target_type == control_msg::g) {//删除gamer
+					
+				}
+				else {
+
+				}
+			}
+			else if (con_m.type == control_msg::join) {//加入room
+				roomid = con_m.id2;
+				scr_ptr->post_event("RefreshChat");
+			}
+			else if (con_m.type == control_msg::leave) {//离开room
+				if (roomid > 0) {
+					roomid = 0;
+					chat_mutex.acquire();
+					chat_msg_queue.clear();
+					chat_mutex.release();
+				}
+				else {
+					roomid = -1;
+				}
+				scr_ptr->post_event("RefreshRoomInfo");
+				chat_mutex.acquire();
+				chat_msg_queue.clear();
+				chat_mutex.release();
+			}
+			else if (con_m.type == control_msg::none) {
+
+			}
+			else {
+
+			}
+			refresh_screen();
+		}
+		else if (type == msg_t::str) {
+			str_msg strmsg;
+			struct_json::from_json(strmsg, msg.jsonstr);
+			if (strmsg.target_type == str_msg::g) {
+				if (strmsg.id1 == 0) {
+					if (strmsg.id2 == -1) {
+						notices.push_back(strmsg.content);
+					}
+					else {
+						
+					}
+				}
+				else {
+					
+				}
+			}
+			else {
+				chat_mutex.acquire();
+				chat_msg_queue.push_back(std::move(strmsg));
+				chat_mutex.release();
+				scr_ptr->post_event("AddChat");
+			}
+			refresh_screen();
+		}
+		else if (type == msg_t::game) {
+			game_msg gmmsg;
+			struct_json::from_json(gmmsg, msg.jsonstr);
+			switch (gmmsg.type) {
+			case game_msg::create:
+				game_type = gmmsg.movestr;
+				game_info_str = gmmsg.board;
+
+				break;
+			case game_msg::prepare://根据发过来的user，生成gamer,加入gamers。
+			{
+				basic_gamer_info gamer_info;
+				struct_json::from_json(gamer_info, gmmsg.movestr);
+				if (gamer_info.gametype == bw::core::gameid::othello) {
+					if (gmmsg.id == id) {
+
+					}
+
+
+				}
+				else if (gamer_info.gametype == bw::core::gameid::tictactoe) {
+
+				}
+				else {
+
+				}
+			}
+				break;
+			case game_msg::start://根据prepare的gamers生成game和Game，并且启动
+
+				break;
+			case game_msg::move: {
+				auto& chan = chan_gamer_map.at(gmmsg.id);
+				chan.first->write(gmmsg.movestr);
+				}
+				break;
+			case game_msg::end:
+				//chan_vec.clear();
+				chan_gamer_map.clear();
+				break;
+			default:
+				;
+			}
+		}
+		else if (type == msg_t::notice) {
+			notice_msg nmsg;
+			struct_json::from_json(nmsg, msg.jsonstr);
+			notices.push_back(nmsg.str);
+			if (scr_ptr && scr_ptr->good()) {
+				scr_ptr->refresh();
+			}
+		}
+		else if (type == msg_t::ret) {
+			ret_msg rmsg;
+			struct_json::from_json(rmsg, msg.jsonstr);
+			if (rmsg.ret_type == "room_info") {
+				std::vector<room_info> infos;
+				struct_json::from_json(infos, rmsg.ret_str);
+				roomid = infos.front().id;
+				hall.rooms.clear();
+				for (int i = 1; i < infos.size(); ++i) {
+					hall.rooms.emplace_back(infos[i]);
+				}
+				infostate = latest;
+				hall.infostate = hall_info::latest;
+				scr_ptr->post_event("RefreshRoomInfo");
+				refresh_screen();
+			}
+			else if (rmsg.ret_type == "gamer_info") {
+				std::vector<basic_gamer> infos;
+				
+			}
+			else if (rmsg.ret_type == "notices") {
+				std::vector<message> msgs;
+				struct_json::from_json(msgs, rmsg.ret_str);
+				std::vector<std::string> notices;
+				notice_msg notice;
+				for (auto& msg : msgs) {
+					struct_json::from_json(notice, msg.jsonstr);
+					notices.push_back(notice.str);
+				}
+				this->notices.assign(notices.begin(), notices.end());
+				refresh_screen();
+			}
+			else {
+
+			}
+
+		}
+		else {
+
+		}
+	}
+	using user = gamer;
+	using user_ptr = std::shared_ptr<user>;
+	boost::cobalt::task<void> gamer::cobalt_reader(std::shared_ptr<gamer> self)
+	{
+		using namespace boost::asio;
+		std::string read_str, read_size_str;
+		msg_t msg;
+		while (true) {
+			try {
+				co_await async_read(self->socket, dynamic_buffer(read_size_str, self->sizelen), boost::cobalt::use_op);
+				co_await async_read(self->socket, dynamic_buffer(read_str, std::stoi(read_size_str)), boost::cobalt::use_op);
+			}
+			catch (const std::exception& e) {
+				if (!stop_flag.test()) {
+					ui::msgbox(fmt::format("{}:{}", gettext("Error"), gbk2utf8(e.what())));
+					self->stop();
+				}
+				co_return;
+			}
+			try {
+				struct_json::from_json(msg, read_str);
+			}
+			catch (const std::exception& e)
+			{
+				ui::msgbox(fmt::format("{}:{}", gettext("Data structure damaged. msg"), gbk2utf8(e.what())));
+				read_size_str = "";
+				read_str = "";
+				continue;
+			}
+
+			try {
+				for (auto& [_, p] : self->filters) {
+					p(msg);
+				}
+			}
+			catch (const std::exception& e)
+			{
+				ui::msgbox(std::format("{}:{}", gettext("Bad Filter. msg"), gbk2utf8(e.what())));
+			}
+
+			try {
+				handle_msg(msg);
+			}
+			catch (const std::exception& e)
+			{
+				ui::msgbox(std::format("{}:{}", gettext("Failed to process data. msg"), gbk2utf8(e.what())));
+			}
+			read_size_str = "";
+			read_str = "";
+		}
+	}
+#pragma optimize("", off)
+	boost::cobalt::task<void> gamer::cobalt_writer(std::shared_ptr<gamer> self)
+	{
+		using namespace boost::asio;
+		using namespace std::string_literals;
+		try
+		{
+			std::string write_str, write_size_str;
+			while (self->socket.is_open())
+			{
+				if (self->write_msg_queue.empty())
+				{
+					boost::system::error_code ec;
+					co_await self->timer_.async_wait(redirect_error(boost::cobalt::use_op, ec));
+				}
+				else
+				{
+					write_str = "";
+					write_size_str = "";
+					struct_json::to_json(self->write_msg_queue.front(), write_str);
+					/*size_str = std::to_string(write_str.size());
+					size_str = size_str + std::string(sizelen - size_str.size(), ' ');
+					size_str = std::format("{0:<{1}}", write_str.size(), sizelen);*/
+					write_size_str = std::format("{:<{}}", write_str.size(), self->sizelen);
+					co_await boost::asio::async_write(self->socket, boost::asio::dynamic_buffer(write_size_str, self->sizelen), boost::cobalt::use_op);
+					co_await boost::asio::async_write(self->socket, boost::asio::dynamic_buffer(write_str, write_str.size()), boost::cobalt::use_op);
+					self->write_msg_queue.pop_front();
+				}
+			}
+		}
+		catch (std::exception& e)
+		{
+			ui::msgbox(std::string(gettext("Failed to send ... Error: ")) + e.what());
+			self->stop();
+		}
+	}
+#pragma optimize("", on)
+};
+

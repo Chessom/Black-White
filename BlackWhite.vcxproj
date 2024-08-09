@@ -72,12 +72,26 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ExternalIncludePath>C:\Program Files %28x86%29\yaLanTingLibs\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <IncludePath>D:\Projects\CppProjects\BlackWhite\include;$(IncludePath)</IncludePath>
+    <SourcePath>D:\Projects\CppProjects\BlackWhite\src;$(SourcePath)</SourcePath>
+    <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
+    <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ExternalIncludePath>C:\Program Files %28x86%29\yaLanTingLibs\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <IncludePath>D:\Projects\CppProjects\BlackWhite\include;$(IncludePath)</IncludePath>
+    <SourcePath>D:\Projects\CppProjects\BlackWhite\src;$(SourcePath)</SourcePath>
+    <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
+    <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg">
     <VcpkgAutoLink>true</VcpkgAutoLink>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <VcpkgUseStatic>false</VcpkgUseStatic>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <VcpkgUseStatic>false</VcpkgUseStatic>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -127,12 +141,12 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level2</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_WIN32_WINNT=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <LanguageStandard_C>stdclatest</LanguageStandard_C>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <EnableModules>false</EnableModules>
       <BuildStlModules>false</BuildStlModules>
@@ -142,6 +156,9 @@
       <AdditionalOptions>/utf-8 /bigobj %(AdditionalOptions)</AdditionalOptions>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <Optimization>MaxSpeed</Optimization>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -151,14 +168,14 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <LanguageStandard_C>stdclatest</LanguageStandard_C>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <EnableModules>false</EnableModules>
       <BuildStlModules>false</BuildStlModules>
@@ -166,6 +183,11 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <AdditionalOptions>/utf-8 /bigobj %(AdditionalOptions)</AdditionalOptions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <ControlFlowGuard>false</ControlFlowGuard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -175,67 +197,71 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ataxx.move.hpp" />
-    <ClCompile Include="ataxx.moves.hpp" />
-    <ClCompile Include="components.cpp" />
-    <ClCompile Include="gamer.lua.hpp" />
-    <ClCompile Include="ipv4.cpp" />
-    <ClCompile Include="ipv4.hpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="online.basic_gamer.hpp" />
-    <ClCompile Include="online.simple.hpp" />
-    <ClCompile Include="othello.ai.practise.cpp" />
-    <ClCompile Include="globals.cpp" />
-    <ClCompile Include="othello.gamer.online.hpp" />
-    <ClCompile Include="othello.online.game.hpp" />
-    <ClCompile Include="tictactoe.game.hpp" />
-    <ClCompile Include="tictactoe.gamer.computer.hpp" />
-    <ClCompile Include="tictactoe.gamer.hpp" />
-    <ClCompile Include="tictactoe.gamer.human.hpp" />
-    <ClCompile Include="tictactoe.gamer.online.hpp" />
-    <ClCompile Include="tictactoe.move.hpp" />
-    <ClCompile Include="tictactoe.moves.hpp" />
-    <ClCompile Include="utility.hpp" />
+    <ClCompile Include="src\grid-container.cpp" />
+    <ClCompile Include="src\ipv4.cpp" />
+    <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ataxx.board.hpp" />
-    <ClInclude Include="ataxx.components.hpp" />
-    <ClInclude Include="bwlocale.hpp" />
-    <ClInclude Include="components.h" />
-    <ClInclude Include="config.hpp" />
-    <ClInclude Include="core.hpp" />
-    <ClInclude Include="env.hpp" />
-    <ClInclude Include="game.hpp" />
-    <ClInclude Include="gamer.hpp" />
-    <ClInclude Include="initialize.hpp" />
-    <ClInclude Include="message.hpp" />
-    <ClInclude Include="move.hpp" />
-    <ClInclude Include="online.components.hpp" />
-    <ClInclude Include="online.gamer.hpp" />
-    <ClInclude Include="online.gamer_info.hpp" />
-    <ClInclude Include="online.room.hpp" />
-    <ClInclude Include="online.hpp" />
-    <ClInclude Include="othello.ai.hpp" />
-    <ClInclude Include="othello.ai.practise.hpp" />
-    <ClInclude Include="othello.board.hpp" />
-    <ClInclude Include="othello.components.hpp" />
-    <ClInclude Include="othello.game.hpp" />
-    <ClInclude Include="othello.gamer.computer.hpp" />
-    <ClInclude Include="othello.gamer.hpp" />
-    <ClInclude Include="othello.gamer.human.hpp" />
-    <ClInclude Include="othello.online.gamer.hpp" />
-    <ClInclude Include="othello.gamer.remote.hpp" />
-    <ClInclude Include="globals.hpp" />
-    <ClInclude Include="othello.hpp" />
-    <ClInclude Include="othello.move.hpp" />
-    <ClInclude Include="othello.moves.hpp" />
-    <ClInclude Include="othello.online.hpp" />
-    <ClInclude Include="practise.hpp" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="tictactoe.board.hpp" />
-    <ClInclude Include="tictactoe.components.hpp" />
-    <ClInclude Include="tools.hpp" />
-    <ClInclude Include="ui.hpp" />
+    <ClInclude Include="include\ataxx\board.hpp" />
+    <ClInclude Include="include\ataxx\components.hpp" />
+    <ClInclude Include="include\ataxx\move.hpp" />
+    <ClInclude Include="include\ataxx\moves.hpp" />
+    <ClInclude Include="include\config.hpp" />
+    <ClInclude Include="include\core.hpp" />
+    <ClInclude Include="include\env.hpp" />
+    <ClInclude Include="include\game.hpp" />
+    <ClInclude Include="include\basic_Game.hpp" />
+    <ClInclude Include="include\gamer.hpp" />
+    <ClInclude Include="include\gamer\lua.hpp" />
+    <ClInclude Include="include\games.hpp" />
+    <ClInclude Include="include\globals.hpp" />
+    <ClInclude Include="include\grid-container.hpp" />
+    <ClInclude Include="include\initialize.hpp" />
+    <ClInclude Include="include\ipv4.hpp" />
+    <ClInclude Include="include\macros.hpp" />
+    <ClInclude Include="include\move.hpp" />
+    <ClInclude Include="include\net\message.hpp" />
+    <ClInclude Include="include\online\basic_gamer.hpp" />
+    <ClInclude Include="include\online\components.hpp" />
+    <ClInclude Include="include\online\gamer.hpp" />
+    <ClInclude Include="include\online\gamer_info.hpp" />
+    <ClInclude Include="include\online\room.hpp" />
+    <ClInclude Include="include\online\simple.hpp" />
+    <ClInclude Include="include\othello.hpp" />
+    <ClInclude Include="include\othello\ai.hpp" />
+    <ClInclude Include="include\othello\ai\practise.hpp" />
+    <ClInclude Include="include\othello\board.hpp" />
+    <ClInclude Include="include\othello\components.hpp" />
+    <ClInclude Include="include\othello\game.hpp" />
+    <ClInclude Include="include\othello\gamer.hpp" />
+    <ClInclude Include="include\othello\gamer\computer.hpp" />
+    <ClInclude Include="include\othello\gamer\human.hpp" />
+    <ClInclude Include="include\othello\gamer\online.hpp" />
+    <ClInclude Include="include\othello\gamer\remote.hpp" />
+    <ClInclude Include="include\othello\move.hpp" />
+    <ClInclude Include="include\othello\moves.hpp" />
+    <ClInclude Include="include\othello\online.hpp" />
+    <ClInclude Include="include\othello\online\gamer.hpp" />
+    <ClInclude Include="include\practise.hpp" />
+    <ClInclude Include="include\safe_vector.hpp" />
+    <ClInclude Include="include\stdafx.h" />
+    <ClInclude Include="include\tictactoe.hpp" />
+    <ClInclude Include="include\tictactoe\board.hpp" />
+    <ClInclude Include="include\tictactoe\components.hpp" />
+    <ClInclude Include="include\tictactoe\game.hpp" />
+    <ClInclude Include="include\tictactoe\gamer.hpp" />
+    <ClInclude Include="include\tictactoe\gamer\computer.hpp" />
+    <ClInclude Include="include\tictactoe\gamer\human.hpp" />
+    <ClInclude Include="include\tictactoe\gamer\online.hpp" />
+    <ClInclude Include="include\tictactoe\move.hpp" />
+    <ClInclude Include="include\tictactoe\moves.hpp" />
+    <ClInclude Include="include\tools.hpp" />
+    <ClInclude Include="include\tui\bwlocale.hpp" />
+    <ClInclude Include="include\tui\components.hpp" />
+    <ClInclude Include="include\tui\ftxui_screen.hpp" />
+    <ClInclude Include="include\tui\screen.hpp" />
+    <ClInclude Include="include\tui\ui.hpp" />
+    <ClInclude Include="include\utility.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

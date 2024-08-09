@@ -1,0 +1,513 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2024-07-16 23:16+0800\n"
+"PO-Revision-Date: 2024-07-16 23:17+0800\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.4.4\n"
+"X-Poedit-Basepath: ../../..\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-SearchPath-0: include\n"
+"X-Poedit-SearchPath-1: include/ataxx\n"
+"X-Poedit-SearchPath-2: include/gamer\n"
+"X-Poedit-SearchPath-3: include/net\n"
+"X-Poedit-SearchPath-4: include/online\n"
+"X-Poedit-SearchPath-5: include/othello\n"
+"X-Poedit-SearchPath-6: include/tictactoe\n"
+"X-Poedit-SearchPath-7: include/tui\n"
+"X-Poedit-SearchPath-8: include/othello/ai\n"
+"X-Poedit-SearchPath-9: include/othello/gamer\n"
+"X-Poedit-SearchPath-10: include/othello/online\n"
+"X-Poedit-SearchPath-11: include/tictactoe/gamer\n"
+"X-Poedit-SearchPath-12: src\n"
+
+#: include/globals.hpp:35 include/globals.hpp:44
+msgid "Human"
+msgstr "人类"
+
+#: include/globals.hpp:35
+msgid "ComputerLow"
+msgstr "计算机低级"
+
+#: include/globals.hpp:35
+msgid "ComputerMiddle"
+msgstr "计算机中级"
+
+#: include/globals.hpp:35
+msgid "ComputerHigh"
+msgstr "计算机高级"
+
+#: include/globals.hpp:35
+msgid "RemoteGamer"
+msgstr "外部玩家"
+
+#: include/globals.hpp:44
+msgid "Computer Random"
+msgstr "计算机(随机下)"
+
+#: include/online/components.hpp:25
+msgid "Join"
+msgstr "加入"
+
+#: include/online/components.hpp:28
+msgid "You are already in a room."
+msgstr "你已经在一个房间里了。"
+
+#: include/online/components.hpp:35 include/online/components.hpp:46
+msgid "Please refresh the information and retry."
+msgstr "请刷新信息并重试。"
+
+#: include/online/components.hpp:41 include/online/components.hpp:251
+#: include/online/components.hpp:298 include/othello/components.hpp:455
+#: include/tictactoe/components.hpp:195 include/tui/ui.hpp:49
+#: include/tui/ui.hpp:134 src/components.cpp:17
+msgid "Quit"
+msgstr "退出"
+
+#: include/online/components.hpp:130 include/online/components.hpp:372
+msgid "Refresh"
+msgstr "刷新"
+
+#: include/online/components.hpp:131 include/online/components.hpp:180
+#: include/tui/ui.hpp:73
+msgid "Othello"
+msgstr "黑白棋"
+
+#: include/online/components.hpp:163 include/online/components.hpp:181
+#: include/tui/ui.hpp:79
+msgid "TicTacToe"
+msgstr "井字棋"
+
+#: include/online/components.hpp:213 include/online/components.hpp:378
+msgid "Hide"
+msgstr "隐藏"
+
+#: include/online/components.hpp:237 include/othello/components.hpp:252
+msgid "Address:"
+msgstr "地址："
+
+#: include/online/components.hpp:237 include/othello/components.hpp:252
+msgid "Port:"
+msgstr "端口："
+
+#: include/online/components.hpp:240
+msgid "IP or Domain Name"
+msgstr "IP地址或者域名"
+
+#: include/online/components.hpp:245 include/othello/components.hpp:260
+msgid "Connect"
+msgstr "连接"
+
+#: include/online/components.hpp:264
+msgid "Enter your name to login"
+msgstr "输入用户名并登录"
+
+#: include/online/components.hpp:266
+msgid "You name:"
+msgstr "你的名字："
+
+#: include/online/components.hpp:267
+msgid "Set this name as default"
+msgstr "记住我"
+
+#: include/online/components.hpp:268
+msgid "Login"
+msgstr "登录"
+
+#: include/online/components.hpp:303 include/online/components.hpp:361
+msgid "Name"
+msgstr "用户名"
+
+#: include/online/components.hpp:304
+msgid "Room ID"
+msgstr "房间ID"
+
+#: include/online/components.hpp:304 include/othello/components.hpp:284
+msgid "None"
+msgstr "无"
+
+#: include/online/components.hpp:305
+msgid "Submit"
+msgstr "提交"
+
+#: include/online/components.hpp:310
+msgid "Cancel"
+msgstr "取消"
+
+#: include/online/components.hpp:314
+msgid "Enter your name"
+msgstr "输入你的用户名"
+
+#: include/online/components.hpp:315
+msgid "Name: "
+msgstr "用户名："
+
+#: include/online/components.hpp:319
+msgid "Changes will take effect later"
+msgstr "更改将会稍后生效"
+
+#: include/online/components.hpp:323 include/online/components.hpp:334
+msgid "Edit Name"
+msgstr "编辑用户名"
+
+#: include/online/components.hpp:342
+msgid "Refresh Notices"
+msgstr "刷新公告"
+
+#: include/online/components.hpp:348
+msgid "Notices"
+msgstr "公告"
+
+#: include/online/components.hpp:359 include/online/components.hpp:466
+msgid "ID"
+msgstr "ID"
+
+#: include/online/components.hpp:363
+msgid "Num"
+msgstr "人数"
+
+#: include/online/components.hpp:365 include/othello/components.hpp:281
+#: include/othello/components.hpp:366
+msgid "State"
+msgstr "状态"
+
+#: include/online/components.hpp:367
+msgid "Operation"
+msgstr "操作"
+
+#: include/online/components.hpp:380
+msgid "Operations take effect after refreshing."
+msgstr "操作将会在刷新后生效。"
+
+#: include/online/components.hpp:385
+msgid "RefreshRoomInfo"
+msgstr "刷新房间信息"
+
+#: include/online/components.hpp:401
+msgid "Room Information"
+msgstr "房间信息"
+
+#: include/online/components.hpp:410
+msgid "Rooms"
+msgstr "房间"
+
+#: include/online/components.hpp:418
+msgid "Enter your message here"
+msgstr "此处输入消息"
+
+#: include/online/components.hpp:419
+msgid "Send"
+msgstr "发送"
+
+#: include/online/components.hpp:432
+msgid "Press enter to line feed."
+msgstr "按回车换行"
+
+#: include/online/components.hpp:449 include/online/components.hpp:456
+msgid "Chat"
+msgstr "聊天"
+
+#: include/online/gamer.hpp:50
+msgid ""
+"Server not found. Please check the address or your network connection. Error "
+"code:"
+msgstr "没有找到服务器，请检查地址或您的网络连接。错误码："
+
+#: include/online/gamer.hpp:58
+msgid ""
+"The server response is abnormal. Please check the address or your network "
+"connection. Error code:"
+msgstr "服务器响应异常，请检查地址或您的网络连接。错误码："
+
+#: include/online/gamer.hpp:186
+msgid "Fatal error: Invalid screen!"
+msgstr "致命错误：无效的screen对象！"
+
+#: include/online/gamer.hpp:235
+msgid "Error"
+msgstr "错误"
+
+#: include/online/gamer.hpp:244
+msgid "Data structure damaged. msg"
+msgstr "数据结构损坏。错误消息"
+
+#: include/online/gamer.hpp:254
+msgid "Failed to process data. msg"
+msgstr "数据处理失败。错误消息"
+
+#: include/online/gamer.hpp:287
+msgid "Failed to send ... Error: "
+msgstr "发送数据失败。错误消息："
+
+#: include/online/gamer.hpp:302
+msgid "Invalid Control Message"
+msgstr "无效控制消息"
+
+#: include/othello/components.hpp:108
+msgid "Black win!"
+msgstr "黑方获胜！"
+
+#: include/othello/components.hpp:111
+msgid "White win!"
+msgstr "白方获胜！"
+
+#: include/othello/components.hpp:114 include/tictactoe/components.hpp:94
+msgid "Draw!"
+msgstr "平局！"
+
+#: include/othello/components.hpp:130 include/othello/components.hpp:134
+#: include/tictactoe/components.hpp:104 include/tictactoe/components.hpp:108
+msgid "Function in Developing"
+msgstr "功能还在开发中"
+
+#: include/othello/components.hpp:183 include/tictactoe/components.hpp:160
+msgid "First Player:"
+msgstr "先手："
+
+#: include/othello/components.hpp:184 include/tictactoe/components.hpp:161
+msgid "Second Player:"
+msgstr "后手："
+
+#: include/othello/components.hpp:185
+msgid "Board size:"
+msgstr "棋盘大小："
+
+#: include/othello/components.hpp:186 include/tictactoe/components.hpp:162
+msgid "Start"
+msgstr "开始"
+
+#: include/othello/components.hpp:187 include/tictactoe/components.hpp:163
+msgid "Back"
+msgstr "返回"
+
+#: include/othello/components.hpp:244
+msgid "Actively Connect"
+msgstr "主动连接"
+
+#: include/othello/components.hpp:244
+msgid "Wait for Connection"
+msgstr "等待连接"
+
+#: include/othello/components.hpp:262 include/othello/components.hpp:394
+msgid "Accepting Now"
+msgstr "正在等待连接"
+
+#: include/othello/components.hpp:281 include/othello/components.hpp:366
+msgid "Connected"
+msgstr "连接成功"
+
+#: include/othello/components.hpp:281
+msgid "Disconnected"
+msgstr "连接已断开"
+
+#: include/othello/components.hpp:316
+msgid "Listening port:"
+msgstr "监听端口："
+
+#: include/othello/components.hpp:323
+msgid "remote Address:"
+msgstr "远程玩家地址："
+
+#: include/othello/components.hpp:324
+msgid "remote Port:"
+msgstr "远程端口："
+
+#: include/othello/components.hpp:334
+msgid "Start Accept"
+msgstr "开始监听"
+
+#: include/othello/components.hpp:355
+msgid "Stop Accept"
+msgstr "停止监听"
+
+#: include/othello/components.hpp:362
+msgid "Not Accepting"
+msgstr "监听已停止"
+
+#: include/othello/components.hpp:366
+msgid "Accepting"
+msgstr "正在监听"
+
+#: include/othello/components.hpp:366
+msgid "Stopped"
+msgstr "已停止"
+
+#: include/othello/components.hpp:384 include/tui/ui.hpp:98
+msgid " Quit "
+msgstr " 退出 "
+
+#: include/othello/components.hpp:392
+msgid "  OK  "
+msgstr " 完成 "
+
+#: include/othello/components.hpp:403
+msgid "Not Connected"
+msgstr "未连接"
+
+#: include/othello/components.hpp:407
+msgid "WARNING:"
+msgstr "警告："
+
+#: include/othello/components.hpp:409
+msgid ""
+"The purpose of this mode is to provide users\n"
+"with a customized interface for the game.\n"
+"If you want to go online, please go to \n"
+"\"Home->Online\"\n"
+"For more information about this mode, please go to\n"
+"\"Home->More\""
+msgstr ""
+"这个模式的目的是为了\n"
+"给这个游戏一个可定制的接口，\n"
+"用来与外部程序对战。\n"
+"如果你只是想与其他玩家联机对战，\n"
+"请前往主界面，点击“联机”。\n"
+"想要获得更多关于这个模式的信息，\n"
+"请前往主页面，点击“更多”"
+
+#: include/othello/components.hpp:457 include/tictactoe/components.hpp:197
+msgid "Regret"
+msgstr "悔棋"
+
+#: include/othello/components.hpp:459 include/tictactoe/components.hpp:199
+msgid "Suspend"
+msgstr "暂停"
+
+#: include/othello/components.hpp:461 include/tictactoe/components.hpp:201
+msgid "Save"
+msgstr "保存"
+
+#: include/othello/components.hpp:470 include/tictactoe/components.hpp:209
+msgid "Current player"
+msgstr "当前玩家"
+
+#: include/othello/components.hpp:471 include/othello/components.hpp:473
+msgid "Black"
+msgstr "黑"
+
+#: include/othello/components.hpp:472 include/othello/components.hpp:477
+msgid "White"
+msgstr "白"
+
+#: include/othello/components.hpp:473 include/othello/components.hpp:477
+msgid "state"
+msgstr "状态"
+
+#: include/othello/components.hpp:475 include/othello/components.hpp:476
+#: include/othello/components.hpp:479 include/othello/components.hpp:480
+msgid "Good"
+msgstr "正常"
+
+#: include/othello/components.hpp:475 include/othello/components.hpp:479
+msgid "Disconnetced"
+msgstr "断联"
+
+#: include/othello/components.hpp:518
+msgid "Board Size: "
+msgstr "棋盘大小："
+
+#: include/othello/components.hpp:522
+msgid "Match"
+msgstr "匹配"
+
+#: include/othello/game.hpp:33
+msgid "Invalid Gamer!"
+msgstr "无效gamer对象！"
+
+#: include/othello/game.hpp:39
+msgid "Invalid color!"
+msgstr "无效颜色！"
+
+#: include/othello/game.hpp:86
+msgid "You can't regret it now!"
+msgstr "你现在不能悔棋！"
+
+#: include/othello/game.hpp:90
+msgid "Regretting is not supported now!"
+msgstr "现在不支持悔棋！"
+
+#: include/othello/game.hpp:126
+msgid "move type id"
+msgstr "move的编号"
+
+#: include/othello/game.hpp:236
+msgid "black"
+msgstr "黑"
+
+#: include/othello/game.hpp:236
+msgid "white"
+msgstr "白"
+
+#: include/tictactoe/components.hpp:91
+msgid "Win!"
+msgstr "胜出！"
+
+#: include/tui/ui.hpp:42
+msgid "Black White"
+msgstr "黑白棋"
+
+#: include/tui/ui.hpp:44
+msgid "Local battles"
+msgstr "本地对战"
+
+#: include/tui/ui.hpp:45
+msgid "Online"
+msgstr "联机"
+
+#: include/tui/ui.hpp:46
+msgid "Settings"
+msgstr "设置"
+
+#: include/tui/ui.hpp:47
+msgid "Help"
+msgstr "帮助"
+
+#: include/tui/ui.hpp:48
+msgid "More"
+msgstr "关于"
+
+#: include/tui/ui.hpp:85
+msgid "Ataxx"
+msgstr "同化棋"
+
+#: include/tui/ui.hpp:88
+msgid "Gobang"
+msgstr "五子棋"
+
+#: include/tui/ui.hpp:91
+msgid " GO "
+msgstr " 围棋 "
+
+#: include/tui/ui.hpp:127
+msgid "Online Hall"
+msgstr "联机大厅"
+
+#: include/tui/ui.hpp:130
+msgid "Easy Online Battle"
+msgstr "简易联机"
+
+#: include/tui/ui.hpp:131
+msgid "These are in developing!"
+msgstr "这些还在开发中！"
+
+#: include/tui/ui.hpp:141 include/tui/ui.hpp:150 include/tui/ui.hpp:154
+#: include/tui/ui.hpp:158
+msgid "Developing."
+msgstr "仍在开发中。"
+
+#~ msgid "退出"
+#~ msgstr "退出"
+
+#~ msgid "悔棋"
+#~ msgstr "悔棋"
+
+#~ msgid "暂停"
+#~ msgstr "暂停"
+
+#~ msgid "保存"
+#~ msgstr "保存"
