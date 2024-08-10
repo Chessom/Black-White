@@ -16,38 +16,28 @@ namespace bw::othello {
 		color col;
 	};
 	using aspects = std::vector<aspect>;
-	class game :public basic_game{
+	class game :public basic_game, public std::enable_shared_from_this<game> {
 		friend class components::BoardBase;
 	public:
-		game() = delete;
 		game(basic_gamer_ptr g0, basic_gamer_ptr g1, int brd_size = default_size, bw::components::ftxui_screen_ptr Screen = nullptr) :basic_game(ready), brd(brd_size) {
 			g[col0] = std::move(std::dynamic_pointer_cast<gamer>(g0));
 			g[col1] = std::move(std::dynamic_pointer_cast<gamer>(g1));
+			if (g[col0] == nullptr || g[col1] == nullptr) {
+				ui::msgbox(gettext("Invalid Gamer!"));
+				throw std::invalid_argument("Invalid Gamer!");
+			}
+			if (g[col0]->col != op_col(g[col1]->col)) {
+				ui::msgbox(gettext("Invalid color!"));
+				throw std::invalid_argument("Invalid Gamer color!");
+			}
+
 			brd.initialize();
 			st = ready;
 			screen = Screen;
 		}
-		string gbk2utf8(std::string_view s) {
-			return boost::locale::conv::to_utf<char>(s.data(), "gbk");
-		}
-		boost::cobalt::task<void> start(basic_gamer_ptr g0, basic_gamer_ptr g1) override {
-			if (g0 == nullptr || g1 == nullptr) {
-				ui::msgbox(gettext("Invalid Gamer!"));
-				co_return;
-			}
-			if (g0->col != op_col(g1->col)) {
-				ui::msgbox(gettext("Invalid color!"));
-				co_return;
-			}
+		boost::cobalt::task<void> start() override {
+			auto self = shared_from_this();
 
-			g[g0->col] = std::dynamic_pointer_cast<gamer>(g0);
-			g[g1->col] = std::dynamic_pointer_cast<gamer>(g1);
-
-			co_await start();
-
-			co_return;
-		}
-		boost::cobalt::task<void> start() {
 			st = ongoing;
 			brd.initialize();
 			color op = core::op_col(col);

@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include"stdafx.h"
 #include"net/message.hpp"
-#include"online/gamer_info.hpp"
+#include"online/user_info.hpp"
 namespace bw::online {
 	class room_info {
 	public:
@@ -29,7 +29,7 @@ namespace bw::online {
 		std::string address = "localhost";
 		int port = 22222;
 		std::vector<room_info> rooms;
-		std::set<gamer_info> gamers;
+		std::set<user_info> gamers;
 		enum { outdated, latest };
 		int infostate = outdated;
 	};

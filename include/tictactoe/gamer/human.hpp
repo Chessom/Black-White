@@ -10,6 +10,7 @@ namespace bw::tictactoe {
 		using timer = boost::asio::steady_timer;
 		using timer_ptr = std::shared_ptr<timer>;
 		human_gamer() :gamer() { name = global_config->default_name; gamertype = human; }
+		human_gamer(basic_gamer_info info) :gamer(info) {};
 		human_gamer(core::color Color, int ID = 0, const std::string& Name = global_config->default_name)
 			:gamer(Color, ID, Name, human) {};
 		boost::cobalt::task<move> getmove(board& brd, std::chrono::seconds limit = 0s) override {

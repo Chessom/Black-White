@@ -4,7 +4,6 @@
 namespace bw::components {
 	class ftxui_screen :public screen {
 	public:
-		ftxui_screen() = delete;
 		ftxui_screen(ftxui::ScreenInteractive* Screen) :_initial(Screen) {}
 		virtual bool good() override {
 			return _initial == current();

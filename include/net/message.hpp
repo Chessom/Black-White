@@ -14,19 +14,20 @@ namespace bw {
 	REFLECTION(control_msg, type, content, id1, id2, target_type);
 	struct str_msg {
 		std::string content;
-		int target_type = g;
-		int id1, id2;
-		std::string name;
+		int target_type = g;//目标类型，g:单独用户，r:整个房间
+		int id1, id2;//id1为发送者ID, id2为接收者ID/房间ID
+		std::string name;//发送者名字
 		enum { r, g, n };
 	};
 	REFLECTION(str_msg, content, target_type, id1, id2, name);
 	struct game_msg {
-		enum { create, prepare, start, move, watch, brd, end };
+		enum { create, prepare, start, move, watch, brd, match, end };
 		int type;
 		int id;
 		std::string movestr, board;
 		//create：movestr代表game的名字（种类），而board则是game的详细信息，是一个json字符串
-		//prepare：movestr代表gamer_info（basic_gamer）
+		//prepare：movestr代表user_info（basic_user）
+		//start: movestr代表game种类，board代表board size
 	};
 	REFLECTION(game_msg, type, id, movestr, board);
 	struct get_msg {

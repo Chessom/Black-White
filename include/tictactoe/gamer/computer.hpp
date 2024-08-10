@@ -8,6 +8,7 @@ namespace bw::tictactoe {
 	class computer_gamer :public gamer {
 	public:
 		computer_gamer() :gamer() { gamertype = basic_gamer::computer; }
+		computer_gamer(basic_gamer_info info) :gamer(info) {};
 		computer_gamer(core::color Color, int ID = 0, const std::string& Name = "basic_computer_gamer", int GamerType = basic_gamer::computer)
 			:gamer(Color, ID, Name, computer) {
 		};
@@ -21,6 +22,7 @@ namespace bw::tictactoe {
 	class computer_gamer_random :public computer_gamer {
 	public:
 		computer_gamer_random() : computer_gamer() {}
+		computer_gamer_random(basic_gamer_info info) : computer_gamer(info) {};
 		computer_gamer_random(core::color Color, int ID = 1, const std::string& Name = "computer_gamer_random")
 			:computer_gamer(Color, ID, Name, basic_gamer::computer) {};
 		virtual boost::cobalt::task<move> getmove(board& brd, std::chrono::seconds limit = 0s) override {

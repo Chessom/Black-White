@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include"stdafx.h"
 #include"tui/components.hpp"
-#include"online/gamer.hpp"
+#include"online/user.hpp"
 #include"othello/gamer/online.hpp"
 #include"othello/components.hpp"
 #include"tictactoe/gamer/online.hpp"
@@ -89,7 +89,7 @@ namespace bw::online::components {
 		ftxui::Component MakeRoomInfoJoinButton(int room_id) {
 			using namespace ftxui;
 			return ftxui::Button(gettext("Join"), [this, room_id] {
-				if (self->infostate == gamer::latest && self->hall.infostate == hall_info::latest) {
+				if (self->infostate == user::latest && self->hall.infostate == hall_info::latest) {
 					if (self->roomid != 0) {
 						ui::msgbox(gettext("You are already in a room."));
 					}
@@ -105,7 +105,7 @@ namespace bw::online::components {
 		ftxui::Component MakeRoomInfoQuitButton() {
 			using namespace ftxui;
 			return ftxui::Button(gettext("Quit"), [this] {
-				if (self->infostate == gamer::latest && self->hall.infostate == hall_info::latest) {
+				if (self->infostate == user::latest && self->hall.infostate == hall_info::latest) {
 					self->try_leave();
 				}
 				else {
@@ -160,7 +160,7 @@ namespace bw::online::components {
 
 			auto RefreshRoomInfoBut = Button(gettext("Refresh"), [this] {
 				self->get("room_info");
-				self->infostate = gamer::outdated;
+				self->infostate = user::outdated;
 				self->hall.infostate = hall_info::outdated;
 				RefreshRoomInfoEntries();
 				}, ButtonOption::Animated(Color::Blue, Color::White, Color::BlueLight, Color::White)) | center;
@@ -169,7 +169,7 @@ namespace bw::online::components {
 				Renderer([] {return text(gettext("Operations take effect after refreshing.")) | center; }),
 				ftxui::Container::Horizontal({RefreshRoomInfoBut,HideRoomInfoBut}) | center,
 				RoomInfosTitle | center | border,
-				RoomInfoEntries | Renderer([](Element e) {return e; }) | vscroll_indicator | frame | flex | border | center
+				RoomInfoEntries /*| Renderer([](Element e) {return e; })*/ | vscroll_indicator | frame | flex | border | center
 				}) | CatchEvent([this, &showRoomChatPage, &showRoomChatTaskBar](Event e) {
 					if (e == Event::Special("RefreshRoomInfo")) {
 						RefreshRoomInfoEntries();
@@ -183,8 +183,10 @@ namespace bw::online::components {
 						}
 						return true;
 					}
-					return false;
-					});
+					else {
+						return RoomInfoEntries->OnEvent(e);
+					}
+				});
 			auto RoomInfoWindow = Window({
 				.inner = RoomInfoInner,
 				.title = gettext("Room Information"),
@@ -250,7 +252,9 @@ namespace bw::online::components {
 				})
 				});
 			
-			content = ResizableSplitBottom(SendChatCom, RoomChatMsgs | vscroll_indicator | frame | flex, &SendChatSize) | CatchEvent([this](Event e) {
+			
+			auto temp_ = ResizableSplitBottom(SendChatCom, RoomChatMsgs | vscroll_indicator | frame | flex, &SendChatSize);
+			content = temp_ | CatchEvent([this, temp_](Event e) {
 				if (e == Event::Special("AddChat")) {
 					AddRoomChatMsg();
 					return true;
@@ -259,8 +263,10 @@ namespace bw::online::components {
 					RefreshRoomChatMsgs();
 					return true;
 				}
-				return false;
-				});
+				else {
+					return temp_->OnEvent(e);
+				}
+			});
 			auto RoomChatWindow = Window({
 				.inner = content,
 				.title = gettext("Chat"),
@@ -300,12 +306,14 @@ namespace bw::online::components {
 		int selectedPlayerID = 0;
 	};
 	struct GamePage {
-		GamePage(user_ptr G, ftxui::ScreenInteractive& scr) :self(G), screen(scr) {}
+		GamePage(user_ptr G, ftxui::ScreenInteractive& scr) :self(G), screen(scr) {
+			GamePageCom = ftxui::Container::Vertical({});
+		}
 		ftxui::Component MakeGamePreparePages() {
-			int game_index = 0;
+			
 			tab_entries = {
 				gettext("Othello"),
-				gettext("TicTacToe")
+				gettext("TicTacToe"),
 			};
 			auto tab_selection = ftxui::Menu(&tab_entries, &game_index, ftxui::MenuOption::HorizontalAnimated());
 			auto tab_content = ftxui::Container::Tab({}, &game_index);
@@ -316,7 +324,8 @@ namespace bw::online::components {
 			Games.push_back(othello_Game);
 			tab_content->Add(othello_Game->OnlinePrepareCom(
 				[this, othello_Game] {
-					basic_gamer_info info(core::none, self->id, self->name, basic_gamer::human, core::gameid::othello);
+					self->Game_ptr = othello_Game;
+					basic_gamer_info info(core::none, self->id, self->name, basic_gamer::online, core::gameid::othello);
 					std::string infostr;
 					struct_json::to_json(info, infostr);
 					self->deliver(wrap(
@@ -324,7 +333,7 @@ namespace bw::online::components {
 							.type = game_msg::prepare,
 							.id = self->id,
 							.movestr = infostr,
-							.board = std::format("{}_{}","othello",othello_Game->board_size),
+							.board = std::format("{} {}", "othello", othello_Game->board_size),
 						},
 						msg_t::game
 					));
@@ -332,12 +341,31 @@ namespace bw::online::components {
 			));
 
 			//tictactoe
-			//auto tictactoe_Game = std::make_shared<tictactoe::components::Game>(self->get_executor());
+			auto tictactoe_Game = std::make_shared<tictactoe::components::Game>(self->get_executor());
+			Games.push_back(tictactoe_Game);
+			tab_content->Add(tictactoe_Game->OnlinePrepareCom(
+				[this, tictactoe_Game] {
+					self->Game_ptr = tictactoe_Game;
+					basic_gamer_info info(core::none, self->id, self->name, basic_gamer::online, core::gameid::tictactoe);
+					std::string infostr;
+					struct_json::to_json(info, infostr);
+					self->deliver(wrap(
+						game_msg{
+							.type = game_msg::prepare,
+							.id = self->id,
+							.movestr = infostr,
+							.board = std::format("{}", "tictactoe"),
+						},
+						msg_t::game
+						));
+				}
+			));
+
 
 
 
 			auto exit_button = ftxui::Button(
-				gettext("Hide"), [this] { showGamePage = false; }, ftxui::ButtonOption::Animated());
+				gettext("Hide"), [this] { showGamePreparePages = false; }, ftxui::ButtonOption::Animated());
 
 			auto main_container =
 				ftxui::Container::Vertical({
@@ -349,10 +377,25 @@ namespace bw::online::components {
 					});
 			return main_container;
 		}
-		ftxui::Component MakeContent() {
-
+		ftxui::Component MakeGamePage() {
+			using namespace ftxui;  
+			return GamePageCom | CatchEvent([this](Event e) {
+				if (e == Event::Special("StartGame")) {
+					GamePageCom->DetachAllChildren();
+					gm_ptr = Game_ptr->generate_game(screen);
+					GamePageCom->Add(Game_ptr->GamePage(screen, gm_ptr));
+					boost::cobalt::spawn(*self->get_executor(), gm_ptr->start(), boost::asio::detached);
+					showGamePage = true;
+					screen.PostEvent(Event::Custom);
+					return true;
+				}
+				else {
+					return GamePageCom->OnEvent(e);
+				}
+				}) | ui::EnableMessageBox();
 		}
 		user_ptr self;
+		int game_index = 0;
 		ftxui::ScreenInteractive& screen;
 		ftxui::Component GamePageCom, GamePreparePage;
 		bool showGamePreparePages = false;
@@ -385,59 +428,12 @@ namespace bw::online::components {
 
 		RoomChatPages RoomChatPagesCom;
 
-
-
 		ftxui::Component MakeTaskBut(bool& showflag, std::string button_name) {
 			using namespace ftxui;
 			return Button(button_name, [&showflag] {
 				showflag = showflag ? false : true;
 				}, ButtonOption::Animated());
 		}
-		
-		ftxui::Component MakeStartGameButtons() {
-			using namespace ftxui;
-			return ftxui::Container::Vertical({
-				Button(gettext("Refresh"),[this] {RoomChatPagesCom.RefreshRoomChatMsgs(); },ButtonOption::Animated(Color::Blue,Color::White,Color::BlueLight,Color::White)),
-				Button(gettext("Othello"),[this] {
-					using namespace othello;
-					//move mv{.mvtype=move::preparaed,.c=col0};
-					//gm_ptr=std::make_shared<othello::game>();
-					/*
-					* 1. add the component to the window
-					* 2. spawn the task coroutine to run in the executor
-					* ----Q:how to make the channel connected to the user?
-					* ----A:we register the channel in the handle_msg function of the user?
-					* ----we only forward the raw move string(json format) to the gamer,
-					* ----and the gamer will handle the move string on their own.(or perhaps we can use the std::any?)
-					*
-					*
-					* 3.
-					* the false code:
-					* GamePageCom = ftxui::Container::Vertical({});
-					* GamePageCom->DetachAllChildren();
-					* GamePageCom->Add(game_type::components::GamePageComp());
-					*
-					*/
-
-					/*
-					* GamePreparePage=othello::GamePreparePage(...);//包含各种各样的参数
-					* showGamePreparePage=true;
-					*
-					*/
-					auto rd_chan_p = std::make_shared<gamer::str_channel>();
-					self->chan_gamer_map[self->id] = {
-						rd_chan_p,
-						std::make_shared<othello::online_gamer>(rd_chan_p,*self)
-					};
-					},ButtonOption::Animated()),
-				Button(gettext("TicTacToe"),[this] {
-					using namespace tictactoe;
-					//move mv{ .mvtype = move::preparaed,.col = col0 };
-
-					},ButtonOption::Animated())
-				});
-		}
-		
 
 		void startHallPages();
 		void ConnectServer() {

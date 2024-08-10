@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="bw::online::user" Collapsed="true">
+    <Position X="3.25" Y="1" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gASAEKhAAkFIACBwgAxBQAyGABAgAigJQAEQQEElETA=</HashCode>
+      <FileName>include\online\user.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="bw::online::user_info" Collapsed="true">
+    <Position X="0.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAEAAQAAAEAAAEAAAAAAAAAgA=</HashCode>
+      <FileName>include\online\user_info.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="bw::othello::gamer" Collapsed="true">
+    <Position X="0.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABAAAAAYAAAAAAAAAAAAAAAAAAAACAAAgAAAIAAAAI=</HashCode>
+      <FileName>include\othello\gamer.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="bw::othello::human_gamer" Collapsed="true">
+    <Position X="3.25" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABAAAAAYgAAIAAAAAAAAAAAAAAAAAAAAgAAAIAABAA=</HashCode>
+      <FileName>include\othello\gamer\human.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="bw::othello::v2::online_gamer" Collapsed="true">
+    <Position X="3.25" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABAAAAAYAAAAAAAAAAAAAAAAAAAEAAAAgAAAIAAAAA=</HashCode>
+      <FileName>include\othello\gamer\online.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="bw::online::basic_user" Collapsed="true">
+    <Position X="0.5" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAEAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAA=</HashCode>
+      <FileName>include\online\basic_user.hpp</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="bw::online::basic_online_gamer" Collapsed="true">
+    <Position X="0.5" Y="3" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAEAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>include\online\basic_gamer.hpp</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Font Name="Microsoft YaHei UI" Size="9" />
+</ClassDiagram>

@@ -55,17 +55,11 @@
     <Filter Include="头文件\bw\practical">
       <UniqueIdentifier>{5a47d2e7-d985-4db5-9e0f-95d67b865d2f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="头文件\bw\online\online.gamers">
-      <UniqueIdentifier>{3ae387c5-6f81-40fd-b80a-d3239dfa7c28}</UniqueIdentifier>
-    </Filter>
     <Filter Include="头文件\tictactoe">
       <UniqueIdentifier>{12ae308a-823c-493b-9d23-9f95bf659c65}</UniqueIdentifier>
     </Filter>
     <Filter Include="头文件\tictactoe\tictactoe.gamers">
       <UniqueIdentifier>{ffa48882-8a81-4409-93e6-2a36a39f4686}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="头文件\othello\othello.online">
-      <UniqueIdentifier>{4a091b4a-9267-4cb5-8716-9e24a74a2541}</UniqueIdentifier>
     </Filter>
     <Filter Include="头文件\bw\shared\gamer">
       <UniqueIdentifier>{4c02371a-78dc-4ce1-b169-71ff3842e932}</UniqueIdentifier>
@@ -86,16 +80,7 @@
     <ClInclude Include="include\net\message.hpp">
       <Filter>头文件\bw\net</Filter>
     </ClInclude>
-    <ClInclude Include="include\online\basic_gamer.hpp">
-      <Filter>头文件\bw\online\online.gamers</Filter>
-    </ClInclude>
     <ClInclude Include="include\online\components.hpp">
-      <Filter>头文件\bw\online</Filter>
-    </ClInclude>
-    <ClInclude Include="include\online\gamer.hpp">
-      <Filter>头文件\bw\online</Filter>
-    </ClInclude>
-    <ClInclude Include="include\online\gamer_info.hpp">
       <Filter>头文件\bw\online</Filter>
     </ClInclude>
     <ClInclude Include="include\online\room.hpp">
@@ -121,9 +106,6 @@
     </ClInclude>
     <ClInclude Include="include\othello\gamer\remote.hpp">
       <Filter>头文件\othello\othello.gamer</Filter>
-    </ClInclude>
-    <ClInclude Include="include\othello\online\gamer.hpp">
-      <Filter>头文件\othello\othello.online</Filter>
     </ClInclude>
     <ClInclude Include="include\othello\board.hpp">
       <Filter>头文件\othello</Filter>
@@ -263,5 +245,22 @@
     <ClInclude Include="include\games.hpp">
       <Filter>头文件\bw\shared</Filter>
     </ClInclude>
+    <ClInclude Include="include\online\user.hpp">
+      <Filter>头文件\bw\online</Filter>
+    </ClInclude>
+    <ClInclude Include="include\online\user_info.hpp">
+      <Filter>头文件\bw\online</Filter>
+    </ClInclude>
+    <ClInclude Include="include\online\basic_user.hpp">
+      <Filter>头文件\bw\online</Filter>
+    </ClInclude>
+    <ClInclude Include="include\online\basic_online_gamer.hpp">
+      <Filter>头文件\bw\online</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram.cd" />
+    <None Include="ClassDiagram1.cd" />
+    <None Include="ClassDiagram2.cd" />
   </ItemGroup>
 </Project>

@@ -11,42 +11,23 @@ namespace bw::tictactoe {
 		core::color col;
 	};
 	using aspects = std::vector<aspect>;
-	struct game: basic_game{
+	struct game : basic_game, std::enable_shared_from_this<game> {
 		game() = delete;
 		game(basic_gamer_ptr g0, basic_gamer_ptr g1) :basic_game(ready) {
 			using namespace core;
-			if (g0 == nullptr || g1 == nullptr) {
-				ui::msgbox(gettext("Invalid Gamer!"));
-			}
-			if (g0->col != op_col(g1->col)) {
-				ui::msgbox(gettext("Invalid color!"));
-			}
+			
 			g[col0] = std::move(std::dynamic_pointer_cast<gamer>(g0));
 			g[col1] = std::move(std::dynamic_pointer_cast<gamer>(g1));
+			if (g[col0] == nullptr || g[col1] == nullptr) {
+				ui::msgbox(gettext("Invalid Gamer!"));
+				throw std::invalid_argument("Invalid Gamer!");
+			}
+			if (g[col0]->col != op_col(g[col1]->col)) {
+				ui::msgbox(gettext("Invalid color!"));
+				throw std::invalid_argument("Invalid color!");
+			}
 			brd.initialize();
 			st = ready;
-		}
-		boost::cobalt::task<void> start(basic_gamer_ptr g0, basic_gamer_ptr g1) override {
-			using namespace core;
-			if (g0 == nullptr || g1 == nullptr) {
-				ui::msgbox("Invalid Gamer!");
-				co_return;
-			}
-			if (g0->col != op_col(g1->col)) {
-				ui::msgbox("Invalid color!");
-				co_return;
-			}
-
-			g[g0->col] = std::dynamic_pointer_cast<gamer>(g0);
-			g[g1->col] = std::dynamic_pointer_cast<gamer>(g1);
-
-			if (g[col0] == nullptr || g[col1] == nullptr) {
-				ui::msgbox("Cast gamer failed!");
-				co_return;
-			}
-			co_await start();
-
-			co_return;
 		}
 
 		boost::cobalt::task<void> start();
@@ -89,10 +70,11 @@ namespace bw::tictactoe {
 #pragma optimize("",off)
 boost::cobalt::task<void> bw::tictactoe::game::start() {
 	using namespace core;
+	auto self = shared_from_this();
+
 	st = ongoing;
 	brd.initialize();
 	game_aspects.emplace_back(brd, none);
-
 	while (true) {
 		auto winner = brd.check_winner();
 		if (winner != core::none || brd.cnt == 9) {

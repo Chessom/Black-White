@@ -179,6 +179,8 @@ namespace bw::core {
 		std::deque<T> q;
 		boost::asio::steady_timer tim;
 	};
+	using str_dq = timer_deque_t<std::string>;
+	using str_dq_ptr = std::shared_ptr<str_dq>;
 };
 namespace std {
 	template<std::integral Int, typename CharT>

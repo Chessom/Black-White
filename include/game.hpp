@@ -9,7 +9,10 @@ namespace bw {
 		enum { unready, ready, ongoing, ended, suspended };
 		basic_game() = default;
 		basic_game(int State) :st(State) {}
-		virtual boost::cobalt::task<void> start(basic_gamer_ptr g0, basic_gamer_ptr g1) = 0;
+		string gbk2utf8(std::string_view s) {
+			return boost::locale::conv::to_utf<char>(s.data(), "gbk");
+		}
+		virtual boost::cobalt::task<void> start() = 0;
 		int& state() { return st; }
 		virtual ~basic_game() = default;
 	protected:

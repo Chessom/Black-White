@@ -150,7 +150,7 @@ namespace bw::tictactoe::components {
 		inline string gbk2utf8(std::string_view s) {
 			return boost::locale::conv::to_utf<char>(s.data(), "gbk");
 		}
-		virtual ftxui::Component GamePage(ftxui::ScreenInteractive& screen, basic_game_ptr gm_ptr) {
+		virtual ftxui::Component GamePage(ftxui::ScreenInteractive& screen, basic_game_ptr gm_ptr) override {
 			using namespace ftxui;
 			assert(gptr[col0] != nullptr && gptr[col1] != nullptr);
 			std::shared_ptr<game> gm = std::dynamic_pointer_cast<game>(gm_ptr);
@@ -175,10 +175,56 @@ namespace bw::tictactoe::components {
 				Renderer([this, gm] { return text(std::format("{}:{}",gettext("Current player"),gptr[gm->current_color()]->name)) | center; }),
 			});
 		}
-		virtual void join(basic_gamer_ptr gp) override {
-			/*assert(gp != nullptr);
-			gptr[gp->col] = std::dynamic_pointer_cast<tictactoe::gamer>(gp);*/
+		ftxui::Component OnlinePrepareCom(std::function<void()> match_op) {
+			using namespace ftxui;
+			auto layout = Container::Vertical({
+				Button(gettext("Match"),[this, match_op]
+				{
+					static boost::asio::steady_timer tim(*pctx);
+					static std::atomic_flag flag;
+					if (!flag.test()) {
+						match_op();
+						flag.test_and_set();
+						tim.expires_after(5s);
+						tim.async_wait([](boost::system::error_code ec) {
+							flag.clear();
+						});
+					}
+					else {
+						ui::msgbox(gettext("The operation is too fast, please match later."));
+					}
+				},ButtonOption::Animated()) | center
+				});
+			return layout;
 		}
+		virtual void join(basic_gamer_ptr gp) override {
+			assert(gp != nullptr);
+			gptr[gp->col] = std::dynamic_pointer_cast<gamer>(gp);
+		}
+		virtual basic_gamer_ptr gamer_from_info(basic_gamer_info info) override {
+			basic_gamer_ptr ret;
+			switch (info.gamertype)
+			{
+			case gamer::human:
+				ret = std::make_shared<tictactoe::human_gamer>(info);
+				break;
+			case gamer::computer:
+				ret = std::make_shared<tictactoe::computer_gamer_random>(info);
+				break;
+			case gamer::online:
+				ret = std::make_shared<tictactoe::online_gamer>(info);
+				break;
+			default:
+				break;
+			}
+			return ret;
+		}
+		virtual basic_game_ptr generate_game(ftxui::ScreenInteractive& screen) override {
+			std::shared_ptr<game> gm = std::make_shared<game>(gptr[core::col0], gptr[core::col1]);
+			gm->screen_ptr = &screen;
+			return gm;
+		}
+		void set_board_size(int size) override {}
 		bool GamePreparing() {
 			using namespace ftxui;
 			bool ret = true;

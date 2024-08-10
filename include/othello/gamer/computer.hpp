@@ -9,7 +9,7 @@ namespace bw::othello {
 	class computer_gamer :public gamer {
 	public:
 		computer_gamer() :gamer() { gamertype = basic_gamer::computer; }
-		computer_gamer(core::color Color, int ID = 0, const std::string& Name = "basic_computer_gamer", int GamerType = basic_gamer::computer)
+		computer_gamer(core::color Color, int ID = -1, const std::string& Name = "basic_computer_gamer", int GamerType = basic_gamer::computer)
 			:gamer(Color, ID, Name, computer){
 		};
 		virtual boost::cobalt::task<move> getmove(dynamic_brd& brd, std::chrono::seconds limit = 0s) { co_return { .mvtype = invalid }; };
@@ -20,9 +20,10 @@ namespace bw::othello {
 	};
 	class computer_gamer_random :public bw::othello::computer_gamer {
 	public:
-		computer_gamer_random() : computer_gamer() {}
-		computer_gamer_random(core::color Color, int ID = 1, const std::string& Name = "computer_gamer_random")
-			:computer_gamer(Color, ID, Name, basic_gamer::computer) {};
+		computer_gamer_random(core::color Color, int ID = 0, const std::string& Name = "computer_gamer_random")
+			:computer_gamer(Color, ID, Name, basic_gamer::computer) {
+			name = gettext("computer_gamer_random");
+		};
 		virtual boost::cobalt::task<move> getmove(dynamic_brd& brd, std::chrono::seconds limit = 0s) override {
 			mvs.update(brd, col);
 			std::random_device rd;
@@ -31,14 +32,14 @@ namespace bw::othello {
 			co_return move{ .mvtype = move::mv, .pos = mvs.coords[distrib(gen)],.c = col };
 		}
 		
-		
 		virtual ~computer_gamer_random() = default;
 	};
 	class computer_gamer_ai :public bw::othello::computer_gamer {
 	public:
-		computer_gamer_ai() : computer_gamer() {}
-		computer_gamer_ai(core::color Color, int ID = 2, const std::string& Name = "computer_gamer_ai", int GamerType = basic_gamer::computer)
-			:computer_gamer(Color, ID, Name, GamerType) {};
+		computer_gamer_ai(core::color Color, int ID = 1, const std::string& Name = "computer_gamer_ai", int GamerType = basic_gamer::computer)
+			:computer_gamer(Color, ID, Name, GamerType) {
+			name = gettext("computer_gamer_ai");
+		};
 		virtual boost::cobalt::task<move> getmove(dynamic_brd& brd, std::chrono::seconds limit = 0s) override {
 			mvs.update(brd, col);
 			move mv;
@@ -58,4 +59,15 @@ namespace bw::othello {
 	private:
 		ai::evaluator e;
 	};
+	inline basic_gamer_ptr computer_gamer_from_id(int ID, color c) {
+		switch (ID) {
+		case 0:
+			return std::make_shared<computer_gamer_random>(c);
+		case 1:
+			return std::make_shared<computer_gamer_ai>(c);
+		default:
+			break;
+		}
+		return nullptr;
+	}
 }

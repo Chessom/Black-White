@@ -4,6 +4,7 @@
 #include"othello/gamer/computer.hpp"
 #include"othello/gamer/human.hpp"
 #include"othello/gamer/remote.hpp"
+#include"othello/gamer/online.hpp"
 #include"globals.hpp"
 #include"tui/components.hpp"
 #include"tui/ftxui_screen.hpp"
@@ -193,7 +194,7 @@ namespace bw::othello::components {
 				Button(censtr(gettext("Back"), 8), [&ret,&screen] { ret = false; screen.Exit(); }, ButtonOption::Animated()) | center
 				}) | ui::EnableMessageBox();
 		}
-		ftxui::Component GamePage(ftxui::ScreenInteractive& screen, basic_game_ptr gm_ptr) override {
+		virtual ftxui::Component GamePage(ftxui::ScreenInteractive& screen, basic_game_ptr gm_ptr) override {
 			assert(gptr[col0] != nullptr && gptr[col1] != nullptr);
 			using namespace ftxui;
 			game_ptr gm = std::dynamic_pointer_cast<game>(gm_ptr);
@@ -232,18 +233,34 @@ namespace bw::othello::components {
 			return layout;
 		}
 		virtual void join(basic_gamer_ptr gp) override {
-			switch (gp->gamertype)
+			assert(gp != nullptr);
+			gptr[gp->col] = std::dynamic_pointer_cast<gamer>(gp);
+		}
+		virtual basic_gamer_ptr gamer_from_info(basic_gamer_info info) override {
+			basic_gamer_ptr ret;
+			switch (info.gamertype)
 			{
 			case gamer::human:
-				gptr[gp->col] = std::make_shared<othello::human_gamer>(*gp);
+				ret = std::make_shared<othello::human_gamer>(info);
+				break;
+			case gamer::computer:
+				ret = computer_gamer_from_id(info.id, info.col);
 				break;
 			case gamer::online:
-				gptr[gp->col] = std::make_shared<othello::online_gamer>();
+				ret = std::make_shared<othello::online_gamer>(info);
+				break;
+			case gamer::remote:
+				ret = std::make_shared<othello::remote_tcp_gamer>(pctx, info.col);
+				break;
 			default:
 				break;
 			}
-			//assert(gp != nullptr);
-			//gptr[gp->col] = std::dynamic_pointer_cast<othello::gamer>(gp);
+			return ret;
+		}
+		virtual basic_game_ptr generate_game(ftxui::ScreenInteractive& screen) override {
+			auto gm = std::make_shared<game>(gptr[col0], gptr[col1], board_size, std::make_shared<bw::components::ftxui_screen>(&screen));
+			gm->screen_ptr = &screen;
+			return gm;
 		}
 		bool GamePreparing() {
 			using namespace ftxui;
@@ -550,6 +567,9 @@ namespace bw::othello::components {
 				},ButtonOption::Animated()) | center
 			});
 			return layout;
+		}
+		void set_board_size(int size) override {
+			board_size = size;
 		}
 		gamer_ptr gptr[2] = { nullptr,nullptr };
 		using context_ptr = std::shared_ptr<boost::asio::io_context>;
