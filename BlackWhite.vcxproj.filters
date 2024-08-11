@@ -257,10 +257,16 @@
     <ClInclude Include="include\online\basic_online_gamer.hpp">
       <Filter>头文件\bw\online</Filter>
     </ClInclude>
+    <ClInclude Include="include\exceptions.hpp">
+      <Filter>头文件\bw\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="include\online\signals.hpp">
+      <Filter>头文件\bw\online</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ClassDiagram.cd" />
-    <None Include="ClassDiagram1.cd" />
-    <None Include="ClassDiagram2.cd" />
+    <None Include="README.md">
+      <Filter>资源文件</Filter>
+    </None>
   </ItemGroup>
 </Project>

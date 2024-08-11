@@ -50,7 +50,7 @@ namespace bw::tictactoe {
 		gamer_ptr current_gamer() const {
 			return g[col];
 		}
-		void endgame() {
+		void end_game() {
 			if (st == ongoing) {
 				st = ended;
 			}

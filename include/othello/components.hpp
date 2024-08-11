@@ -9,7 +9,7 @@
 #include"tui/components.hpp"
 #include"tui/ftxui_screen.hpp"
 #include"grid-container.hpp"
-#include"basic_Game.hpp"
+#include"online/signals.hpp"
 namespace bw::othello::components {
 	class BoardBase : public ftxui::ComponentBase {
 	public:
@@ -124,7 +124,7 @@ namespace bw::othello::components {
 				return true;
 			}
 			else if (e == Event::Special("EndLoop")) {
-				game_ptr->endgame();
+				game_ptr->end_game();
 				return true;
 			}
 			else if (e == Event::Special("Suspend")) {
@@ -168,7 +168,7 @@ namespace bw::othello::components {
 		ftxui::Box box;
 	};
 	using Board = std::shared_ptr<BoardBase>;
-	class Game :public basic_Game{
+	class Game :public basic_Game, public std::enable_shared_from_this<Game> {
 	public:
 		Game() { pctx = std::make_shared<boost::asio::io_context>(); }
 		Game(std::shared_ptr<boost::asio::io_context> context_ptr) :basic_Game(context_ptr) {};
@@ -194,6 +194,91 @@ namespace bw::othello::components {
 				Button(censtr(gettext("Back"), 8), [&ret,&screen] { ret = false; screen.Exit(); }, ButtonOption::Animated()) | center
 				}) | ui::EnableMessageBox();
 		}
+		virtual ftxui::Component OnlinePrepareCom(online::basic_user_ptr uptr) override {
+			using namespace ftxui;
+			auto layout = Container::Vertical({
+				ui::TextComp(gettext("Othello")) | center,
+				Container::Horizontal({
+					ui::TextComp(gettext("Board Size: ")) | center,
+					Dropdown(&size_list,&s_size)
+				}) | center,
+				Button(gettext("Match"),[this, uptr]
+				{
+					static boost::asio::steady_timer tim(*pctx);
+					static std::atomic_flag flag;
+					auto othello_Game = shared_from_this();
+					board_size = std::stoi(size_list[s_size]);
+					if (!flag.test()) {
+						if (uptr->state != online::user_st::gaming) {
+							uptr->Game_ptr = othello_Game;
+							basic_gamer_info info(core::none, uptr->id, uptr->name, basic_gamer::online, core::gameid::othello);
+							std::string infostr;
+							struct_json::to_json(info, infostr);
+							uptr->deliver(wrap(
+								game_msg{
+									.type = game_msg::prepare,
+									.id = uptr->id,
+									.movestr = infostr,
+									.board = std::format("{} {}", "othello", othello_Game->board_size),
+								},
+								msg_t::game
+								));
+							uptr->state = online::user_st::prepared;
+						}
+						else {
+							ui::msgbox(gettext("Cannot match during game!"));
+						}
+						flag.test_and_set();
+						tim.expires_after(5s);
+						tim.async_wait([](boost::system::error_code ec) {
+							flag.clear();
+						});
+					}
+					else {
+						ui::msgbox(gettext("The operation is too fast, please match later."));
+					}
+				},ButtonOption::Animated()) | center
+				});
+			return layout;
+		}
+		virtual ftxui::Component OnlineGamePage(ftxui::ScreenInteractive& screen, basic_game_ptr gm_ptr) override {
+			assert(gptr[col0] != nullptr && gptr[col1] != nullptr);
+			using namespace ftxui;
+			game_ptr gm = std::dynamic_pointer_cast<game>(gm_ptr);
+
+			Board brd_ptr = Make<BoardBase>(pctx, gm);
+
+			Component buttons = Container::Vertical({
+				Button(censtr(gettext("Quit"), 8), [] {online::signals::end_game(); }, ButtonOption::Animated()) | center,
+				Renderer([] {return separator(); }),
+				Button(censtr(gettext("Regret"), 8), [&screen] {screen.PostEvent(Event::Special("Regret")); }, ButtonOption::Animated()) | center,
+				Renderer([] {return separator(); }),
+				Button(censtr(gettext("Suspend"), 8), [&screen] {screen.PostEvent(Event::Special("Suspend")); }, ButtonOption::Animated()) | center,
+				Renderer([] {return separator(); }),
+				Button(censtr(gettext("Save"), 8), [&screen] {screen.PostEvent(Event::Special("Save")); }, ButtonOption::Animated()) | center,
+				}) | ftxui::border;
+			Component brd = Container::Horizontal({ brd_ptr }) | center;
+			Component layout = Container::Vertical({
+				Container::Horizontal({
+					buttons | center,
+					brd | center,
+				}),
+				Container::Vertical({
+					Renderer([=,this] { return text(std::format("{}:{}",gettext("Current player"),gptr[gm->current_color()]->get_name())) | center; }),
+					Renderer([=,this] {return text(std::format("{}-{}:{}",gettext("Black"),gptr[col0]->get_name(),brd_ptr->brd.countpiece(col0))) | center; }),
+					Renderer([=,this] {return text(std::format("{}-{}:{}",gettext("White"),gptr[col1]->get_name(),brd_ptr->brd.countpiece(col1))) | center; }),
+					Renderer([=,this] {return text(std::format("{}-{} {}:{}",gettext("Black"),gptr[col0]->get_name(),gettext("state"),
+					gptr[col0]->is_remote() ?
+						(std::dynamic_pointer_cast<remote_tcp_gamer>(gptr[col0])->connected() ? gettext("Good") : gettext("Disconnetced"))
+						: gettext("Good"))) | center; }),
+					Renderer([&] {return text(std::format("{}-{} {}:{}",gettext("White"),gptr[col1]->get_name(),gettext("state"),
+					gptr[col1]->is_remote() ?
+						(std::dynamic_pointer_cast<remote_tcp_gamer>(gptr[col1])->connected() ? gettext("Good") : gettext("Disconnetced"))
+						: gettext("Good"))) | center; }),
+				}) | center | border
+				});
+			return layout;
+		}
 		virtual ftxui::Component GamePage(ftxui::ScreenInteractive& screen, basic_game_ptr gm_ptr) override {
 			assert(gptr[col0] != nullptr && gptr[col1] != nullptr);
 			using namespace ftxui;
@@ -202,7 +287,7 @@ namespace bw::othello::components {
 			Board brd_ptr = Make<BoardBase>(pctx, gm);
 
 			Component buttons = Container::Vertical({
-				Button(censtr(gettext("Quit"), 8), [=, &screen] {gm->endgame(); if (!pctx->stopped()) { pctx->stop(); } screen.Exit(); }, ButtonOption::Animated()) | center,
+				Button(censtr(gettext("Quit"), 8), [=, &screen] {gm->end_game(); if (!pctx->stopped()) { pctx->stop(); } screen.Exit(); }, ButtonOption::Animated()) | center,
 				Renderer([] {return separator(); }),
 				Button(censtr(gettext("Regret"), 8), [&screen] {screen.PostEvent(Event::Special("Regret")); }, ButtonOption::Animated()) | center,
 				Renderer([] {return separator(); }),
@@ -541,42 +626,20 @@ namespace bw::othello::components {
 			screen.Loop(GamePageComponent);
 			pctx->stop();
 		}
-		ftxui::Component OnlinePrepareCom(std::function<void()> match_op) {
-			using namespace ftxui;
-			auto layout = Container::Vertical({
-				Container::Horizontal({ui::TextComp(gettext("Board Size: ")),Dropdown(&size_list,&s_size)})
-				| frame
-				| ftxui::size(ftxui::HEIGHT,ftxui::LESS_THAN,3)
-				| center,
-				Button(gettext("Match"),[this, match_op]
-				{
-					static boost::asio::steady_timer tim(*pctx);
-					static std::atomic_flag flag;
-					board_size = std::stoi(size_list[s_size]);
-					if (!flag.test()) {
-						match_op();
-						flag.test_and_set();
-						tim.expires_after(5s);
-						tim.async_wait([](boost::system::error_code ec) {
-							flag.clear();
-						});
-					}
-					else {
-						ui::msgbox(gettext("The operation is too fast, please match later."));
-					}
-				},ButtonOption::Animated()) | center
-			});
-			return layout;
+		void reset() {
+			gptr[0] = nullptr;
+			gptr[1] = nullptr;
+			board_size = 8;
+			s_size = 0;
 		}
+		
 		void set_board_size(int size) override {
 			board_size = size;
 		}
 		gamer_ptr gptr[2] = { nullptr,nullptr };
-		using context_ptr = std::shared_ptr<boost::asio::io_context>;
-		
 		int board_size = 8;
 	protected:
-		int s_size = 0;
+		int s_size = 2;
 	};
 	using othello_Game_ptr = std::shared_ptr<Game>;
 }

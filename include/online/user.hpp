@@ -6,7 +6,6 @@
 #include"safe_vector.hpp"
 #include"tui/components.hpp"
 #include"basic_user.hpp"
-#include"basic_Game.hpp"
 #include"basic_online_gamer.hpp"
 #include"boost/container/flat_map.hpp"
 namespace bw::online {
@@ -22,6 +21,8 @@ namespace bw::online {
 		user() :context_ptr(std::make_shared<context>()), socket(*context_ptr), timer_(*context_ptr),  chat_mutex(0), _gen(0, INT_MAX) {
 			timer_.expires_at(std::chrono::steady_clock::time_point::max());
 			stop_flag.clear();
+			crt_room_info.store(default_room_info());
+			search_rinfo_res.store(default_room_info());
 		};
 		std::string gbk2utf8(std::string_view s) {
 			return boost::locale::conv::to_utf<char>(s.data(), "gbk");
@@ -72,6 +73,9 @@ namespace bw::online {
 		inline bool connected() const {
 			return socket.is_open();
 		}
+		bool in_room() const {
+			return crt_room_info.load().id != 0;
+		}
 		auto get_executor() { return context_ptr; }
 
 		void post(std::function<void()> handler) {
@@ -87,8 +91,8 @@ namespace bw::online {
 		}
 
 		void start() {
-			boost::cobalt::spawn(*context_ptr, cobalt_reader(shared_from_this()), boost::asio::detached);
-			boost::cobalt::spawn(*context_ptr, cobalt_writer(shared_from_this()), boost::asio::detached);
+			boost::cobalt::spawn(*context_ptr, cobalt_reader(), boost::asio::detached);
+			boost::cobalt::spawn(*context_ptr, cobalt_writer(), boost::asio::detached);
 			/*boost::asio::co_spawn(*context_ptr, asio_reader(), boost::asio::detached);
 			boost::asio::co_spawn(*context_ptr, asio_writer(), boost::asio::detached);*/
 			chat_mutex.release();
@@ -101,15 +105,19 @@ namespace bw::online {
 			boost::system::error_code ec;
 			socket.wait(socket_t::wait_write, ec);
 			if (!ec) {
-				deliver(wrap(control_msg{
-				.type = control_msg::create,
-				.content = jsonstr,
-				.target_type = control_msg::g,
-					}, msg_t::control));
 				infostate = outdated;
+				deliver(wrap(
+					control_msg{
+						.type = control_msg::create,
+						.content = jsonstr,
+						.target_type = control_msg::g,
+					},
+					msg_t::control
+				));
 			}
 		}
 		void try_update_info(const user_info& info) {
+			infostate = outdated;
 			std::string infostr;
 			struct_json::to_json(info, infostr);
 			deliver(wrap(control_msg{
@@ -118,7 +126,6 @@ namespace bw::online {
 				.id1 = id,
 				.target_type = control_msg::g
 				}, msg_t::control));
-			infostate = outdated;
 		}
 		void try_update_name(std::string new_name) {
 			user_info info = *this;
@@ -126,7 +133,8 @@ namespace bw::online {
 			try_update_info(info);
 		}
 		void try_join_room(int roomID) {
-			if (roomID > 0 && roomID < hall.rooms.size()) {
+			if (roomID > 0) {
+				infostate = outdated;
 				deliver(wrap(control_msg{
 					.type = control_msg::join,
 					.id1 = id,
@@ -134,7 +142,6 @@ namespace bw::online {
 					},
 					msg_t::control
 				));
-				infostate = outdated;
 			}
 		}
 		void get(std::string gettype, std::vector<int> ids = {}) {
@@ -143,6 +150,23 @@ namespace bw::online {
 					get_msg{
 						.get_type = gettype,
 						.ids = std::move(ids)
+					},
+					msg_t::get
+				));
+			}
+			else if (gettype == "current_room_info") {
+				deliver(wrap(
+					get_msg{
+						.get_type = gettype,
+					},
+					msg_t::get
+				));
+			}
+			else if (gettype == "search_room_info") {
+				deliver(wrap(
+					get_msg{
+						.get_type = gettype,
+						.ids = std::move(ids),
 					},
 					msg_t::get
 				));
@@ -170,6 +194,7 @@ namespace bw::online {
 			return;
 		}
 		void try_leave() {
+			infostate = outdated;
 			deliver(wrap(
 				control_msg{
 					.type = control_msg::leave,
@@ -178,16 +203,16 @@ namespace bw::online {
 				},
 				msg_t::control
 			));
-			infostate = outdated;
 		}
 		void broadcast(std::string str) {
-			if ((roomid == 0 && authority == admin) || roomid > 0) {
+			auto rinfo = crt_room_info.load();
+			if ((rinfo.id == 0 && authority == admin) || rinfo.id > 0) {
 				deliver(wrap(
 					str_msg{
 						.content = str,
 						.target_type = str_msg::r,
 						.id1 = id,
-						.id2 = roomid,
+						.id2 = rinfo.id,
 						.name = name
 					},
 					msg_t::str
@@ -199,15 +224,15 @@ namespace bw::online {
 				scr_ptr->refresh();
 			}
 		}
-		void add_filter(const std::string& tag, filter_func pred) {
-			filters[tag] = (std::move(pred));
-		}
-		void del_filter(const string& tag) {
-			filters.erase(tag);
-		}
-		void clear_filter() {
-			filters.clear();
-		}
+		//void add_filter(const std::string& tag, filter_func pred) {
+		//	filters[tag] = (std::move(pred));
+		//}
+		//void del_filter(const string& tag) {
+		//	filters.erase(tag);
+		//}
+		//void clear_filter() {
+		//	filters.clear();
+		//}
 		void stop() {
 			if (socket.is_open()) {
 				socket.close();
@@ -217,6 +242,7 @@ namespace bw::online {
 				context_ptr->stop();
 			}
 		}
+
 		~user() {
 			if (socket.is_open()) {
 				socket.close();
@@ -227,10 +253,11 @@ namespace bw::online {
 			}
 		};
 		
+		//boost::signals2::signal<void()> refresh_room_info, search_roon_info;
+
 		using ID = int;
 		
 		hall_info hall;
-		int roomid = 0;
 
 		std::atomic_flag stop_flag;
 
@@ -246,16 +273,17 @@ namespace bw::online {
 		std::deque<str_msg> chat_msg_queue;
 		std::binary_semaphore chat_mutex;
 
-		std::unordered_map<std::string, filter_func> filters;
+		//std::unordered_map<std::string, filter_func> filters;
+		boost::signals2::signal<void(const message&)> read_msg;
 
-		basic_Game_ptr Game_ptr;
 		std::string game_type, game_info_str;
 		using chan_gamer_ptr = std::pair<core::str_dq_ptr, basic_gamer_ptr>;
 		std::unordered_map<ID, chan_gamer_ptr> chan_gamer_map;
+		std::atomic<room_info> crt_room_info, search_rinfo_res;
 	private:
 		
-		boost::cobalt::task<void> cobalt_reader(std::shared_ptr<user>);
-		boost::cobalt::task<void> cobalt_writer(std::shared_ptr<user>);
+		boost::cobalt::task<void> cobalt_reader();
+		boost::cobalt::task<void> cobalt_writer();
 
 		boost::cobalt::task<void> heart_beat() {//unused
 			boost::asio::steady_timer t(*context_ptr);
@@ -267,6 +295,7 @@ namespace bw::online {
 		}
 
 		void handle_game_msg(const message&);
+		
 		std::random_device _rnd;
 		std::uniform_int_distribution<int> _gen;
 		std::shared_ptr<context> context_ptr;
@@ -293,7 +322,6 @@ namespace bw::online {
 					self = newinfo;
 					assert(newinfo.id == con_m.id1);
 					infostate = latest;
-					del_filter("wait_response");
 				}
 			}
 			else if (con_m.type == control_msg::update) {
@@ -329,20 +357,25 @@ namespace bw::online {
 				}
 			}
 			else if (con_m.type == control_msg::join) {//加入room
-				roomid = con_m.id2;
+				room_info rinfo;
+				struct_json::from_json(rinfo, con_m.content);
+				crt_room_info.store(rinfo);
+				infostate = latest;
 				scr_ptr->post_event("RefreshChat");
 			}
 			else if (con_m.type == control_msg::leave) {//离开room
-				if (roomid > 0) {
-					roomid = 0;
+				auto rinfo = crt_room_info.load();
+				if (rinfo.id > 0) {
+					crt_room_info.store(default_room_info());
 					chat_mutex.acquire();
 					chat_msg_queue.clear();
 					chat_mutex.release();
 				}
 				else {
-					roomid = -1;
+					crt_room_info.store(default_room_info());
 				}
-				scr_ptr->post_event("RefreshRoomInfo");
+				//scr_ptr->post_event("RefreshRoomInfo");
+				get("current_room_info");
 				chat_mutex.acquire();
 				chat_msg_queue.clear();
 				chat_mutex.release();
@@ -406,8 +439,13 @@ namespace bw::online {
 			}
 				break;
 			case game_msg::start://根据prepare的gamers生成game和Game，并且启动
-				Game_ptr->set_board_size(std::stoi(gmmsg.board));
-				scr_ptr->post_event("StartGame");
+			{
+				std::stringstream ss(gmmsg.board);
+				std::string game_name, brd_sizestr;
+				ss >> game_name >> brd_sizestr;
+				Game_ptr->set_board_size(std::stoi(brd_sizestr));
+				signals::start_game();
+			}
 				break;
 			case game_msg::move: {
 				auto& chan = chan_gamer_map.at(gmmsg.id);
@@ -418,6 +456,7 @@ namespace bw::online {
 				break;
 			case game_msg::end:
 				chan_gamer_map.clear();
+				signals::end_game();
 				break;
 			default:
 				;
@@ -437,7 +476,7 @@ namespace bw::online {
 			if (rmsg.ret_type == "room_info") {
 				std::vector<room_info> infos;
 				struct_json::from_json(infos, rmsg.ret_str);
-				roomid = infos.front().id;
+				crt_room_info.store(infos.front());
 				hall.rooms.clear();
 				for (int i = 1; i < infos.size(); ++i) {
 					hall.rooms.emplace_back(infos[i]);
@@ -445,6 +484,31 @@ namespace bw::online {
 				infostate = latest;
 				hall.infostate = hall_info::latest;
 				scr_ptr->post_event("RefreshRoomInfo");
+				refresh_screen();
+			}
+			else if (rmsg.ret_type == "current_room_info") {
+				if (rmsg.value == success) {
+					std::vector<room_info> infos;
+					struct_json::from_json(infos, rmsg.ret_str);
+					crt_room_info.store(infos.front());
+				}
+				else {
+					crt_room_info.store(default_room_info());
+				}
+				infostate = latest;
+				refresh_screen();
+			}
+			else if (rmsg.ret_type == "search_room_info") {
+				if (rmsg.value == success) {
+					std::vector<room_info> infos;
+					struct_json::from_json(infos, rmsg.ret_str);
+					search_rinfo_res.store(infos.front());
+				}
+				else {
+					search_rinfo_res.store(default_room_info());
+					ui::msgbox(gettext("Room not found"));
+				}
+				infostate = latest;
 				refresh_screen();
 			}
 			else if (rmsg.ret_type == "user_info") {
@@ -473,8 +537,10 @@ namespace bw::online {
 		}
 	}
 	using user_ptr = std::shared_ptr<user>;
-	boost::cobalt::task<void> user::cobalt_reader(std::shared_ptr<user> self)
+#pragma optimize("", off)
+	boost::cobalt::task<void> user::cobalt_reader()
 	{
+		std::shared_ptr<user> self = shared_from_this();
 		using namespace boost::asio;
 		std::string read_str, read_size_str;
 		msg_t msg;
@@ -496,35 +562,36 @@ namespace bw::online {
 			catch (const std::exception& e)
 			{
 				ui::msgbox(fmt::format("{}:{}", gettext("Data structure damaged. msg"), gbk2utf8(e.what())));
+				spdlog::error("msg:{} error:{}", msg.jsonstr, e.what());
 				read_size_str = "";
 				read_str = "";
 				continue;
 			}
 
 			try {
-				for (auto& [_, p] : self->filters) {
-					p(msg);
-				}
+				read_msg(msg);
 			}
 			catch (const std::exception& e)
 			{
 				ui::msgbox(std::format("{}:{}", gettext("Bad Filter. msg"), gbk2utf8(e.what())));
+				spdlog::error("msg:{} error:{}", msg.jsonstr, e.what());
 			}
 
 			try {
-				handle_msg(msg);
+				self->handle_msg(msg);
 			}
 			catch (const std::exception& e)
 			{
 				ui::msgbox(std::format("{}:{}", gettext("Failed to process data. msg"), gbk2utf8(e.what())));
+				spdlog::error("msg:{} error:{}", msg.jsonstr, e.what());
 			}
 			read_size_str = "";
 			read_str = "";
 		}
 	}
-#pragma optimize("", off)
-	boost::cobalt::task<void> user::cobalt_writer(std::shared_ptr<user> self)
+	boost::cobalt::task<void> user::cobalt_writer()
 	{
+		std::shared_ptr<user> self = shared_from_this();
 		using namespace boost::asio;
 		using namespace std::string_literals;
 		try
@@ -560,7 +627,6 @@ namespace bw::online {
 	}
 #pragma optimize("", on)
 };
-
 //boost::asio::awaitable<void> asio_reader(socket_ptr socket)
 		//{
 		//	using namespace boost::asio;

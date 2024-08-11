@@ -64,14 +64,14 @@ namespace bw::othello {
 				move mv{ .mvtype = move::invalid,.msg = "None" };
 				try {
 					mv = co_await g[col]->getmove(brd);
+
+					co_await g[op_col(col)]->pass_move(mv);
 				}
 				catch (const std::exception& e) {
 					ui::msgbox(gbk2utf8(e.what()));
 					st = game::ended;
+					mv.mvtype = move::quit;
 				}
-
-				co_await g[col]->pass_move(mv);
-				co_await g[op_col(col)]->pass_move(mv);
 
 				switch (mv.mvtype) {
 				case move::mv:
@@ -84,7 +84,7 @@ namespace bw::othello {
 						co_await g[col]->pass_msg(gettext("You can't regret it now!"));
 						continue;
 					}
-					if (g[col]->gamertype == gamer::remote || g[op_col(col)]->gamertype == gamer::remote) {
+					if (cannot_regret()) {
 						co_await g[col]->pass_msg(gettext("Regretting is not supported now!"));
 					}
 					if (col == game_aspects.back().col) {//和上次的是同一个人
@@ -97,7 +97,6 @@ namespace bw::othello {
 						game_aspects.pop_back();
 						brd = game_aspects.back().brd;
 					}
-					//screen->post_event("Flush");
 					announce("Flush");
 					wait_for_gamer(col);
 					continue;
@@ -109,8 +108,6 @@ namespace bw::othello {
 					break;
 				case move::quit:
 					st = ended;
-					//screen->exit();
-					screen_ptr->Exit();
 					co_return;
 					break;
 				case move::str:
@@ -118,15 +115,13 @@ namespace bw::othello {
 					break;
 				case move::invalid:
 					ui::msgbox(std::format("Invalid move:pos:{},type:{},\nmsg:{}", mv.pos, mv.mvtype, mv.msg));
-					//screen->exit();
-					screen_ptr->Exit();
 					st = ended;
 					co_return;
 					break;
 				default:
 					ui::msgbox(std::format("{}:{}", gettext("move type id"), mv.mvtype));
 					st = ended;
-					std::unreachable();
+					break;
 				}
 				game_aspects.emplace_back(brd, col);
 				col = op;//change the setter
@@ -155,12 +150,19 @@ namespace bw::othello {
 		gamer_ptr current_gamer() const {
 			return g[col];
 		}
-		void endgame() {
+		void end_game() override {
 			if (st == ongoing) {
 				st = ended;
 			}
 			g[col]->cancel();
 			g[col ^ 1]->cancel();
+		}
+		bool cannot_regret() {
+			return 
+				g[col]->gamertype==gamer::online||
+				g[op_col(col)]->gamertype==gamer::online||
+				g[col]->gamertype == gamer::remote ||
+				g[op_col(col)]->gamertype == gamer::remote;
 		}
 		virtual ~game() = default;
 		bw::components::ftxui_screen_ptr screen;

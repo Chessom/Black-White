@@ -3,6 +3,7 @@
 #include<ylt/struct_json/json_reader.h>
 namespace bw {
 	enum { success, failed };
+	enum { server_id = 0 };
 	struct control_msg {
 		enum { create, update, del, leave, join, none };
 		int type = none;
@@ -25,9 +26,15 @@ namespace bw {
 		int type;
 		int id;
 		std::string movestr, board;
+		enum { ok, server_end_game, gamer_quit_or_disconnect, unknown };
 		//create：movestr代表game的名字（种类），而board则是game的详细信息，是一个json字符串
-		//prepare：movestr代表user_info（basic_user）
+		//prepare：movestr代表basic_gamer_info（basic_gamer）
 		//start: movestr代表game种类，board代表board size
+		//move: movestr代表move
+		//watch: id:想watch的user ID
+		//brd: board：棋盘字符串
+		//match: 代表在整个服务器随机匹配，其余与prepare相同
+		//end: id代表结束的状态码。
 	};
 	REFLECTION(game_msg, type, id, movestr, board);
 	struct get_msg {

@@ -1,0 +1,11 @@
+[2024-08-11 15:21:17.906] [mylogger] [error] Expected these: [
+[2024-08-11 15:21:38.513] [mylogger] [error] Expected these: [
+[2024-08-11 15:21:38.515] [mylogger] [error] Expected these: [
+[2024-08-11 15:21:41.469] [mylogger] [error] Expected these: [
+[2024-08-11 15:21:43.776] [mylogger] [error] Expected these: [
+[2024-08-11 15:46:15.036] [mylogger] [error] msg:{"value":1,"ret_type":"current_room_info","ret_str":"Not in any room"} error:Expected these: [
+[2024-08-11 20:28:25.615] [mylogger] [error] msg:{"type":4,"content":"","id1":2,"id2":1,"target_type":0} error:Unexpected end of buffer. Expected:
+[2024-08-11 20:49:53.621] [mylogger] [error] msg:{"type":4,"content":"","id1":2,"id2":1,"target_type":0} error:Unexpected end of buffer. Expected:
+[2024-08-11 20:53:48.016] [mylogger] [error] msg:{"type":4,"content":"","id1":1,"id2":1,"target_type":0} error:Unexpected end of buffer. Expected:
+[2024-08-11 21:04:27.653] [mylogger] [error] msg:{"type":4,"content":"","id1":1,"id2":1,"target_type":0} error:Unexpected end of buffer. Expected:
+[2024-08-11 21:17:01.513] [mylogger] [error] msg:{"type":4,"content":"","id1":1,"id2":1,"target_type":0} error:Unexpected end of buffer. Expected:

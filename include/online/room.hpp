@@ -2,28 +2,44 @@
 #include"stdafx.h"
 #include"net/message.hpp"
 #include"online/user_info.hpp"
+#include"boost/static_string.hpp"
 namespace bw::online {
-	class room_info {
+	struct room_info {
 	public:
-		room_info() = default;
-		room_info(int room_id, int room_owner, std::string room_name, int room_state) 
-			:id(room_id), owner(room_owner), name(room_name), state(room_state) {};
-		int id = -1, owner = 0;
-		std::string name = "Default";
-		int state = none;
-		int gamersize = 0;
+		int id, owner;
+		char name[15];
+		int state;
+		int gamersize;
 		enum { gaming, end, prepared, none };
-		virtual ~room_info() = default;
 		enum { outdated, latest };
-		int infostate = outdated;
+		int infostate;
 	};
+	inline room_info default_room_info() {
+		return room_info{
+			.id = 0,
+			.owner = 0,
+			.name = "Default",
+			.state = room_info::none,
+			.gamersize = 0,
+			.infostate = room_info::outdated,
+		};
+		std::is_trivially_copyable<boost::static_string<15>>::value;
+	}
 	REFLECTION(room_info, id, owner, name, state, gamersize);
+	//struct room_info {
+	//public:
+	//	int id = -1, owner = 0;
+	//	std::string name = "Default";
+	//	int state = none;
+	//	int gamersize = 0;
+	//	enum { gaming, end, prepared, none };
+	//	//virtual ~room_info() = default;
+	//	enum { outdated, latest };
+	//	int infostate = outdated;
+	//};
+	
 	inline std::string_view state_str[] = { "game","end","preparaed","none" };
 	using room_info_ptr = std::shared_ptr<room_info>;
-	class room :public room_info {
-	public:
-
-	};
 	class hall_info {
 	public:
 		std::string address = "localhost";

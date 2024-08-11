@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include"stdafx.h"
+#include"signals.hpp"
 #include"tui/components.hpp"
 #include"online/user.hpp"
 #include"othello/gamer/online.hpp"
@@ -7,6 +8,7 @@
 #include"tictactoe/gamer/online.hpp"
 #include"tictactoe/components.hpp"
 namespace bw::online::components {
+	
 	struct SideBar {
 		SideBar(user_ptr G, ftxui::ScreenInteractive& scr) :self(G), screen(scr) {}
 		ftxui::Component MakeEditNameWindow() {
@@ -39,6 +41,7 @@ namespace bw::online::components {
 				.resize_right = true,
 				.resize_top = false,
 				.resize_down = false,
+				.render = &ui::AlwaysActiveRenderState,
 				});
 			return Maybe(EditNameWindow, &showEditNameWindow);
 		}
@@ -50,7 +53,7 @@ namespace bw::online::components {
 			/*Name show and edit*/
 			NameBuf = self->name;
 			auto ShowName = Renderer([this] {return text(std::format("{}: {}", gettext("Name"), self->name)); }) | center | borderRounded;
-			auto ShowRoom = Renderer([this] {return text(std::format("{}:{}", gettext("Room ID"), self->roomid > 0 ? std::to_string(self->roomid) : gettext("None"))); }) | center | borderRounded;
+			auto ShowRoom = Renderer([this] {return text(std::format("{}:{}", gettext("Room ID"), self->crt_room_info.load().id > 0 ? std::to_string(self->crt_room_info.load().id) : gettext("None"))); }) | center | borderRounded;
 			if (!EditNameWindow) throw std::runtime_error("Invalid Component!");
 			auto EditBut = Button(gettext("Edit Name"), [this] {
 				showEditNameWindow = true;
@@ -86,126 +89,244 @@ namespace bw::online::components {
 	};
 	struct RoomInfoPages {
 		RoomInfoPages(user_ptr G,ftxui::ScreenInteractive& scr) :self(G),screen(scr) {}
-		ftxui::Component MakeRoomInfoJoinButton(int room_id) {
+		//ftxui::Component MakeRoomInfoJoinButton(int room_id) {
+		//	using namespace ftxui;
+		//	return ftxui::Button(gettext("Join"), [this, room_id] {
+		//		if (self->infostate == user::latest && self->hall.infostate == hall_info::latest) {
+		//			if (self->in_room()) {
+		//				ui::msgbox(gettext("You are already in a room."));
+		//			}
+		//			else {
+		//				self->try_join_room(room_id);
+		//			}
+		//		}
+		//		else {
+		//			ui::msgbox(gettext("Please refresh the information and retry."));
+		//		}
+		//		}, ButtonOption::Animated(Color::Green, Color::White, Color::GreenLight, Color::White));
+		//}
+		//ftxui::Component MakeRoomInfoQuitButton() {
+		//	using namespace ftxui;
+		//	return ftxui::Button(gettext("Quit"), [this] {
+		//		if (self->infostate == user::latest && self->hall.infostate == hall_info::latest) {
+		//			self->try_leave();
+		//		}
+		//		else {
+		//			ui::msgbox(gettext("Please refresh the information and retry."));
+		//		}
+		//		}, ButtonOption::Animated(Color::Red, Color::White, Color::RedLight, Color::White));
+		//}
+		//ftxui::Component MakeRoomInfoEntry(int room_id) {
+		//	using namespace ftxui;
+		//	auto but = (room_id != self->roomid ? MakeRoomInfoJoinButton(room_id) : MakeRoomInfoQuitButton()) | center;
+		//	return Renderer(but, [but, room_id, this] {
+		//		auto& rinfo = self->hall.rooms.at(room_id);
+		//		return vbox(hbox(
+		//			text(std::to_string(rinfo.id)) | center | size(WIDTH, GREATER_THAN, 4),
+		//			separator(),
+		//			text(rinfo.name) | center | size(WIDTH, GREATER_THAN, 8),
+		//			separator(),
+		//			text(std::to_string(rinfo.gamersize)) | center | size(WIDTH, GREATER_THAN, 5),
+		//			separator(),
+		//			text(state_str[rinfo.state].data()) | center | size(WIDTH, GREATER_THAN, 7),
+		//			separator(),
+		//			but->Render() | center | size(WIDTH, GREATER_THAN, 11)
+		//		), separator());
+		//		});
+		//}
+		//void RefreshRoomInfoEntries() {
+		//	if (RoomInfoEntries->ChildCount())
+		//		RoomInfoEntries->DetachAllChildren();
+		//	for (int i = 1; i < self->hall.rooms.size(); ++i) {
+		//		RoomInfoEntries->Add(MakeRoomInfoEntry(i));
+		//	}
+		//	RoomInfoEntries->TakeFocus();
+		//}
+		//ftxui::Component MakeWindow(bool& showRoomChatPage, bool& showRoomChatTaskBar) {
+		//	using namespace ftxui;
+		//	auto RoomInfosTitle = Renderer([] {
+		//		auto style = ftxui::color(Color::BlueLight) | center;
+		//		return hbox(
+		//			text(gettext("ID")) | style | size(WIDTH, GREATER_THAN, 4),
+		//			separator(),
+		//			text(gettext("Name")) | style | size(WIDTH, GREATER_THAN, 8),
+		//			separator(),
+		//			text(gettext("Num")) | style | size(WIDTH, GREATER_THAN, 5),
+		//			separator(),
+		//			text(gettext("State")) | style | size(WIDTH, GREATER_THAN, 7),
+		//			separator(),
+		//			text(gettext("Operation")) | style | size(WIDTH, GREATER_THAN, 11)
+		//		) | center;
+		//		});
+		//	RoomInfoEntries = ftxui::Container::Vertical({});
+		//	RefreshRoomInfoEntries();
+		//	auto RefreshRoomInfoBut = Button(gettext("Refresh"), [this] {
+		//		self->get("room_info");
+		//		self->infostate = user::outdated;
+		//		self->hall.infostate = hall_info::outdated;
+		//		RefreshRoomInfoEntries();
+		//		}, ButtonOption::Animated(Color::Blue, Color::White, Color::BlueLight, Color::White)) | center;
+		//	auto HideRoomInfoBut = Button(gettext("Hide"), [this] { showRoomInfoPage = false; }, ButtonOption::Animated(Color::GrayLight)) | center;
+		//	Component RoomInfoInner = ftxui::Container::Vertical({
+		//		Renderer([] {return text(gettext("Operations take effect after refreshing.")) | center; }),
+		//		ftxui::Container::Horizontal({RefreshRoomInfoBut,HideRoomInfoBut}) | center,
+		//		RoomInfosTitle | center | border,
+		//		RoomInfoEntries /*| Renderer([](Element e) {return e; })*/ | vscroll_indicator | frame | flex | border | center
+		//		}) | CatchEvent([this, &showRoomChatPage, &showRoomChatTaskBar](Event e) {
+		//			if (e == Event::Special("RefreshRoomInfo")) {
+		//				RefreshRoomInfoEntries();
+		//				if (self->roomid <= 0) {
+		//					showRoomChatPage = false;
+		//					showRoomChatTaskBar = false;
+		//				}
+		//				else {
+		//					showRoomChatPage = true;
+		//					showRoomChatTaskBar = true;
+		//				}
+		//				return true;
+		//			}
+		//			else {
+		//				return RoomInfoEntries->OnEvent(e);
+		//			}
+		//		});
+		//	auto RoomInfoWindow = Window({
+		//		.inner = RoomInfoInner,
+		//		.title = gettext("Room Information"),
+		//		.left = 25,
+		//		.top = 2,
+		//		.width = &RoomInfoWidth,
+		//		.height = &RoomInfoHeight,
+		//		.resize_left = false,
+		//		.resize_right = false,
+		//		.render = &ui::AlwaysActiveRenderState,
+		//		});
+		//	return Maybe(RoomInfoWindow, &showRoomInfoPage);
+		//}
+		ftxui::Component MakeWindow_v2(bool& showRoomChatPage, bool& showRoomChatTaskBar) {
 			using namespace ftxui;
-			return ftxui::Button(gettext("Join"), [this, room_id] {
-				if (self->infostate == user::latest && self->hall.infostate == hall_info::latest) {
-					if (self->roomid != 0) {
-						ui::msgbox(gettext("You are already in a room."));
-					}
-					else {
-						self->try_join_room(room_id);
-					}
+			auto CurrentRoomInfo = Renderer([this, &showRoomChatPage, &showRoomChatTaskBar] {
+				auto rinfo = self->crt_room_info.load();
+				bool in_any_room = rinfo.id != 0;
+				if ( showRoomChatPage == false && in_any_room) {
+					showRoomChatPage = true;
+					showRoomChatTaskBar = true;
 				}
-				else {
-					ui::msgbox(gettext("Please refresh the information and retry."));
+				if (in_any_room) {
+					showRoomChatPage = false;
+					showRoomChatTaskBar = false;
 				}
-				}, ButtonOption::Animated(Color::Green, Color::White, Color::GreenLight, Color::White));
-		}
-		ftxui::Component MakeRoomInfoQuitButton() {
-			using namespace ftxui;
-			return ftxui::Button(gettext("Quit"), [this] {
-				if (self->infostate == user::latest && self->hall.infostate == hall_info::latest) {
-					self->try_leave();
-				}
-				else {
-					ui::msgbox(gettext("Please refresh the information and retry."));
-				}
-				}, ButtonOption::Animated(Color::Red, Color::White, Color::RedLight, Color::White));
-		}
-		ftxui::Component MakeRoomInfoEntry(int room_id) {
-			using namespace ftxui;
-			auto but = (room_id != self->roomid ? MakeRoomInfoJoinButton(room_id) : MakeRoomInfoQuitButton()) | center;
-			return Renderer(but, [but, room_id, this] {
-				auto& rinfo = self->hall.rooms.at(room_id);
-				return vbox(hbox(
-					text(std::to_string(rinfo.id)) | center | size(WIDTH, GREATER_THAN, 4),
-					separator(),
-					text(rinfo.name) | center | size(WIDTH, GREATER_THAN, 8),
-					separator(),
-					text(std::to_string(rinfo.gamersize)) | center | size(WIDTH, GREATER_THAN, 5),
-					separator(),
-					text(state_str[rinfo.state].data()) | center | size(WIDTH, GREATER_THAN, 7),
-					separator(),
-					but->Render() | center | size(WIDTH, GREATER_THAN, 11)
-				), separator());
-				});
-		}
-		void RefreshRoomInfoEntries() {
-			if (RoomInfoEntries->ChildCount())
-				RoomInfoEntries->DetachAllChildren();
-			for (int i = 1; i < self->hall.rooms.size(); ++i) {
-				RoomInfoEntries->Add(MakeRoomInfoEntry(i));
-			}
-			RoomInfoEntries->TakeFocus();
-		}
-		ftxui::Component MakeWindow(bool& showRoomChatPage, bool& showRoomChatTaskBar) {
-			using namespace ftxui;
-			auto RoomInfosTitle = Renderer([] {
 				auto style = ftxui::color(Color::BlueLight) | center;
-				return hbox(
-					text(gettext("ID")) | style | size(WIDTH, GREATER_THAN, 4),
-					separator(),
-					text(gettext("Name")) | style | size(WIDTH, GREATER_THAN, 8),
-					separator(),
-					text(gettext("Num")) | style | size(WIDTH, GREATER_THAN, 5),
-					separator(),
-					text(gettext("State")) | style | size(WIDTH, GREATER_THAN, 7),
-					separator(),
-					text(gettext("Operation")) | style | size(WIDTH, GREATER_THAN, 11)
-				) | center;
+				return
+					hbox(
+						vbox(
+							emptyElement() | flex,
+							text(gettext("Current Room:")) | borderRounded
+						) | center,
+						vbox(
+							hbox(
+								text(gettext("ID")) | style | size(WIDTH, GREATER_THAN, 4),
+								separator(),
+								text(gettext("Name")) | style | size(WIDTH, GREATER_THAN, 8),
+								separator(),
+								text(gettext("Num")) | style | size(WIDTH, GREATER_THAN, 5),
+								separator(),
+								text(gettext("State")) | style | size(WIDTH, GREATER_THAN, 7)
+							),
+							separator(),
+							hbox(
+								text(in_any_room ? std::to_string(rinfo.id) : gettext("None")) | center | size(WIDTH, GREATER_THAN, 4),
+								separator(),
+								text(in_any_room ? rinfo.name : gettext("None")) | center | size(WIDTH, GREATER_THAN, 8),
+								separator(),
+								text(in_any_room ? std::to_string(rinfo.gamersize) : gettext("None")) | center | size(WIDTH, GREATER_THAN, 5),
+								separator(),
+								text(in_any_room ? state_str[rinfo.state].data() : gettext("None")) | center | size(WIDTH, GREATER_THAN, 7)
+							)
+						) | border | center
+					);
 				});
-			RoomInfoEntries = ftxui::Container::Vertical({});
-			RefreshRoomInfoEntries();
-
-			auto RefreshRoomInfoBut = Button(gettext("Refresh"), [this] {
-				self->get("room_info");
-				self->infostate = user::outdated;
-				self->hall.infostate = hall_info::outdated;
-				RefreshRoomInfoEntries();
-				}, ButtonOption::Animated(Color::Blue, Color::White, Color::BlueLight, Color::White)) | center;
-			auto HideRoomInfoBut = Button(gettext("Hide"), [this] { showRoomInfoPage = false; }, ButtonOption::Animated(Color::GrayLight)) | center;
-			Component RoomInfoInner = ftxui::Container::Vertical({
-				Renderer([] {return text(gettext("Operations take effect after refreshing.")) | center; }),
-				ftxui::Container::Horizontal({RefreshRoomInfoBut,HideRoomInfoBut}) | center,
-				RoomInfosTitle | center | border,
-				RoomInfoEntries /*| Renderer([](Element e) {return e; })*/ | vscroll_indicator | frame | flex | border | center
-				}) | CatchEvent([this, &showRoomChatPage, &showRoomChatTaskBar](Event e) {
-					if (e == Event::Special("RefreshRoomInfo")) {
-						RefreshRoomInfoEntries();
-						if (self->roomid <= 0) {
-							showRoomChatPage = false;
-							showRoomChatTaskBar = false;
+			auto SearchResult = Renderer([this] {
+				auto rinfo = self->search_rinfo_res.load();
+				return
+					hbox(
+						text(gettext("Result:")) | borderRounded | center,
+						hbox(
+							text(std::to_string(rinfo.id)) | center | size(WIDTH, GREATER_THAN, 4),
+							separator(),
+							text(rinfo.name) | center | size(WIDTH, GREATER_THAN, 8),
+							separator(),
+							text(std::to_string(rinfo.gamersize)) | center | size(WIDTH, GREATER_THAN, 5),
+							separator(),
+							text(state_str[rinfo.state].data()) | center | size(WIDTH, GREATER_THAN, 7)
+						) | border | center
+					) | center;
+				});
+			auto OperationPannel = Container::Horizontal({
+				ui::TextComp(gettext("Room ID:")) | center,
+				Input(&search_str,gettext("Enter Room ID")) | border | 
+				CatchEvent([&](Event event) {
+					return event.is_character() && !std::isdigit(event.character()[0]);
+				})|CatchEvent([&](Event event) {
+					return event.is_character() && search_str.size() > 5;
+				}),
+				Button(gettext("Search"), [this] {
+					if(!search_str.empty())
+						self->get("search_room_info",{std::stoi(search_str)});
+				}, ButtonOption::Animated(Color::Blue, Color::White, Color::BlueLight, Color::White)) | center,
+				Button(gettext("Join"), [this] {
+					if (self->infostate == user::latest) {
+						if (self->in_room()) {
+							ui::msgbox(gettext("You are already in a room."));
 						}
 						else {
-							showRoomChatPage = true;
-							showRoomChatTaskBar = true;
+							self->infostate = user::outdated;
+							self->try_join_room(std::stoi(search_str));
 						}
-						return true;
 					}
 					else {
-						return RoomInfoEntries->OnEvent(e);
+						ui::msgbox(gettext("Please wait for the information update to be completed."));
 					}
+				}, ButtonOption::Animated(Color::Green, Color::White, Color::GreenLight, Color::White)),
+				Button(gettext("Quit"), [this] {
+					if (self->infostate == user::latest && self->in_room()) {
+						self->infostate = user::outdated;
+						self->try_leave();
+					}
+					else {
+						ui::msgbox(gettext("Please wait for the information update to be completed."));
+					}
+				}, ButtonOption::Animated(Color::Red, Color::White, Color::RedLight, Color::White)),
+				Button(gettext("Refresh"), [this] {
+					self->infostate = user::outdated;
+					self->get("current_room_info");
+				}, ButtonOption::Animated(Color::Blue, Color::White, Color::BlueLight, Color::White)) | center
+				});
+			auto RoomInfoInner = Container::Vertical({
+				CurrentRoomInfo | center,
+				SearchResult | center,
+				OperationPannel | center,
 				});
 			auto RoomInfoWindow = Window({
 				.inner = RoomInfoInner,
 				.title = gettext("Room Information"),
-				.left = 25,
-				.top = 2,
+				.left = &RoomInfoX,
+				.top = &RoomInfoY,
 				.width = &RoomInfoWidth,
 				.height = &RoomInfoHeight,
-				.resize_left = false,
-				.resize_right = false,
+				.render = &ui::AlwaysActiveRenderState,
 				});
 			return Maybe(RoomInfoWindow, &showRoomInfoPage);
 		}
 		user_ptr self;
-		int RoomInfoHeight = 38;
-		int RoomInfoWidth = 44;
+		int RoomInfoHeight = 13;
+		int RoomInfoWidth = 62;
+		int RoomInfoX = 2;
+		int RoomInfoY = 1;
+		int search_room_id = 1;
+		std::string search_str;
 		ftxui::ScreenInteractive& screen;
 		ftxui::Component RoomInfoEntries;
 		bool showRoomInfoPage = true;
-		
 	};
 	struct RoomChatPages {
 		RoomChatPages(user_ptr G) :self(G) {};
@@ -234,7 +355,7 @@ namespace bw::online::components {
 			using namespace ftxui;
 			auto InputChatComp = Input(&chatmsg, gettext("Enter your message here"), InputOption::Spacious());
 			auto SendChatBut = Button(gettext("Send"), [this] {
-				if (self->roomid > 0) {
+				if (self->in_room()) {
 					if (chatmsg != "") {
 						self->broadcast(chatmsg);
 						chatmsg = "";
@@ -248,7 +369,7 @@ namespace bw::online::components {
 			auto SendChatCom = ftxui::Container::Vertical({
 				InputChatComp,
 				Renderer(SendChatBut, [SendChatBut] {
-					return hbox(text(gettext("Press enter to line feed.")) | center, SendChatBut->Render() | center | align_right);
+					return hbox(text(gettext("Press enter to line feed.")) , SendChatBut->Render() | align_right | vcenter) | xflex_grow;
 				})
 				});
 			
@@ -270,10 +391,11 @@ namespace bw::online::components {
 			auto RoomChatWindow = Window({
 				.inner = content,
 				.title = gettext("Chat"),
-				.left = 71,
-				.top = 4,
-				.width = 80,
-				.height = 30,
+				.left = &RoomChatPageX,
+				.top = &RoomChatPageY,
+				.width = &RoomChatPageWidth,
+				.height = &RoomChatPageHeight,
+				.render = &ui::AlwaysActiveRenderState,
 				});
 			return Maybe(RoomChatWindow, &show_content);
 		}
@@ -283,10 +405,12 @@ namespace bw::online::components {
 			self->chat_mutex.acquire();
 			auto msgq = self->chat_msg_queue;
 			self->chat_mutex.release();
-			for (int i = 0; i < msgq.size() - 1; ++i) {
-				RoomChatMsgs->Add(MakeChatMsg(msgq[i]));
+			if (!msgq.empty()) {
+				for (int i = 0; i < msgq.size() - 1; ++i) {
+					RoomChatMsgs->Add(MakeChatMsg(msgq[i]));
+				}
+				RoomChatMsgs->Add(MakeChatMsg(msgq.back())/* | ftxui::focus*/);
 			}
-			RoomChatMsgs->Add(MakeChatMsg(msgq.back())/* | ftxui::focus*/);
 			RoomChatMsgs->TakeFocus();
 		}
 		void AddRoomChatMsg() {
@@ -299,6 +423,10 @@ namespace bw::online::components {
 		}
 		user_ptr self;
 		int SendChatSize = 7;
+		int RoomChatPageX = 71;
+		int RoomChatPageY = 4;
+		int RoomChatPageWidth = 65;
+		int RoomChatPageHeight = 25;
 		std::string chatmsg;
 		ftxui::Component content, RoomChatMsgs = ftxui::Container::Vertical({});
 		bool show_content = false;
@@ -322,92 +450,88 @@ namespace bw::online::components {
 			//othello
 			auto othello_Game = std::make_shared<othello::components::Game>(self->get_executor());
 			Games.push_back(othello_Game);
-			tab_content->Add(othello_Game->OnlinePrepareCom(
-				[this, othello_Game] {
-					self->Game_ptr = othello_Game;
-					basic_gamer_info info(core::none, self->id, self->name, basic_gamer::online, core::gameid::othello);
-					std::string infostr;
-					struct_json::to_json(info, infostr);
-					self->deliver(wrap(
-						game_msg{
-							.type = game_msg::prepare,
-							.id = self->id,
-							.movestr = infostr,
-							.board = std::format("{} {}", "othello", othello_Game->board_size),
-						},
-						msg_t::game
-					));
-				}
-			));
+			tab_content->Add(othello_Game->OnlinePrepareCom(self));
 
 			//tictactoe
 			auto tictactoe_Game = std::make_shared<tictactoe::components::Game>(self->get_executor());
 			Games.push_back(tictactoe_Game);
-			tab_content->Add(tictactoe_Game->OnlinePrepareCom(
-				[this, tictactoe_Game] {
-					self->Game_ptr = tictactoe_Game;
-					basic_gamer_info info(core::none, self->id, self->name, basic_gamer::online, core::gameid::tictactoe);
-					std::string infostr;
-					struct_json::to_json(info, infostr);
-					self->deliver(wrap(
-						game_msg{
-							.type = game_msg::prepare,
-							.id = self->id,
-							.movestr = infostr,
-							.board = std::format("{}", "tictactoe"),
-						},
-						msg_t::game
-						));
-				}
-			));
-
-
-
-
+			tab_content->Add(tictactoe_Game->OnlinePrepareCom(self));
+			//END
 			auto exit_button = ftxui::Button(
-				gettext("Hide"), [this] { showGamePreparePages = false; }, ftxui::ButtonOption::Animated());
+				gettext("Hide"), [this] { showGameWindow = false; }, ftxui::ButtonOption::Animated());
 
 			auto main_container =
 				ftxui::Container::Vertical({
-					ftxui::Container::Horizontal({
-						tab_selection,
-						exit_button,
-					}),
-					tab_content,
-					});
+					tab_selection | ftxui::center,
+					tab_content | ftxui::center,
+					exit_button | ftxui::center,
+				});
 			return main_container;
 		}
 		ftxui::Component MakeGamePage() {
-			using namespace ftxui;  
-			return GamePageCom | CatchEvent([this](Event e) {
-				if (e == Event::Special("StartGame")) {
-					GamePageCom->DetachAllChildren();
-					gm_ptr = Game_ptr->generate_game(screen);
-					GamePageCom->Add(Game_ptr->GamePage(screen, gm_ptr));
-					boost::cobalt::spawn(*self->get_executor(), gm_ptr->start(), boost::asio::detached);
-					showGamePage = true;
-					screen.PostEvent(Event::Custom);
-					return true;
-				}
-				else {
-					return GamePageCom->OnEvent(e);
-				}
-				}) | ui::EnableMessageBox();
+			using namespace ftxui;
+			signals::start_game.connect([this]() {
+				GamePageCom->DetachAllChildren();
+				self->gm_ptr = self->Game_ptr->generate_game(screen);
+				GamePageCom->Add(self->Game_ptr->OnlineGamePage(screen, self->gm_ptr));
+				boost::cobalt::spawn(*self->get_executor(), self->gm_ptr->start(), boost::asio::detached);
+				self->state = user_st::gaming;
+				screen.PostEvent(Event::Custom);
+			});
+			signals::end_game.connect([this]() {
+				self->gm_ptr->end_game();
+				self->deliver(wrap(
+					game_msg{
+						.type = game_msg::end,
+						.id = game_msg::gamer_quit_or_disconnect,
+					},
+					msg_t::game
+				));
+				ui::msgbox(gettext("The game ends."));
+				self->state = user_st::free;
+			});
+			return GamePageCom;
+		}
+		ftxui::Component MakeWindow() {
+			using namespace ftxui;
+			auto _st_str = gettext("State");
+			std::vector<std::string> state_str_map = { gettext("Matching"),gettext("Gaming"),gettext("Free") };
+			Component Content = ResizableSplitRight(
+				MakeGamePage() | center,
+				Container::Vertical({
+					MakeGamePreparePages() | hcenter,
+					Renderer([this, _st_str, state_str_map] {return text(std::format("{}: {}",_st_str,state_str_map[self->state])) | border; }),
+				}),
+				&RightSize
+			);
+			return Maybe(Window({
+				.inner = Content,
+				.title = gettext("Game"),
+				.left = &GamePageX,
+				.top = &GamePageY,
+				.width = &GamePageWidth,
+				.height = &GamePageHeight,
+				.render = &ui::AlwaysActiveRenderState,
+				}), &showGameWindow);
 		}
 		user_ptr self;
 		int game_index = 0;
+		int GamePageX = 2;
+		int GamePageY = 15;
+		int GamePageWidth = 80;
+		int GamePageHeight = 30;
+		int RightSize = 65;
 		ftxui::ScreenInteractive& screen;
 		ftxui::Component GamePageCom, GamePreparePage;
-		bool showGamePreparePages = false;
+		bool showGameWindow = true;
 		bool showGamePage = false;
-		basic_game_ptr gm_ptr;
-		basic_Game_ptr Game_ptr;
 		std::vector<basic_Game_ptr> Games;
 		std::vector<std::string> tab_entries;
 	};
 	class HallPages {
 	public:
 		HallPages() :
+			GamePageCom(self,screen),
 			RoomInfoPagesCom(self, screen),
 			RoomChatPagesCom(self),
 			SideBarComp(self, screen),
@@ -427,6 +551,8 @@ namespace bw::online::components {
 		RoomInfoPages RoomInfoPagesCom;
 
 		RoomChatPages RoomChatPagesCom;
+
+		GamePage GamePageCom;
 
 		ftxui::Component MakeTaskBut(bool& showflag, std::string button_name) {
 			using namespace ftxui;
@@ -468,7 +594,7 @@ namespace bw::online::components {
 			std::condition_variable cond;
 			std::mutex m;
 			bool flag = false;
-			self->add_filter("wait_response",
+			boost::signals2::scoped_connection c(self->read_msg.connect(
 				[&cond, &flag](const message& msg) {
 					if (msg.type == msg_t::control) {
 						control_msg con_m;
@@ -478,9 +604,8 @@ namespace bw::online::components {
 							flag = true;
 						}
 					}
-				}
+				})
 			);
-
 			if (global_config->first_login) {
 				std::string loginName = global_config->default_name;
 				bool setDefault = true;
@@ -504,13 +629,17 @@ namespace bw::online::components {
 			self->name = global_config->default_name;
 			self->login();
 
-			boost::system::error_code ec;
-			std::unique_lock lock(m);
-			cond.wait_for(lock, 5s);
+			if (flag == false) {
+				boost::system::error_code ec;
+				std::unique_lock lock(m);
+				cond.wait_for(lock, 5s);
+			}
 			return flag;
 		}
 	};
 	void HallPages::startHallPages() {
+		signals::start_game.disconnect_all_slots();
+		signals::end_game.disconnect_all_slots();
 		using namespace ftxui;
 		self->scr_ptr = std::make_shared<bw::components::ftxui_screen>(&screen);
 		ConnectServer();
@@ -530,7 +659,7 @@ namespace bw::online::components {
 		Windows = ftxui::Container::Stacked({});
 
 		/*Room info*/
-		Windows->Add(RoomInfoPagesCom.MakeWindow(RoomChatPagesCom.show_content, RoomChatPagesCom.showRoomChatTaskBar));
+		Windows->Add(RoomInfoPagesCom.MakeWindow_v2(RoomChatPagesCom.show_content, RoomChatPagesCom.showRoomChatTaskBar));
 		Taskbar->Add(MakeTaskBut(RoomInfoPagesCom.showRoomInfoPage, gettext("Rooms")));
 		/*END*/
 
@@ -540,8 +669,8 @@ namespace bw::online::components {
 		/*END*/
 
 		/*Room Game Page*/
-		//GamePreparePage = MakeGamePreparePages();
-		//Windows->Add(Maybe(GamePreparePage, &showGamePreparePages));
+		Windows->Add(GamePageCom.MakeWindow());
+		Taskbar->Add(MakeTaskBut(GamePageCom.showGameWindow, gettext("Game")));
 		/*END*/
 
 		int sizeleft = 20;

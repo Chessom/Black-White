@@ -14,6 +14,7 @@ namespace bw {
 		}
 		virtual boost::cobalt::task<void> start() = 0;
 		int& state() { return st; }
+		virtual void end_game() = 0;
 		virtual ~basic_game() = default;
 	protected:
 		virtual void suspend() {};

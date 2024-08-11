@@ -115,4 +115,91 @@ namespace bw::ui {
 		};
 		return ftxui::Make<Impl>();
 	}
+	class NodeDecorator : public ftxui::Node {
+	public:
+		explicit NodeDecorator(ftxui::Element child) : Node(unpack(std::move(child))) {}
+		void ComputeRequirement() override {
+			Node::ComputeRequirement();
+			requirement_ = children_[0]->requirement();
+		}
+		void SetBox(ftxui::Box box) override {
+			Node::SetBox(box);
+			children_[0]->SetBox(box);
+		}
+	};
+	class ResizeDecorator : public NodeDecorator {
+	public:
+		ResizeDecorator(ftxui::Element child,
+			bool resize_left,
+			bool resize_right,
+			bool resize_top,
+			bool resize_down,
+			ftxui::Color color)
+			: NodeDecorator(std::move(child)),
+			color_(color),
+			resize_left_(resize_left),
+			resize_right_(resize_right),
+			resize_top_(resize_top),
+			resize_down_(resize_down) {}
+
+		void Render(ftxui::Screen& screen) override {
+			NodeDecorator::Render(screen);
+
+			if (resize_left_) {
+				for (int y = box_.y_min; y <= box_.y_max; ++y) {
+					auto& cell = screen.PixelAt(box_.x_min, y);
+					cell.foreground_color = color_;
+					cell.automerge = false;
+				}
+			}
+			if (resize_right_) {
+				for (int y = box_.y_min; y <= box_.y_max; ++y) {
+					auto& cell = screen.PixelAt(box_.x_max, y);
+					cell.foreground_color = color_;
+					cell.automerge = false;
+				}
+			}
+			if (resize_top_) {
+				for (int x = box_.x_min; x <= box_.x_max; ++x) {
+					auto& cell = screen.PixelAt(x, box_.y_min);
+					cell.foreground_color = color_;
+					cell.automerge = false;
+				}
+			}
+			if (resize_down_) {
+				for (int x = box_.x_min; x <= box_.x_max; ++x) {
+					auto& cell = screen.PixelAt(x, box_.y_max);
+					cell.foreground_color = color_;
+					cell.automerge = false;
+				}
+			}
+		}
+
+		ftxui::Color color_;
+		const bool resize_left_;
+		const bool resize_right_;
+		const bool resize_top_;
+		const bool resize_down_;
+	};
+
+	inline ftxui::Element AlwaysActiveRenderState(const ftxui::WindowRenderState& state) {
+		using namespace ftxui;
+		ftxui::Element element = state.inner;
+
+		element = window(ftxui::text(state.title), element);
+		element |= ftxui::clear_under;
+
+		const Color color = Color::Red;
+
+		element = std::make_shared<ResizeDecorator>(  //
+			element,                                  //
+			state.hover_left,                         //
+			state.hover_right,                        //
+			state.hover_top,                          //
+			state.hover_down,                         //
+			color                                     //
+		);
+
+		return element;
+	}
 }

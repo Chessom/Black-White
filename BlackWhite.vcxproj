@@ -157,7 +157,7 @@
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Disabled</Optimization>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
     </ClCompile>
     <Link>
@@ -184,7 +184,7 @@
       <MinimalRebuild>false</MinimalRebuild>
       <AdditionalOptions>/utf-8 /bigobj %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Disabled</Optimization>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <ControlFlowGuard>false</ControlFlowGuard>
@@ -209,6 +209,7 @@
     <ClInclude Include="include\config.hpp" />
     <ClInclude Include="include\core.hpp" />
     <ClInclude Include="include\env.hpp" />
+    <ClInclude Include="include\exceptions.hpp" />
     <ClInclude Include="include\game.hpp" />
     <ClInclude Include="include\basic_Game.hpp" />
     <ClInclude Include="include\gamer.hpp" />
@@ -224,6 +225,7 @@
     <ClInclude Include="include\online\basic_online_gamer.hpp" />
     <ClInclude Include="include\online\basic_user.hpp" />
     <ClInclude Include="include\online\components.hpp" />
+    <ClInclude Include="include\online\signals.hpp" />
     <ClInclude Include="include\online\user.hpp" />
     <ClInclude Include="include\online\user_info.hpp" />
     <ClInclude Include="include\online\room.hpp" />
@@ -264,9 +266,7 @@
     <ClInclude Include="include\utility.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="ClassDiagram.cd" />
-    <None Include="ClassDiagram1.cd" />
-    <None Include="ClassDiagram2.cd" />
+    <None Include="README.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

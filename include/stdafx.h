@@ -61,5 +61,6 @@
 #include<boost/locale.hpp>
 #include<boost/cobalt.hpp>
 #include<boost/asio.hpp>
+#include<boost/signals2.hpp>
 
 #include<spdlog/spdlog.h>

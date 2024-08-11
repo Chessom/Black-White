@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include"globals.hpp"
+#include"online/signals.hpp"
 #include"tictactoe/game.hpp"
 #include"tictactoe/gamer/human.hpp"
 #include"tictactoe/gamer/computer.hpp"
@@ -140,7 +141,7 @@ namespace bw::tictactoe::components {
 	};
 	using Board = std::shared_ptr<BoardBase>;
 	
-	class Game :public basic_Game{
+	class Game :public basic_Game, public std::enable_shared_from_this<Game> {
 	public:
 		Game() { pctx = std::make_shared<boost::asio::io_context>(); }
 		Game(std::shared_ptr<boost::asio::io_context> context_ptr) :basic_Game(context_ptr) {};
@@ -157,7 +158,7 @@ namespace bw::tictactoe::components {
 			Board brd_ptr = Make<BoardBase>(pctx, gm);
 
 			Component buttons = Container::Vertical({
-				Button(censtr(gettext("Quit"), 8), [this,gm,&screen] {gm->endgame(); if (!pctx->stopped()) { pctx->stop(); } screen.Exit(); }, ButtonOption::Animated()) | center,
+				Button(censtr(gettext("Quit"), 8), [this,gm,&screen] {gm->end_game(); if (!pctx->stopped()) { pctx->stop(); } screen.Exit(); }, ButtonOption::Animated()) | center,
 				Renderer([] {return separator(); }),
 				Button(censtr(gettext("Regret"), 8), [&screen] {screen.PostEvent(Event::Special("Regret")); }, ButtonOption::Animated()) | center,
 				Renderer([] {return separator(); }),
@@ -175,15 +176,35 @@ namespace bw::tictactoe::components {
 				Renderer([this, gm] { return text(std::format("{}:{}",gettext("Current player"),gptr[gm->current_color()]->name)) | center; }),
 			});
 		}
-		ftxui::Component OnlinePrepareCom(std::function<void()> match_op) {
+		virtual ftxui::Component OnlinePrepareCom(online::basic_user_ptr uptr) override {
 			using namespace ftxui;
 			auto layout = Container::Vertical({
-				Button(gettext("Match"),[this, match_op]
+				ui::TextComp(gettext("TicTacToe")),
+				Button(gettext("Match"),[this, uptr]
 				{
 					static boost::asio::steady_timer tim(*pctx);
 					static std::atomic_flag flag;
+					auto tictactoe_Game = shared_from_this();
 					if (!flag.test()) {
-						match_op();
+						if (uptr->state != online::user_st::gaming) {
+							uptr->Game_ptr = tictactoe_Game;
+							basic_gamer_info info(core::none, uptr->id, uptr->name, basic_gamer::online, core::gameid::tictactoe);
+							std::string infostr;
+							struct_json::to_json(info, infostr);
+							uptr->deliver(wrap(
+								game_msg{
+									.type = game_msg::prepare,
+									.id = uptr->id,
+									.movestr = infostr,
+									.board = std::format("{} {}", "tictactoe","3"),
+								},
+								msg_t::game
+								));
+							uptr->state = online::user_st::prepared;
+						}
+						else {
+							ui::msgbox(gettext("Cannot match during game!"));
+						}
 						flag.test_and_set();
 						tim.expires_after(5s);
 						tim.async_wait([](boost::system::error_code ec) {
@@ -196,6 +217,31 @@ namespace bw::tictactoe::components {
 				},ButtonOption::Animated()) | center
 				});
 			return layout;
+		}
+		virtual ftxui::Component OnlineGamePage(ftxui::ScreenInteractive& screen, basic_game_ptr gm_ptr) {
+			using namespace ftxui;
+			assert(gptr[col0] != nullptr && gptr[col1] != nullptr);
+			std::shared_ptr<game> gm = std::dynamic_pointer_cast<game>(gm_ptr);
+			Board brd_ptr = Make<BoardBase>(pctx, gm);
+
+			Component buttons = Container::Vertical({
+				Button(censtr(gettext("Quit"), 8), [] {online::signals::end_game(); }, ButtonOption::Animated()) | center,
+				Renderer([] {return separator(); }),
+				Button(censtr(gettext("Regret"), 8), [&screen] {screen.PostEvent(Event::Special("Regret")); }, ButtonOption::Animated()) | center,
+				Renderer([] {return separator(); }),
+				Button(censtr(gettext("Suspend"), 8), [&screen] {screen.PostEvent(Event::Special("Suspend")); }, ButtonOption::Animated()) | center,
+				Renderer([] {return separator(); }),
+				Button(censtr(gettext("Save"), 8), [&screen] {screen.PostEvent(Event::Special("Save")); }, ButtonOption::Animated()) | center,
+				}) | ftxui::border;
+			Component brd = brd_ptr | center;
+			return
+				Container::Vertical({
+					Container::Horizontal({
+						buttons | center,
+						brd | center,
+					}),
+					Renderer([this, gm] { return text(std::format("{}:{}",gettext("Current player"),gptr[gm->current_color()]->name)) | center; }),
+					});
 		}
 		virtual void join(basic_gamer_ptr gp) override {
 			assert(gp != nullptr);
