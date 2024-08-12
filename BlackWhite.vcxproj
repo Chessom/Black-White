@@ -229,7 +229,6 @@
     <ClInclude Include="include\online\user.hpp" />
     <ClInclude Include="include\online\user_info.hpp" />
     <ClInclude Include="include\online\room.hpp" />
-    <ClInclude Include="include\online\simple.hpp" />
     <ClInclude Include="include\othello.hpp" />
     <ClInclude Include="include\othello\ai.hpp" />
     <ClInclude Include="include\othello\ai\practise.hpp" />

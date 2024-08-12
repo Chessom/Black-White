@@ -15,8 +15,6 @@ namespace bw::othello {
 		online_gamer(color Color, int ID = 0, const std::string& Name = "Anonymous")
 			:gamer(Color, ID, Name, online) {};
 		boost::cobalt::task<move> getmove(dynamic_brd& brd, std::chrono::seconds limit = 0s) {
-			mvs.update(brd, col);
-			move mv;
 			if (limit == 0s) {
 				rd_dq->tim.expires_at(std::chrono::steady_clock::time_point::max());
 			}
@@ -25,22 +23,24 @@ namespace bw::othello {
 			}
 			while (true) {
 				boost::system::error_code ec;
-				co_await rd_dq->tim.async_wait(boost::asio::redirect_error(boost::cobalt::use_op, ec));
-
-				while (!rd_dq->q.empty()) {
-					struct_json::from_json(mv, rd_dq->q.front());
-					rd_dq->q.pop_front();
-					if (mv.mvtype == move::mv) {
-						if (mvs.find(mv.pos) != moves::npos) {
-							co_return mv;
-						}
-					}
-					else {
+				if (rd_dq->q.empty()) {
+					co_await rd_dq->tim.async_wait(boost::asio::redirect_error(boost::cobalt::use_op, ec));
+					continue;
+				}
+				move mv;
+				struct_json::from_json(mv, rd_dq->q.front());
+				rd_dq->q.pop_front();
+				mvs.update(brd, col);
+				if (mv.mvtype == move::mv) {
+					if (mvs.find(mv.pos) != moves::npos) {
 						co_return mv;
 					}
 				}
+				else {
+					co_return mv;
+				}
 			}
-			co_return mv;
+			co_return move{};
 		}
 		string get_name() { return name; }
 		boost::cobalt::task<void> pass_msg(std::string msg) override {
@@ -62,7 +62,7 @@ namespace bw::othello {
 			if (mv.mvtype == move::str) {
 				co_await pass_msg(mv.msg);
 			}
-			else {
+			else if (u_ptr->state == online::user_st::gaming) {
 				mvstr = "";
 				struct_json::to_json(mv, mvstr);
 				u_ptr->deliver(wrap(

@@ -9,3 +9,9 @@
 [2024-08-11 20:53:48.016] [mylogger] [error] msg:{"type":4,"content":"","id1":1,"id2":1,"target_type":0} error:Unexpected end of buffer. Expected:
 [2024-08-11 21:04:27.653] [mylogger] [error] msg:{"type":4,"content":"","id1":1,"id2":1,"target_type":0} error:Unexpected end of buffer. Expected:
 [2024-08-11 21:17:01.513] [mylogger] [error] msg:{"type":4,"content":"","id1":1,"id2":1,"target_type":0} error:Unexpected end of buffer. Expected:
+[2024-08-12 08:13:16.332] [mylogger] [info] user_destructed
+[2024-08-12 08:15:15.282] [mylogger] [info] user thread stopped.
+[2024-08-12 08:15:15.419] [mylogger] [info] user_destructed
+[2024-08-12 11:13:26.184] [mylogger] [info] user thread stopped.
+[2024-08-12 11:13:27.647] [mylogger] [info] user_destructed
+[2024-08-12 13:00:31.037] [mylogger] [info] user thread stopped.

@@ -90,10 +90,7 @@ namespace bw::ui {
 			return Container::Stacked({ MessageBoxComp = StackedMsgBoxComp(),std::move(comp) });
 		};*/
 	}
-	inline ftxui::Component TextComp(std::string str) {
-		using namespace ftxui;
-		return Renderer([str]() {return ftxui::text(str.data()); });
-	}
+	
 	inline ftxui::Element autolines(const std::string& str, ftxui::ElementDecorator style = ftxui::nothing) {
 		using namespace ftxui;
 		Elements es;
@@ -108,6 +105,10 @@ namespace bw::ui {
 			es.push_back(paragraphAlignJustify(str.substr(pre, str.size() - pre)) | style);
 		}
 		return vbox(es);
+	}
+	inline ftxui::Component TextComp(std::string str, ftxui::ElementDecorator style = ftxui::nothing) {
+		using namespace ftxui;
+		return Renderer([str, style]() {return autolines(str.data(), style); });
 	}
 	inline ftxui::Component Focusable() {
 		struct Impl : public ftxui::ComponentBase {

@@ -7,6 +7,7 @@
 #include"othello/board.hpp"
 #include"tui/components.hpp"
 #include"tui/ftxui_screen.hpp"
+#include"online/signals.hpp"
 namespace bw::othello {
 	namespace components {
 		class BoardBase;
@@ -48,16 +49,15 @@ namespace bw::othello {
 				if (mvs[col].size == 0) {
 					mvs[op].update(brd, op);
 					if (mvs[op].size == 0) {
-						//screen->post_event("End");
 						announce("End");
 						st = ended;
+						end_game();
 						break;
 					}
 					else {
+						announce("Pass");
 						col = op;
 						op = op_col(col);
-						//screen->post_event("Pass");
-						announce("Pass");
 					}
 					continue;
 				}
@@ -151,11 +151,10 @@ namespace bw::othello {
 			return g[col];
 		}
 		void end_game() override {
-			if (st == ongoing) {
-				st = ended;
-			}
 			g[col]->cancel();
 			g[col ^ 1]->cancel();
+			bw::online::signals::end_game(st == ended ? game_msg::ok : game_msg::gamer_quit_or_disconnect);
+			st = ended;
 		}
 		bool cannot_regret() {
 			return 

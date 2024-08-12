@@ -10,6 +10,7 @@
 #include"tui/ftxui_screen.hpp"
 #include"grid-container.hpp"
 #include"online/signals.hpp"
+#include"basic_Game.hpp"
 namespace bw::othello::components {
 	class BoardBase : public ftxui::ComponentBase {
 	public:
@@ -194,20 +195,20 @@ namespace bw::othello::components {
 				Button(censtr(gettext("Back"), 8), [&ret,&screen] { ret = false; screen.Exit(); }, ButtonOption::Animated()) | center
 				}) | ui::EnableMessageBox();
 		}
-		virtual ftxui::Component OnlinePrepareCom(online::basic_user_ptr uptr) override {
+		virtual ftxui::Component OnlinePrepareCom(bw::online::basic_user_ptr uptr) override {
 			using namespace ftxui;
 			auto layout = Container::Vertical({
 				ui::TextComp(gettext("Othello")) | center,
 				Container::Horizontal({
 					ui::TextComp(gettext("Board Size: ")) | center,
-					Dropdown(&size_list,&s_size)
+					Input(&s_size,"   ") | underlined,
 				}) | center,
 				Button(gettext("Match"),[this, uptr]
 				{
 					static boost::asio::steady_timer tim(*pctx);
 					static std::atomic_flag flag;
 					auto othello_Game = shared_from_this();
-					board_size = std::stoi(size_list[s_size]);
+					board_size = std::stoi(s_size);
 					if (!flag.test()) {
 						if (uptr->state != online::user_st::gaming) {
 							uptr->Game_ptr = othello_Game;
@@ -249,7 +250,7 @@ namespace bw::othello::components {
 			Board brd_ptr = Make<BoardBase>(pctx, gm);
 
 			Component buttons = Container::Vertical({
-				Button(censtr(gettext("Quit"), 8), [] {online::signals::end_game(); }, ButtonOption::Animated()) | center,
+				Button(censtr(gettext("Quit"), 8), [gm] {gm->end_game(); }, ButtonOption::Animated()) | center,
 				Renderer([] {return separator(); }),
 				Button(censtr(gettext("Regret"), 8), [&screen] {screen.PostEvent(Event::Special("Regret")); }, ButtonOption::Animated()) | center,
 				Renderer([] {return separator(); }),
@@ -630,7 +631,7 @@ namespace bw::othello::components {
 			gptr[0] = nullptr;
 			gptr[1] = nullptr;
 			board_size = 8;
-			s_size = 0;
+			s_size = "8";
 		}
 		
 		void set_board_size(int size) override {
@@ -639,7 +640,7 @@ namespace bw::othello::components {
 		gamer_ptr gptr[2] = { nullptr,nullptr };
 		int board_size = 8;
 	protected:
-		int s_size = 2;
+		std::string s_size = "8";
 	};
 	using othello_Game_ptr = std::shared_ptr<Game>;
 }

@@ -176,7 +176,7 @@ namespace bw::tictactoe::components {
 				Renderer([this, gm] { return text(std::format("{}:{}",gettext("Current player"),gptr[gm->current_color()]->name)) | center; }),
 			});
 		}
-		virtual ftxui::Component OnlinePrepareCom(online::basic_user_ptr uptr) override {
+		virtual ftxui::Component OnlinePrepareCom(bw::online::basic_user_ptr uptr) override {
 			using namespace ftxui;
 			auto layout = Container::Vertical({
 				ui::TextComp(gettext("TicTacToe")),
@@ -225,7 +225,7 @@ namespace bw::tictactoe::components {
 			Board brd_ptr = Make<BoardBase>(pctx, gm);
 
 			Component buttons = Container::Vertical({
-				Button(censtr(gettext("Quit"), 8), [] {online::signals::end_game(); }, ButtonOption::Animated()) | center,
+				Button(censtr(gettext("Quit"), 8), [gm] {gm->end_game(); }, ButtonOption::Animated()) | center,
 				Renderer([] {return separator(); }),
 				Button(censtr(gettext("Regret"), 8), [&screen] {screen.PostEvent(Event::Special("Regret")); }, ButtonOption::Animated()) | center,
 				Renderer([] {return separator(); }),

@@ -14,7 +14,6 @@ namespace bw::othello {
 		human_gamer(color Color, int ID = 0, const std::string& Name = global_config->default_name)
 			:gamer(Color, ID, Name, human) {};
 		boost::cobalt::task<move> getmove(dynamic_brd& brd, std::chrono::seconds limit = 0s) {
-			mvs.update(brd, col);
 			move mv;
 			if (limit == 0s) {
 				pmvdq->tim.expires_at(std::chrono::steady_clock::time_point::max());
@@ -24,19 +23,23 @@ namespace bw::othello {
 			}
 			while (true) {
 				boost::system::error_code ec;
-				co_await pmvdq->tim.async_wait(boost::asio::redirect_error(boost::cobalt::use_op, ec));
-
-				while (!pmvdq->q.empty()) {
-					mv = pmvdq->q.front();
-					pmvdq->q.pop_front();
-					if (mv.mvtype == move::mv) {
-						if (mvs.find(mv.pos) != moves::npos) {
-							co_return mv;
-						}
-					}
-					else {
+				if (pmvdq->q.empty()) {
+					co_await pmvdq->tim.async_wait(boost::asio::redirect_error(boost::cobalt::use_op, ec));
+					continue;
+				}
+				mv = pmvdq->q.front();
+				pmvdq->q.pop_front();
+				mvs.update(brd, col);
+				if (mv.mvtype == move::mv) {
+					if (mvs.find(mv.pos) != moves::npos) {
 						co_return mv;
 					}
+				}
+				else if (mv.mvtype == move::quit) {
+					co_return mv;
+				}
+				else {
+					co_return mv;
 				}
 			}
 			co_return mv;

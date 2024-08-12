@@ -31,7 +31,7 @@ namespace bw {
 		//prepare：movestr代表basic_gamer_info（basic_gamer）
 		//start: movestr代表game种类，board代表board size
 		//move: movestr代表move
-		//watch: id:想watch的user ID
+		//watch: id:自己的ID ////////////可能的实现：movestr:是密码等验证方式？
 		//brd: board：棋盘字符串
 		//match: 代表在整个服务器随机匹配，其余与prepare相同
 		//end: id代表结束的状态码。

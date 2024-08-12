@@ -51,11 +51,10 @@ namespace bw::tictactoe {
 			return g[col];
 		}
 		void end_game() {
-			if (st == ongoing) {
-				st = ended;
-			}
 			g[col]->cancel();
 			g[col ^ 1]->cancel();
+			online::signals::end_game(st == ended ? game_msg::ok : game_msg::gamer_quit_or_disconnect);
+			st = ended;
 		}
 		virtual ~game() = default;
 		ftxui::ScreenInteractive* screen_ptr = nullptr;
@@ -79,6 +78,8 @@ boost::cobalt::task<void> bw::tictactoe::game::start() {
 		auto winner = brd.check_winner();
 		if (winner != core::none || brd.cnt == 9) {
 			announce("End");
+			st = ended;
+			end_game();
 			co_return;
 		}
 		mv = co_await g[col]->getmove(brd);
@@ -112,14 +113,12 @@ boost::cobalt::task<void> bw::tictactoe::game::start() {
 			break;
 		case move::quit:
 			st = ended;
-			if (screen_ptr)screen_ptr->ExitLoopClosure()();
 			co_return;
 			break;
 		case move::str:
 			continue;
 			break;
 		case move::invalid:
-			if (screen_ptr)screen_ptr->ExitLoopClosure()();
 			st = ended;
 			co_return;
 			break;

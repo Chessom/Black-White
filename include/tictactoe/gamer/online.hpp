@@ -13,7 +13,6 @@ namespace bw::tictactoe {
 		online_gamer(core::color Color, int ID = 0, const std::string& Name = "Anonymous")
 			:gamer(Color, ID, Name, online) {};
 		boost::cobalt::task<move> getmove(board& brd, std::chrono::seconds limit = 0s) {
-			move mv;
 			if (limit == 0s) {
 				rd_dq->tim.expires_at(std::chrono::steady_clock::time_point::max());
 			}
@@ -22,22 +21,21 @@ namespace bw::tictactoe {
 			}
 			while (true) {
 				boost::system::error_code ec;
-				co_await rd_dq->tim.async_wait(boost::asio::redirect_error(boost::cobalt::use_op, ec));
-
-				while (!rd_dq->q.empty()) {
-					struct_json::from_json(mv, rd_dq->q.front());
-					rd_dq->q.pop_front();
-					if (mv.mvtype == move::mv) {
-						if (brd.checkmove(mv.crd, mv.col)) {
-							co_return mv;
-						}
-					}
-					else {
+				if (rd_dq->q.empty())
+					co_await rd_dq->tim.async_wait(boost::asio::redirect_error(boost::cobalt::use_op, ec));
+				move mv;
+				struct_json::from_json(mv, rd_dq->q.front());
+				rd_dq->q.pop_front();
+				if (mv.mvtype == move::mv) {
+					if (brd.checkmove(mv.crd, mv.col)) {
 						co_return mv;
 					}
 				}
+				else {
+					co_return mv;
+				}
 			}
-			co_return mv;
+			co_return move{};
 		}
 		string get_name() const { return name; }
 		boost::cobalt::task<void> pass_msg(std::string msg) override {
@@ -57,15 +55,17 @@ namespace bw::tictactoe {
 		//To do
 		boost::cobalt::task<void> pass_move(move mv) override {
 			assert(u_ptr != nullptr);
-			mvstr = "";
-			struct_json::to_json(mv, mvstr);
-			u_ptr->deliver(wrap(
-				game_msg{
-					.type = game_msg::move,
-					.id = u_ptr->id,
-					.movestr = mvstr
-				}, msg_t::game
-			));
+			if (u_ptr->state == online::user_st::gaming) {
+				mvstr = "";
+				struct_json::to_json(mv, mvstr);
+				u_ptr->deliver(wrap(
+					game_msg{
+						.type = game_msg::move,
+						.id = u_ptr->id,
+						.movestr = mvstr
+					}, msg_t::game
+				));
+			}
 			co_return;
 		};
 		virtual void cancel() {

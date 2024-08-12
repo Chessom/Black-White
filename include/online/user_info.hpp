@@ -3,7 +3,7 @@
 #include<ylt/struct_json/json_writer.h>
 namespace bw::online {
 	namespace user_st {
-		enum { prepared, gaming, free };
+		enum { prepared, gaming, free, watching };
 	}
 	struct user_info {
 	public:

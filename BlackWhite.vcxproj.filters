@@ -86,9 +86,6 @@
     <ClInclude Include="include\online\room.hpp">
       <Filter>头文件\bw\online</Filter>
     </ClInclude>
-    <ClInclude Include="include\online\simple.hpp">
-      <Filter>头文件\bw\online</Filter>
-    </ClInclude>
     <ClInclude Include="include\othello\ai.hpp">
       <Filter>头文件\othello\othello.ai</Filter>
     </ClInclude>

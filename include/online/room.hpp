@@ -9,7 +9,7 @@ namespace bw::online {
 		int id, owner;
 		char name[15];
 		int state;
-		int gamersize;
+		int usersize;
 		enum { gaming, end, prepared, none };
 		enum { outdated, latest };
 		int infostate;
@@ -20,12 +20,12 @@ namespace bw::online {
 			.owner = 0,
 			.name = "Default",
 			.state = room_info::none,
-			.gamersize = 0,
+			.usersize = 0,
 			.infostate = room_info::outdated,
 		};
 		std::is_trivially_copyable<boost::static_string<15>>::value;
 	}
-	REFLECTION(room_info, id, owner, name, state, gamersize);
+	REFLECTION(room_info, id, owner, name, state, usersize);
 	//struct room_info {
 	//public:
 	//	int id = -1, owner = 0;

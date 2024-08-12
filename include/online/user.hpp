@@ -24,6 +24,12 @@ namespace bw::online {
 			crt_room_info.store(default_room_info());
 			search_rinfo_res.store(default_room_info());
 		};
+		user(std::shared_ptr<context> io) :context_ptr(std::move(io)), socket(*io), timer_(*io), chat_mutex(0), _gen(0, INT_MAX) {
+			timer_.expires_at(std::chrono::steady_clock::time_point::max());
+			stop_flag.clear();
+			crt_room_info.store(default_room_info());
+			search_rinfo_res.store(default_room_info());
+		}
 		std::string gbk2utf8(std::string_view s) {
 			return boost::locale::conv::to_utf<char>(s.data(), "gbk");
 		}
@@ -96,7 +102,11 @@ namespace bw::online {
 			/*boost::asio::co_spawn(*context_ptr, asio_reader(), boost::asio::detached);
 			boost::asio::co_spawn(*context_ptr, asio_writer(), boost::asio::detached);*/
 			chat_mutex.release();
-			thread_ptr = std::make_shared<std::jthread>([this] {context_ptr->run(); });
+			thread_ptr = std::make_shared<std::jthread>(
+				[this] {
+					context_ptr->run(); 
+					spdlog::info("user thread stopped.");
+				});
 		}
 		inline void handle_msg(const message& msg);//Implement below
 		void login() {
@@ -251,6 +261,9 @@ namespace bw::online {
 			if (context_ptr && !context_ptr->stopped()) {
 				context_ptr->stop();
 			}
+			signals::end_game.disconnect_all_slots();
+			signals::start_game.disconnect_all_slots();
+			spdlog::info("user_destructed");
 		};
 		
 		//boost::signals2::signal<void()> refresh_room_info, search_roon_info;
@@ -275,6 +288,7 @@ namespace bw::online {
 
 		//std::unordered_map<std::string, filter_func> filters;
 		boost::signals2::signal<void(const message&)> read_msg;
+		boost::signals2::signal<void(int)> prepare_watch_game;
 
 		std::string game_type, game_info_str;
 		using chan_gamer_ptr = std::pair<core::str_dq_ptr, basic_gamer_ptr>;
@@ -410,10 +424,24 @@ namespace bw::online {
 				game_type = gmmsg.movestr;
 				game_info_str = gmmsg.board;
 				break;
+			case game_msg::watch:
+				state = user_st::watching;
+				infostate = latest;
+				break;
 			case game_msg::prepare://根据发过来的user_info，生成gamer,加入gamers。
 			{
 				basic_gamer_info gamer_info;
 				struct_json::from_json(gamer_info, gmmsg.movestr);
+				if (Game_ptr == nullptr) {
+					if (state == user_st::watching) {
+						prepare_watch_game(gamer_info.gametype);
+					}
+					else {
+						spdlog::error("null Game component.");
+						ui::msgbox(gettext("Error: Invalid Game"));
+						return;
+					}
+				}
 				if (gmmsg.id == id) {
 					gamer_info.gamertype = basic_gamer::human;
 					Game_ptr->join(Game_ptr->gamer_from_info(gamer_info));
@@ -427,15 +455,6 @@ namespace bw::online {
 					chan_gamer_map[gmr_ptr->id] = { ol_gamer->rd_dq,gmr_ptr };
 					Game_ptr->join(gmr_ptr);
 				}
-				/*if (gamer_info.gametype == bw::core::gameid::othello) {
-					
-				}
-				else if (gamer_info.gametype == bw::core::gameid::tictactoe) {
-
-				}
-				else {
-
-				}*/
 			}
 				break;
 			case game_msg::start://根据prepare的gamers生成game和Game，并且启动
@@ -445,18 +464,24 @@ namespace bw::online {
 				ss >> game_name >> brd_sizestr;
 				Game_ptr->set_board_size(std::stoi(brd_sizestr));
 				signals::start_game();
+				if (state != user_st::watching) {
+					state = user_st::gaming;
+				}
 			}
 				break;
-			case game_msg::move: {
-				auto& chan = chan_gamer_map.at(gmmsg.id);
-				chan.first->q.push_back(gmmsg.movestr);
-				chan.first->tim.cancel();
-				//chan.first->write(gmmsg.movestr);
+			case game_msg::move:
+			{
+				if (gmmsg.id != id) {
+					auto& chan = chan_gamer_map.at(gmmsg.id);
+					chan.first->q.push_back(gmmsg.movestr);
+					chan.first->tim.cancel();
 				}
+			}
 				break;
 			case game_msg::end:
 				chan_gamer_map.clear();
-				signals::end_game();
+				if(gm_ptr)
+					gm_ptr->end_game();
 				break;
 			default:
 				;
@@ -527,10 +552,15 @@ namespace bw::online {
 				this->notices.assign(notices.begin(), notices.end());
 				refresh_screen();
 			}
-			else {
-
+			else if (rmsg.ret_type == "join_room_failed"){
+				ui::msgbox(gettext("Room not found"));
 			}
-
+			else if (rmsg.ret_type == "operation_failed") {
+				ui::msgbox(gettext("Server message: ") + rmsg.ret_str);
+			}
+			else if (rmsg.ret_type == "match_failed"){
+				ui::msgbox(gettext("You can only match in a room"));
+			}
 		}
 		else {
 
