@@ -364,3 +364,4 @@ FodyWeavers.xsd
 
 # ClassDiagram
 *.cd
+/locale.zip
