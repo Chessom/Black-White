@@ -100,44 +100,6 @@ namespace bw::othello::components {
 			if (e.is_mouse()) {
 				return OnMouseEvent(e);
 			}
-			else if (e == Event::Special("Flush")) {
-				brd = game_ptr->current_board();
-				pmvdq->tim.cancel_one();
-				game_ptr->screen->refresh();
-				return true;
-			}
-			else if (e == Event::Special("End")) {
-				int points0 = brd.countpiece(col0), points1 = brd.countpiece(col1);
-				if (points0 > points1) {
-					ui::msgbox(gettext("Black win!"));
-				}
-				else if (points0 < points1) {
-					ui::msgbox(gettext("White win!"));
-				}
-				else {
-					ui::msgbox(gettext("Draw!"));
-				}
-				return true;
-			}
-			else if (e == Event::Special("Regret")) {
-				pmvdq->q.push_back({ .mvtype = move::regret });
-				pmvdq->tim.cancel_one();
-				return true;
-			}
-			else if (e == Event::Special("EndLoop")) {
-				game_ptr->end_game();
-				return true;
-			}
-			else if (e == Event::Special("Suspend")) {
-				/*dqptr->q.push_back({ -1,-3 });
-				dqptr->conv.notify_one();*/
-				ui::msgbox(gettext("Function in Developing"));
-				return true;
-			}
-			else if (e == Event::Special("Save")) {
-				ui::msgbox(gettext("Function in Developing"));
-				return true;
-			}
 			return false;
 		}
 		bool OnMouseEvent(ftxui::Event e) {
@@ -164,6 +126,7 @@ namespace bw::othello::components {
 		timdq_ptr pmvdq;
 		std::shared_ptr<game> game_ptr = nullptr;
 		dynamic_brd brd;
+		
 	protected:
 		bool mouse_hover = false;
 		ftxui::Box box;
@@ -201,7 +164,12 @@ namespace bw::othello::components {
 				ui::TextComp(gettext("Othello")) | center,
 				Container::Horizontal({
 					ui::TextComp(gettext("Board Size: ")) | center,
-					Input(&s_size,"   ") | underlined,
+					Input(&s_size,"  ") | underlined
+					| CatchEvent([this](Event event) {
+						return event.is_character() && !std::isdigit(event.character()[0]);
+					}) | CatchEvent([&](Event event) {
+					return event.is_character() && s_size.size() > 2;
+				}),
 				}) | center,
 				Button(gettext("Match"),[this, uptr]
 				{
@@ -209,6 +177,10 @@ namespace bw::othello::components {
 					static std::atomic_flag flag;
 					auto othello_Game = shared_from_this();
 					board_size = std::stoi(s_size);
+					if (board_size % 2 == 1) {
+						ui::msgbox(gettext("The size of the othello board must be even."));
+						return;
+					}
 					if (!flag.test()) {
 						if (uptr->state != online::user_st::gaming) {
 							uptr->Game_ptr = othello_Game;
@@ -249,14 +221,36 @@ namespace bw::othello::components {
 
 			Board brd_ptr = Make<BoardBase>(pctx, gm);
 
+			gm->regret_sig.connect([brd_ptr] {
+				brd_ptr->pmvdq->q.push_back({ .mvtype = move::regret });
+				brd_ptr->pmvdq->tim.cancel_one();
+				});
+			gm->end_sig.connect([brd_ptr, gm] {
+				int points0 = gm->current_board().countpiece(col0), points1 = gm->current_board().countpiece(col1);
+				if (points0 > points1) {
+					ui::msgbox(gettext("Black win!"));
+				}
+				else if (points0 < points1) {
+					ui::msgbox(gettext("White win!"));
+				}
+				else {
+					ui::msgbox(gettext("Draw!"));
+				}
+				});
+			gm->flush_sig.connect([brd_ptr, gm, &screen] {
+				screen.Post([brd_ptr, gm] { brd_ptr->brd = gm->current_board(); });
+				});
+			gm->save_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
+			gm->suspend_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
+
 			Component buttons = Container::Vertical({
 				Button(censtr(gettext("Quit"), 8), [gm] {gm->end_game(); }, ButtonOption::Animated()) | center,
 				Renderer([] {return separator(); }),
-				Button(censtr(gettext("Regret"), 8), [&screen] {screen.PostEvent(Event::Special("Regret")); }, ButtonOption::Animated()) | center,
+				Button(censtr(gettext("Regret"), 8), [gm] {gm->regret_sig(); }, ButtonOption::Animated()) | center,
 				Renderer([] {return separator(); }),
-				Button(censtr(gettext("Suspend"), 8), [&screen] {screen.PostEvent(Event::Special("Suspend")); }, ButtonOption::Animated()) | center,
+				Button(censtr(gettext("Suspend"), 8), [gm] {gm->suspend_sig(); } , ButtonOption::Animated()) | center,
 				Renderer([] {return separator(); }),
-				Button(censtr(gettext("Save"), 8), [&screen] {screen.PostEvent(Event::Special("Save")); }, ButtonOption::Animated()) | center,
+				Button(censtr(gettext("Save"), 8), [gm] {gm->save_sig(); } , ButtonOption::Animated()) | center,
 				}) | ftxui::border;
 			Component brd = Container::Horizontal({ brd_ptr }) | center;
 			Component layout = Container::Vertical({
@@ -287,14 +281,36 @@ namespace bw::othello::components {
 
 			Board brd_ptr = Make<BoardBase>(pctx, gm);
 
+			gm->regret_sig.connect([brd_ptr] {
+				brd_ptr->pmvdq->q.push_back({ .mvtype = move::regret });
+				brd_ptr->pmvdq->tim.cancel_one();
+				});
+			gm->end_sig.connect([brd_ptr, gm] {
+				int points0 = gm->current_board().countpiece(col0), points1 = gm->current_board().countpiece(col1);
+				if (points0 > points1) {
+					ui::msgbox(gettext("Black win!"));
+				}
+				else if (points0 < points1) {
+					ui::msgbox(gettext("White win!"));
+				}
+				else {
+					ui::msgbox(gettext("Draw!"));
+				}
+				});
+			gm->flush_sig.connect([brd_ptr, gm, &screen] {
+				screen.Post([brd_ptr, gm] { brd_ptr->brd = gm->current_board(); });
+				});
+			gm->save_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
+			gm->suspend_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
+
 			Component buttons = Container::Vertical({
-				Button(censtr(gettext("Quit"), 8), [=, &screen] {gm->end_game(); if (!pctx->stopped()) { pctx->stop(); } screen.Exit(); }, ButtonOption::Animated()) | center,
+				Button(censtr(gettext("Quit"), 8), [=,&screen] {gm->end_game(); if (!pctx->stopped()) { pctx->stop(); } screen.Exit(); }, ButtonOption::Animated()) | center,
 				Renderer([] {return separator(); }),
-				Button(censtr(gettext("Regret"), 8), [&screen] {screen.PostEvent(Event::Special("Regret")); }, ButtonOption::Animated()) | center,
+				Button(censtr(gettext("Regret"), 8), [gm] {gm->regret_sig(); }, ButtonOption::Animated()) | center,
 				Renderer([] {return separator(); }),
-				Button(censtr(gettext("Suspend"), 8), [&screen] {screen.PostEvent(Event::Special("Suspend")); }, ButtonOption::Animated()) | center,
+				Button(censtr(gettext("Suspend"), 8), [gm] {gm->suspend_sig(); } , ButtonOption::Animated()) | center,
 				Renderer([] {return separator(); }),
-				Button(censtr(gettext("Save"), 8), [&screen] {screen.PostEvent(Event::Special("Save")); }, ButtonOption::Animated()) | center,
+				Button(censtr(gettext("Save"), 8), [gm] {gm->save_sig(); } , ButtonOption::Animated()) | center,
 				}) | ftxui::border;
 			Component brd = Container::Horizontal({ brd_ptr }) | center;
 			Component layout = Container::Vertical({
@@ -345,7 +361,6 @@ namespace bw::othello::components {
 		}
 		virtual basic_game_ptr generate_game(ftxui::ScreenInteractive& screen) override {
 			auto gm = std::make_shared<game>(gptr[col0], gptr[col1], board_size, std::make_shared<bw::components::ftxui_screen>(&screen));
-			gm->screen_ptr = &screen;
 			return gm;
 		}
 		bool GamePreparing() {
@@ -610,7 +625,6 @@ namespace bw::othello::components {
 
 			std::shared_ptr<game> gm = 
 				std::make_shared<game>(gptr[col0], gptr[col1], board_size, std::make_shared<bw::components::ftxui_screen>(&screen));
-			gm->screen_ptr = &screen;
 			Component GamePageComponent = GamePage(screen, gm) | center | ui::EnableMessageBox();
 			std::jthread j([this, gm, &screen] {
 				try

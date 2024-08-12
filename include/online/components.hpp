@@ -95,10 +95,6 @@ namespace bw::online::components {
 			auto CurrentRoomInfo = Renderer([this, &showRoomChatPage, &showRoomChatTaskBar] {
 				auto rinfo = self->crt_room_info.load();
 				bool in_any_room = rinfo.id != 0;
-				if ( showRoomChatPage == false && in_any_room) {
-					showRoomChatPage = true;
-					showRoomChatTaskBar = true;
-				}
 				if (!in_any_room) {
 					showRoomChatPage = false;
 					showRoomChatTaskBar = false;
@@ -293,6 +289,7 @@ namespace bw::online::components {
 				.height = &RoomChatPageHeight,
 				.render = &ui::AlwaysActiveRenderState,
 				});
+			self->show_room_chats.connect([this] {showRoomChatTaskBar = true; show_content = true; });
 			return Maybe(RoomChatWindow, &show_content);
 		}
 		void RefreshRoomChatMsgs() {
@@ -305,17 +302,19 @@ namespace bw::online::components {
 				for (int i = 0; i < msgq.size() - 1; ++i) {
 					RoomChatMsgs->Add(MakeChatMsg(msgq[i]));
 				}
-				RoomChatMsgs->Add(MakeChatMsg(msgq.back())/* | ftxui::focus*/);
+				ftxui::Component LastMessage = MakeChatMsg(msgq.back());
+				RoomChatMsgs->Add(LastMessage);
+				LastMessage->TakeFocus();
 			}
-			RoomChatMsgs->TakeFocus();
 		}
 		void AddRoomChatMsg() {
 			using namespace ftxui;
 			self->chat_mutex.acquire();
 			auto msg = self->chat_msg_queue.back();
 			self->chat_mutex.release();
-			RoomChatMsgs->Add(MakeChatMsg(msg)/* | ftxui::focus*/);
-			RoomChatMsgs->TakeFocus();
+			auto NewChatMsg = MakeChatMsg(msg);
+			RoomChatMsgs->Add(NewChatMsg);
+			NewChatMsg->TakeFocus();
 		}
 		user_ptr self;
 		int SendChatSize = 7;

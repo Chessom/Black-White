@@ -289,6 +289,7 @@ namespace bw::online {
 		//std::unordered_map<std::string, filter_func> filters;
 		boost::signals2::signal<void(const message&)> read_msg;
 		boost::signals2::signal<void(int)> prepare_watch_game;
+		boost::signals2::signal<void()> show_room_chats;
 
 		std::string game_type, game_info_str;
 		using chan_gamer_ptr = std::pair<core::str_dq_ptr, basic_gamer_ptr>;
@@ -376,6 +377,7 @@ namespace bw::online {
 				crt_room_info.store(rinfo);
 				infostate = latest;
 				scr_ptr->post_event("RefreshChat");
+				show_room_chats();
 			}
 			else if (con_m.type == control_msg::leave) {//离开room
 				auto rinfo = crt_room_info.load();

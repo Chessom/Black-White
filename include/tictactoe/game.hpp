@@ -31,16 +31,6 @@ namespace bw::tictactoe {
 		}
 
 		boost::cobalt::task<void> start();
-		void announce(std::string s) {
-			if (screen_ptr)screen_ptr->PostEvent(ftxui::Event::Special(s.data()));
-		}
-		void refresh_screen() {
-			if (screen_ptr)screen_ptr->PostEvent(ftxui::Event::Custom);
-		}
-		void wait_for_gamer(core::color c) {
-
-			return;
-		}
 		board current_board() const  {
 			return brd;
 		}
@@ -57,7 +47,6 @@ namespace bw::tictactoe {
 			st = ended;
 		}
 		virtual ~game() = default;
-		ftxui::ScreenInteractive* screen_ptr = nullptr;
 		gamer_ptr g[2];
 		board brd;
 		core::color col = core::col0, op = core::col1;
@@ -77,7 +66,7 @@ boost::cobalt::task<void> bw::tictactoe::game::start() {
 	while (true) {
 		auto winner = brd.check_winner();
 		if (winner != core::none || brd.cnt == 9) {
-			announce("End");
+			end_sig();
 			st = ended;
 			end_game();
 			co_return;
@@ -90,7 +79,7 @@ boost::cobalt::task<void> bw::tictactoe::game::start() {
 		switch (mv.mvtype) {
 		case move::mv:
 			brd.applymove(mv.crd, col);
-			announce("Flush");
+			flush_sig();
 			break;
 		case move::regret:
 			if (brd.cnt < 2) {
@@ -103,7 +92,7 @@ boost::cobalt::task<void> bw::tictactoe::game::start() {
 			game_aspects.pop_back();
 			game_aspects.pop_back();
 			brd = game_aspects.back().brd;
-			announce("Flush");
+			flush_sig();
 			continue;
 			break;
 		case move::suspend:

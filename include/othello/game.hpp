@@ -34,7 +34,6 @@ namespace bw::othello {
 
 			brd.initialize();
 			st = ready;
-			screen = Screen;
 		}
 		boost::cobalt::task<void> start() override {
 			auto self = shared_from_this();
@@ -49,13 +48,14 @@ namespace bw::othello {
 				if (mvs[col].size == 0) {
 					mvs[op].update(brd, op);
 					if (mvs[op].size == 0) {
-						announce("End");
+						//announce("End");
+						end_sig();
 						st = ended;
 						end_game();
 						break;
 					}
 					else {
-						announce("Pass");
+						pass_sig();
 						col = op;
 						op = op_col(col);
 					}
@@ -77,7 +77,7 @@ namespace bw::othello {
 				case move::mv:
 					brd.applymove(mv.pos, col);
 					//screen->post_event("Flush");
-					announce("Flush");
+					flush_sig();
 					break;
 				case move::regret:
 					if (brd.count(col0) + brd.count(col1) < 6) {
@@ -97,7 +97,7 @@ namespace bw::othello {
 						game_aspects.pop_back();
 						brd = game_aspects.back().brd;
 					}
-					announce("Flush");
+					flush_sig();
 					wait_for_gamer(col);
 					continue;
 					break;
@@ -131,12 +131,6 @@ namespace bw::othello {
 		bool valid_move(color c, const coord& crd) {
 			return mvs[c].find(crd) != moves::npos;
 		}
-		void announce(std::string s) {
-			if (screen_ptr)screen_ptr->PostEvent(ftxui::Event::Special(s.data()));
-		}
-		void refresh_screen() {
-			if (screen_ptr)screen_ptr->PostEvent(ftxui::Event::Custom);
-		}
 		void wait_for_gamer(color c) {
 
 			return;
@@ -164,8 +158,6 @@ namespace bw::othello {
 				g[op_col(col)]->gamertype == gamer::remote;
 		}
 		virtual ~game() = default;
-		bw::components::ftxui_screen_ptr screen;
-		ftxui::ScreenInteractive* screen_ptr;
 	protected:
 		void suspend() {
 

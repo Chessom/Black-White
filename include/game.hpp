@@ -16,6 +16,8 @@ namespace bw {
 		int& state() { return st; }
 		virtual void end_game() = 0;
 		virtual ~basic_game() = default;
+		boost::signals2::signal<void()>
+			pass_sig, regret_sig, end_sig, flush_sig, suspend_sig, save_sig;
 	protected:
 		virtual void suspend() {};
 		int st = unready;

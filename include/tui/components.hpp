@@ -9,45 +9,7 @@ namespace bw::ui {
 		auto_close_modal() { _show_modal = false; }
 		~auto_close_modal() { _show_modal = false; }
 	};
-	inline void msgbox(std::string s) {
-		MessageBoxString = s;
-		_show_modal = true;
-		MessageBoxComp->TakeFocus();
-	}
-	inline void msgbox(std::string s, std::function<void()> call_back) {
-		MessageBoxString = s;
-		_show_modal = true;
-		_msgbox_call_back = std::move(call_back);
-		MessageBoxComp->TakeFocus();
-	}
-	inline void msgbox(std::string s, ftxui::Components buts) {
-		using namespace ftxui;
-		MessageBoxString = s;
-		MessageBoxComp->DetachAllChildren();
-		Component box = Container::Horizontal(buts) | Renderer([](Element inner) {
-			return vbox({
-				text(""),
-				separator(),
-				text(MessageBoxString) | center,
-				inner | center,
-				})
-				| borderRounded | center | clear_under;
-			});
-		MessageBoxComp->Add(box);
-		_show_modal = true;
-		MessageBoxComp->TakeFocus();
-	}
-	inline void msgbox(ftxui::Component box) {
-		MessageBoxComp->DetachAllChildren();
-		MessageBoxComp->Add(box);
-		_show_modal = true;
-		MessageBoxComp->TakeFocus();
-	}
-	inline void premsgbox()
-	{
-		_show_modal = true;
-		MessageBoxComp->TakeFocus();
-	}
+	
 	inline ftxui::Component MessageBoxComponent() {
 		using namespace ftxui;
 		auto component = Button(gettext("OK"), [] {_show_modal = false; _msgbox_call_back(); }, ButtonOption::Animated());
@@ -115,6 +77,46 @@ namespace bw::ui {
 			bool Focusable() const override { return true; }
 		};
 		return ftxui::Make<Impl>();
+	}
+	inline void msgbox(std::string s) {
+		MessageBoxComp->DetachAllChildren();
+		MessageBoxComp->Add(MessageBoxComponent());
+		MessageBoxString = s;
+		_show_modal = true;
+		MessageBoxComp->TakeFocus();
+	}
+	inline void msgbox(std::string s, std::function<void()> call_back) {
+		MessageBoxString = s;
+		_show_modal = true;
+		_msgbox_call_back = std::move(call_back);
+		MessageBoxComp->TakeFocus();
+	}
+	inline void msgbox(std::string s, ftxui::Components buts) {
+		using namespace ftxui;
+		MessageBoxString = s;
+		MessageBoxComp = Container::Horizontal({});
+		Component box = Container::Horizontal(buts) | Renderer([](Element inner) {
+			return vbox({
+				text(""),
+				separator(),
+				text(MessageBoxString) | center,
+				inner | center,
+				})
+				| borderRounded | center | clear_under;
+			});
+		MessageBoxComp->Add(box);
+		_show_modal = true;
+		MessageBoxComp->TakeFocus();
+	}
+	inline void msgbox(ftxui::Component box) {
+		MessageBoxComp = box;
+		_show_modal = true;
+		MessageBoxComp->TakeFocus();
+	}
+	inline void premsgbox()
+	{
+		_show_modal = true;
+		MessageBoxComp->TakeFocus();
 	}
 	class NodeDecorator : public ftxui::Node {
 	public:

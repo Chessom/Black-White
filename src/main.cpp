@@ -3,15 +3,18 @@
 #include"initialize.hpp"
 #include"tools.hpp"
 #include"config.hpp"
-//#include"othello.ai.practise.hpp"
 int main() {
-	bw::initialize();
+	try {
+		bw::initialize();
+	}
+	catch (const std::exception& e) {
+		std::cerr << "Exception: " << e.what();
+		std::cerr << "Initialize failed, please delete the configuration file and retry!\n";
+		std::cerr << "初始化失败，请删除配置文件后重试！\n";
+		auto c = std::getchar();
+		return 0;
+	}
 	bw::cui cui;
 	cui.HomePage();
-	/*std::string json;
-	auto mv = bw::othello::move{ 0,{1,2},bw::core::col0 };
-	struct_json::to_json(mv, json);
-	std::print("{}", json);*/
-	//bw::othello::ai::full_test();
 	return 0;
 }

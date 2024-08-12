@@ -88,7 +88,7 @@
     <VcpkgAutoLink>true</VcpkgAutoLink>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <VcpkgUseStatic>false</VcpkgUseStatic>
+    <VcpkgUseStatic>true</VcpkgUseStatic>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <VcpkgUseStatic>false</VcpkgUseStatic>
@@ -183,7 +183,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <AdditionalOptions>/utf-8 /bigobj %(AdditionalOptions)</AdditionalOptions>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
@@ -261,10 +261,13 @@
     <ClInclude Include="include\tui\components.hpp" />
     <ClInclude Include="include\tui\ftxui_screen.hpp" />
     <ClInclude Include="include\tui\screen.hpp" />
+    <ClInclude Include="include\tui\settings_page.hpp" />
     <ClInclude Include="include\tui\ui.hpp" />
     <ClInclude Include="include\utility.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="locale\zh_CN\LC_MESSAGES\zh_CN.mo" />
+    <None Include="locale\zh_CN\LC_MESSAGES\zh_CN.po" />
     <None Include="README.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

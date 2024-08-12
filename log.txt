@@ -15,3 +15,6 @@
 [2024-08-12 11:13:26.184] [mylogger] [info] user thread stopped.
 [2024-08-12 11:13:27.647] [mylogger] [info] user_destructed
 [2024-08-12 13:00:31.037] [mylogger] [info] user thread stopped.
+[2024-08-12 14:57:25.340] [mylogger] [info] user_destructed
+[2024-08-12 15:15:21.668] [mylogger] [info] user thread stopped.
+[2024-08-12 15:15:21.769] [mylogger] [info] user_destructed

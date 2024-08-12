@@ -5,6 +5,7 @@
 #include"config.hpp"
 #include"bwlocale.hpp"
 #include"tui/components.hpp"
+#include"tui/settings_page.hpp"
 #include"othello/components.hpp"
 #include"online/components.hpp"
 #include"tictactoe/components.hpp"
@@ -147,7 +148,8 @@ namespace bw {
 	}
 	void cui::SettingsPage() {
 		using namespace ftxui;
-		ui::msgbox(gettext("Developing."));
+		bw::components::SettingsPage Page;
+		Page.start();
 	}
 	void cui::HelpPage() {
 		using namespace ftxui;

@@ -3,9 +3,10 @@
 #include"config.hpp"
 namespace bw {
 	inline config_ptr global_config;
+	inline boost::locale::generator locale_gen;
 	inline std::string MessageBoxString = "";
 	inline bool _show_modal = false;
-	inline ftxui::Component MessageBoxComp = nullptr;
+	inline ftxui::Component MessageBoxComp = ftxui::Container::Horizontal({});
 	inline std::function<void()> _msgbox_call_back = [] {};
 }
 namespace bw::othello {

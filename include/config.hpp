@@ -9,6 +9,7 @@ namespace bw {
 				config
 			{
 				.locale_id = "zh_CN",
+				.locale_path = R"(locale\)",
 				.default_address = "localhost",
 				.port = 22222,
 				.first_run = true,
@@ -16,6 +17,8 @@ namespace bw {
 				.default_name = boost::asio::ip::host_name()
 			};
 		}
+		static constexpr std::string bin_config_path = R"(.\config.bin)";
+		static constexpr std::string json_config_path = R"(.\config.json)";
 		bool load_binary_file(const path& p) {
 			using namespace std::filesystem;
 			if (exists(p)) {
@@ -49,58 +52,19 @@ namespace bw {
 				return false;
 			}
 		}
-		std::string locale_id;
-		std::string default_address;
+		std::string locale_id = "zh_CN";
+		std::string locale_path = R"(locale\)";
+		std::string default_address = "localhost";
 		int port = 22222;
 		bool first_run = true;
 		bool first_login = true;
 		std::string default_name;
+		enum class type {
+			json, binary
+		};
+		type config_t;
 	};
-	REFLECTION(config, locale_id, default_address, port, first_run, first_login, default_name);
+	REFLECTION(config, locale_id, locale_path, default_address, port, first_run, first_login, default_name);
 	using config_ptr = std::shared_ptr<config>;
-	/*inline bool load_json_file(const config& conf, const std::filesystem::path& p) {
-		using namespace std::filesystem;
-		try
-		{
-			if (exists(p)) {
-				struct_json::from_json_file(conf, p.string());
-			}
-			else {
-				std::cout << gettext("config.json not exist") << std::endl;
-				std::system("pause");
-				return false;
-			}
-		}
-		catch (const std::exception& e)
-		{
-			std::cout << e.what() << std::endl;
-			std::system("pause");
-			return false;
-		}
-
-	}
-	inline bool dump_json_file(const config& conf, const std::filesystem::path& p) {
-		using namespace std::filesystem;
-		std::fstream fout;
-		try {
-			fout.open(p, std::ios::out);
-			std::string buf;
-			struct_json::to_json(conf, buf);
-			fout << buf;
-			fout.close();
-			return true;
-		}
-		catch (const std::exception& e) {
-			fout.close();
-			std::cout << e.what() << std::endl;
-			std::system("pause");
-			return false;
-		}
-	}
-	inline std::string to_json(const config& conf) {
-		std::string res;
-		struct_json::to_json(conf, res);
-		return res;
-	}*/
 }
 
