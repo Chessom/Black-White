@@ -5,7 +5,7 @@
 #include"othello/move.hpp"
 namespace bw::othello {
 	using namespace bw::core;
-inline namespace v1{
+namespace v1{
 	class moves {
 	public:
 		moves() = default;
@@ -102,7 +102,7 @@ inline namespace v1{
 		coord coords[max_move_num] = {};
 	};
 }
-namespace v2{
+inline namespace v2{
 	class moves {
 	public:
 		moves() = default;
@@ -186,6 +186,9 @@ namespace v2{
 			}
 			return npos;
 		}
+		coord get_crd(int index) {
+			return coords[index];
+		}
 
 		template<typename Archive>
 		void serialize(Archive& ar) {
@@ -194,7 +197,7 @@ namespace v2{
 				ar(coords[i]);
 			}
 		}
-		static const int npos = -1;
+		enum { npos = -1 };
 		int size = 0;
 		std::vector<coord> coords;
 	};

@@ -49,9 +49,6 @@
     <Filter Include="头文件\othello\othello.ai">
       <UniqueIdentifier>{673f5d45-a379-4376-a580-aaee5a67a56e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="源文件\external">
-      <UniqueIdentifier>{2ba751ef-0cb6-413e-bed9-38cbdec33683}</UniqueIdentifier>
-    </Filter>
     <Filter Include="头文件\bw\practical">
       <UniqueIdentifier>{5a47d2e7-d985-4db5-9e0f-95d67b865d2f}</UniqueIdentifier>
     </Filter>
@@ -64,16 +61,28 @@
     <Filter Include="头文件\bw\shared\gamer">
       <UniqueIdentifier>{4c02371a-78dc-4ce1-b169-71ff3842e932}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\tui">
+      <UniqueIdentifier>{0f06d967-fb2d-4243-a306-236e78195a75}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\bw\tui\game">
+      <UniqueIdentifier>{64036a1f-9c0f-4da9-aef2-6b8724727e7f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\othello\tui">
+      <UniqueIdentifier>{0bf04a00-ef41-46e7-9462-c69aaf6eb7a0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\ipv4.cpp">
-      <Filter>源文件\external</Filter>
+    <ClCompile Include="src\tui\grid-container.cpp">
+      <Filter>源文件\tui</Filter>
     </ClCompile>
-    <ClCompile Include="src\grid-container.cpp">
-      <Filter>源文件\external</Filter>
+    <ClCompile Include="src\tui\ipv4.cpp">
+      <Filter>源文件\tui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tui\text_editor.cpp">
+      <Filter>源文件\tui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -101,13 +110,10 @@
     <ClInclude Include="include\othello\gamer\online.hpp">
       <Filter>头文件\othello\othello.gamer</Filter>
     </ClInclude>
-    <ClInclude Include="include\othello\gamer\remote.hpp">
+    <ClInclude Include="include\othello\gamer\remote_tcp.hpp">
       <Filter>头文件\othello\othello.gamer</Filter>
     </ClInclude>
     <ClInclude Include="include\othello\board.hpp">
-      <Filter>头文件\othello</Filter>
-    </ClInclude>
-    <ClInclude Include="include\othello\components.hpp">
       <Filter>头文件\othello</Filter>
     </ClInclude>
     <ClInclude Include="include\othello\game.hpp">
@@ -167,7 +173,7 @@
     <ClInclude Include="include\gamer.hpp">
       <Filter>头文件\bw\shared</Filter>
     </ClInclude>
-    <ClInclude Include="include\gamer\lua.hpp">
+    <ClInclude Include="include\gamer\basic_lua_gamer.hpp">
       <Filter>头文件\bw\shared\gamer</Filter>
     </ClInclude>
     <ClInclude Include="include\initialize.hpp">
@@ -262,6 +268,24 @@
     </ClInclude>
     <ClInclude Include="include\tui\settings_page.hpp">
       <Filter>头文件\bw\tui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\othello\gamer\lua_gamer.hpp">
+      <Filter>头文件\othello\othello.gamer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tictactoe\gamer\lua_gamer.hpp">
+      <Filter>头文件\tictactoe\tictactoe.gamers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tui\text_editor.hpp">
+      <Filter>头文件\bw\tui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tui\game\gamer_prepare.hpp">
+      <Filter>头文件\bw\tui\game</Filter>
+    </ClInclude>
+    <ClInclude Include="include\othello\tui\components.hpp">
+      <Filter>头文件\othello\tui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\othello\tui\gamer_prepare.hpp">
+      <Filter>头文件\othello\tui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

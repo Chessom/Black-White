@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "ipv4.hpp"
+#include "ftxui/component/event.hpp"
 #include "ftxui/component/component.hpp"
 #include "ftxui/component/component_base.hpp"
 #include "ftxui/dom/elements.hpp"

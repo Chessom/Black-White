@@ -5,7 +5,7 @@ namespace bw {
 	using std::string;
 	class basic_gamer {//gamer的基础数据
 	public:
-		enum { human, computer, remote, online, invalid };
+		enum { human, computer, remote, online, external, invalid };//作为基础类别
 		basic_gamer() = default;
 		basic_gamer(core::color Color, int ID = 0, const string& Name = "", int GamerType = invalid, int Gametype = core::gameid::unspecific)
 			:col(Color), id(ID), name(Name), gamertype(GamerType), gametype(Gametype) {

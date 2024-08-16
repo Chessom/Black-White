@@ -37,6 +37,7 @@ namespace bw::othello {
 		virtual boost::cobalt::task<void> pass_move(move mv) = 0;
 		virtual void cancel() = 0;//cancel getmove
 		virtual ~gamer() = default;
+		detailed_type detailed_gamer_type = detailed_type::invalid;
 		moves mvs;
 	};
 	using gamer_ptr = std::shared_ptr<gamer>;

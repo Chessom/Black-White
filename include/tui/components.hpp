@@ -9,18 +9,19 @@ namespace bw::ui {
 		auto_close_modal() { _show_modal = false; }
 		~auto_close_modal() { _show_modal = false; }
 	};
-	
+	inline ftxui::Component MakeOKButton() {
+		return ftxui::Button(gettext("OK"), [] {_show_modal = false; _msgbox_call_back(); }, ftxui::ButtonOption::Animated());
+	}
 	inline ftxui::Component MessageBoxComponent() {
 		using namespace ftxui;
-		auto component = Button(gettext("OK"), [] {_show_modal = false; _msgbox_call_back(); }, ButtonOption::Animated());
+		auto component = MakeOKButton();
 		component |= Renderer([](Element inner) {
 			return vbox({
 				text(""),
 				separator(),
 				text(MessageBoxString) | center,
 				inner | center,
-				})
-				| borderRounded | center | clear_under;
+				})| borderRounded | center | clear_under ;
 			});
 		return Container::Vertical({ component });
 	}
@@ -43,16 +44,21 @@ namespace bw::ui {
 			.resize_top = false,
 			.resize_down = false,
 			});
-		return Modal(Renderer([] {return emptyElement(); }), window, &_show_modal);
+		return Maybe(window, &_show_modal);
 	}
 	inline ftxui::ComponentDecorator EnableMessageBox() {
 		using namespace ftxui;
-		return Modal(MessageBoxComp = MessageBoxComponent(), &_show_modal);
-		/*return [](Component comp) {
-			return Container::Stacked({ MessageBoxComp = StackedMsgBoxComp(),std::move(comp) });
-		};*/
+		return Modal(MessageBoxComp = MessageBoxComponent(), &_show_modal) ;
 	}
-	
+	inline ftxui::ComponentDecorator EnableStackedMessageBox() {
+		using namespace ftxui;
+		return [](Component comp) {
+			return Container::Stacked({ MessageBoxComp = StackedMsgBoxComp(),std::move(comp) });
+		};
+	}
+	inline ftxui::Component ToCom(ftxui::Element e) {
+		return ftxui::Renderer([e] {return e; });
+	}
 	inline ftxui::Element autolines(const std::string& str, ftxui::ElementDecorator style = ftxui::nothing) {
 		using namespace ftxui;
 		Elements es;
@@ -94,7 +100,7 @@ namespace bw::ui {
 	inline void msgbox(std::string s, ftxui::Components buts) {
 		using namespace ftxui;
 		MessageBoxString = s;
-		MessageBoxComp = Container::Horizontal({});
+		MessageBoxComp->DetachAllChildren();
 		Component box = Container::Horizontal(buts) | Renderer([](Element inner) {
 			return vbox({
 				text(""),
@@ -109,9 +115,11 @@ namespace bw::ui {
 		MessageBoxComp->TakeFocus();
 	}
 	inline void msgbox(ftxui::Component box) {
-		MessageBoxComp = box;
+		using namespace ftxui;
+		MessageBoxComp->DetachAllChildren();
+		MessageBoxComp->Add(box);
 		_show_modal = true;
-		MessageBoxComp->TakeFocus();
+		box->TakeFocus();
 	}
 	inline void premsgbox()
 	{
@@ -184,7 +192,6 @@ namespace bw::ui {
 		const bool resize_top_;
 		const bool resize_down_;
 	};
-
 	inline ftxui::Element AlwaysActiveRenderState(const ftxui::WindowRenderState& state) {
 		using namespace ftxui;
 		ftxui::Element element = state.inner;

@@ -49,8 +49,7 @@ namespace bw::othello {
 		int size = default_size;
 	};
 
-	class dynamic_brd :public basic_brd {
-	public:
+	struct dynamic_brd :public basic_brd {
 		dynamic_brd() {
 			size = default_size;
 			mat.resize(size);

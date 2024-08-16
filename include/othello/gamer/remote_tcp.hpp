@@ -18,13 +18,15 @@ namespace bw::othello {
 			context_ptr ContextPtr,
 			core::color Color,
 			int ID = 0,
-			const std::string& Name = "Remote tcp gamer")
+			const std::string& Name = gettext("Remote tcp gamer"))
 			:gamer(Color, ID, Name, remote),
 			context_ptr(ContextPtr) 
 		{
 			rdq = std::make_shared<timdq>(context_ptr);
 			wtq = std::make_shared<timdq>(context_ptr);
 			wtq->tim.expires_at(std::chrono::steady_clock::time_point::max());
+			socket_ptr = std::make_shared<boost::asio::ip::tcp::socket>(*context_ptr);
+			detailed_gamer_type = detailed_type::remote_tcp_gamer;
 		};
 		using acceptor = boost::asio::ip::tcp::acceptor;
 		using context = boost::asio::io_context;
@@ -136,7 +138,7 @@ namespace bw::othello {
 					try
 					{
 						jsonstr = "";
-						auto mv = wtq->q.front();
+						move mv = wtq->q.front();
 						struct_json::to_json(mv, jsonstr);
 						jsonstr = std::format("{:<5}{}", jsonstr.size(), jsonstr);
 						co_await async_write(*socket_ptr, dynamic_buffer(jsonstr, jsonstr.size()), boost::cobalt::use_op);

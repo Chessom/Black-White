@@ -9,10 +9,12 @@ namespace bw::othello {
 	public:
 		using timer = boost::asio::steady_timer;
 		using timer_ptr = std::shared_ptr<timer>;
-		human_gamer() :gamer() { name = global_config->default_name; gamertype = human; }
-		human_gamer(basic_gamer_info info) :gamer(info) {}
+		human_gamer() :gamer() { name = global_config->default_name; gamertype = human; detailed_gamer_type = detailed_type::human; }
+		human_gamer(basic_gamer_info info) :gamer(info) { detailed_gamer_type = detailed_type::human; }
 		human_gamer(color Color, int ID = 0, const std::string& Name = global_config->default_name)
-			:gamer(Color, ID, Name, human) {};
+			:gamer(Color, ID, Name, human) {
+			detailed_gamer_type = detailed_type::human;
+		};
 		boost::cobalt::task<move> getmove(dynamic_brd& brd, std::chrono::seconds limit = 0s) {
 			move mv;
 			if (limit == 0s) {

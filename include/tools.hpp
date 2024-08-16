@@ -28,7 +28,7 @@ namespace bw::tools {
     inline bool in_board(const coord& crd) {
         return crd.x < 8 && crd.y < 8 && crd.x >= 0 && crd.y >= 0;
     }
-    /*void gen_crosses(){
+    inline void gen_crosses(){
         ofstream fout("C:\\Users\\vemy\\desktop\\data.txt");
         ull brd;
         coord iter;
@@ -36,7 +36,7 @@ namespace bw::tools {
         fout << std::hex << "{";
         for (int x = 0; x < 8; ++x) {
             for (int y = 0; y < 8; ++y) {
-                iter = { x,y };
+                /*iter = { x,y };
                 brd = 0ull;
                 brd |= iter.to_bititer();
                 for (int drc = R; drc <= UR; ++drc) {
@@ -45,26 +45,27 @@ namespace bw::tools {
                         brd |= iter.to_bititer();
                     }
                 }
-                fout << "0x" << brd << ",";
+                fout << "0x" << brd << ",";*/
             }
             fout << "\n";
         }
         fout << "}";
     }
-    void test_crosses() {
+    inline void test_crosses() {
         int x = 0, y = 0;
         while (x != -1) {
             cin >> x >> y;
-            println("{:sm<}", bitbrd(crosses[x][y], 0ull));
+            //std::println("{:sm<}", othello::bitbrd(crosses[x][y], 0ull));
         }
-    }*/
-    coord fromstr(const string& s) {
+    }
+    inline coord fromstr(const string& s) {
         return coord(s[1] - '1', s[0] - 'A');
     }
-    bool is_vaild_movestr(const string& s) {
+    inline bool is_vaild_movestr(const string& s) {
         return s[0] >= 'A' && s[0] <= 'Z' && s[1] >= '0' && s[1] <= '9';
     }
-    /*void test_applymove() {
+    inline void test_applymove() {
+        using namespace othello;
         ull bm, wm;
         cin >> std::hex >> bm >> wm;
         bitbrd brd(bm, wm);
@@ -77,11 +78,11 @@ namespace bw::tools {
             brd.applymove(fromstr(s), col0);
             abrd.applymove(fromstr(s), col0);
         }
-    }*/
-    void cls() {
+    }
+    inline void cls() {
         std::system("cls");
     }
-	void print_empty_brd() {
+	inline void print_empty_brd() {
 		std::cout << "╔"; 
         for (int i = 1; i < BSIZE; i++) 
             std::cout << "═══╦";

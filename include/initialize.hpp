@@ -18,42 +18,34 @@ namespace bw {
 		bw::global_config = std::make_shared<bw::config>();
 
 		try {
-			if (exists(config::json_config_path)) {
-				struct_json::from_json_file(*global_config, config::json_config_path);
-				global_config->config_t = config::type::json;
-			}
-			else if (exists(config::bin_config_path)) {
-				global_config->load_binary_file(config::bin_config_path);
-				global_config->config_t = config::type::binary;
+			if (exists(json_config_path)) {
+				struct_json::from_json_file(*global_config, json_config_path);
 			}
 			else {
 				*global_config = bw::config::default_config();
-				global_config->config_t = config::type::json;
 				std::string config_json;
 				struct_json::to_json(*global_config, config_json);
-				std::ofstream fout(config::json_config_path, std::ios::out);
+				std::ofstream fout(json_config_path, std::ios::out);
 				fout << config_json;
 				fout.close();
 			}
-			boost::locale::generator gen;
-			gen.add_messages_path(global_config->locale_path);
-			gen.add_messages_domain(global_config->locale_id);
+
+			locale_gen.add_messages_path(global_config->locale_path);
+			locale_gen.add_messages_domain("zh_CN");
+			locale_gen.add_messages_domain("en_US");
 
 			// 设置全局 locale
-			std::locale::global(gen(global_config->locale_id + ".utf8"));
+			std::locale::global(locale_gen(global_config->locale_id + ".utf8"));
 			std::cout.imbue(std::locale());
 		}
 		catch (const std::exception& e) {
 			spdlog::error(e.what());
 			*global_config = bw::config::default_config();
-			global_config->config_t = config::type::json;
 			std::string config_json;
 			struct_json::to_json(*global_config, config_json);
-			std::ofstream fout(config::json_config_path, std::ios::out);
+			std::ofstream fout(json_config_path, std::ios::out);
 			fout << config_json;
 			fout.close();
-
-
 			
 			locale_gen.add_messages_path(global_config->locale_path);
 			locale_gen.add_messages_domain("zh_CN");

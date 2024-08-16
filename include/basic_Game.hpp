@@ -28,5 +28,6 @@ namespace bw {
 		virtual void join(basic_gamer_ptr) = 0;
 		virtual ~basic_Game() = default;
 		std::shared_ptr<boost::asio::io_context> pctx;
+		bool another_round = false;
 	};
 }

@@ -24,7 +24,9 @@ namespace bw::tictactoe {
 		computer_gamer_random() : computer_gamer() {}
 		computer_gamer_random(basic_gamer_info info) : computer_gamer(info) {};
 		computer_gamer_random(core::color Color, int ID = 1, const std::string& Name = "computer_gamer_random")
-			:computer_gamer(Color, ID, Name, basic_gamer::computer) {};
+			:computer_gamer(Color, ID, Name, basic_gamer::computer) {
+			name = gettext("computer_gamer_random");
+		};
 		virtual boost::cobalt::task<move> getmove(board& brd, std::chrono::seconds limit = 0s) override {
 			mvs.update(brd, col);
 			std::random_device rd;

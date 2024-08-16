@@ -105,7 +105,6 @@ namespace bw::online {
 			thread_ptr = std::make_shared<std::jthread>(
 				[this] {
 					context_ptr->run(); 
-					spdlog::info("user thread stopped.");
 				});
 		}
 		inline void handle_msg(const message& msg);//Implement below
@@ -234,15 +233,6 @@ namespace bw::online {
 				scr_ptr->refresh();
 			}
 		}
-		//void add_filter(const std::string& tag, filter_func pred) {
-		//	filters[tag] = (std::move(pred));
-		//}
-		//void del_filter(const string& tag) {
-		//	filters.erase(tag);
-		//}
-		//void clear_filter() {
-		//	filters.clear();
-		//}
 		void stop() {
 			if (socket.is_open()) {
 				socket.close();
@@ -263,7 +253,6 @@ namespace bw::online {
 			}
 			signals::end_game.disconnect_all_slots();
 			signals::start_game.disconnect_all_slots();
-			spdlog::info("user_destructed");
 		};
 		
 		//boost::signals2::signal<void()> refresh_room_info, search_roon_info;

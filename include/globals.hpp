@@ -6,12 +6,18 @@ namespace bw {
 	inline boost::locale::generator locale_gen;
 	inline std::string MessageBoxString = "";
 	inline bool _show_modal = false;
-	inline ftxui::Component MessageBoxComp = ftxui::Container::Horizontal({});
+	inline ftxui::Component MessageBoxComp = ftxui::Container::Vertical({});
 	inline std::function<void()> _msgbox_call_back = [] {};
+	template<typename E>
+	constexpr auto enum_count() {
+		static_assert(std::is_enum_v<E>, "E must be an enum type");
+		constexpr auto first = static_cast<std::underlying_type_t<E>>(E::first);
+		constexpr auto last = static_cast<std::underlying_type_t<E>>(E::last);
+		return last - first + 1;
+	}
 }
 namespace bw::othello {
 	namespace symbols {
-		//std::string col0 = reinterpret_cast<const char*>(u8"⚫"), col1 = reinterpret_cast<const char*>(u8"⚪"), none = reinterpret_cast<const char*>(u8"■");
 		inline std::string col0 = "○", col1 = "●", none = "■";
 	}
 	namespace numbers {
@@ -29,17 +35,24 @@ namespace bw::othello {
 	private:
 		int stl = symb;
 	};
+	enum class detailed_type :int { human = 0, computer_random, computer_ai, lua_script_gamer, remote_tcp_gamer, online, invalid };
 	inline charmap CharMap{};
 	inline std::vector<std::string> gamer_list;
 	inline std::vector<std::string> size_list = { "4","6","8","10","12","14","16" };
 	inline void initialize_global_variable() {
-		gamer_list = { gettext("Human"),gettext("ComputerLow"),gettext("ComputerMiddle"),gettext("ComputerHigh"),gettext("RemoteGamer") };
+		gamer_list.resize(5);
+		gamer_list[std::to_underlying(detailed_type::human)] = gettext("Human");
+		gamer_list[std::to_underlying(detailed_type::computer_random)] = gettext("ComputerRandom");
+		gamer_list[std::to_underlying(detailed_type::computer_ai)] = gettext("ComputerAI");
+		gamer_list[std::to_underlying(detailed_type::lua_script_gamer)] = gettext("Lua Script Gamer");
+		gamer_list[std::to_underlying(detailed_type::remote_tcp_gamer)] = gettext("RemoteTCPGamer");
 	}
 }
 namespace bw::ataxx {
 
 };
 namespace bw::tictactoe {
+	enum class detailed_type :int { human = 0, computer_random, computer_ai, lua_script_gamer, remote_tcp_gamer, invalid };
 	inline std::vector<std::string> gamer_list;
 	inline void initialize_global_variable() {
 		gamer_list = { gettext("Human"),gettext("Computer Random") };

@@ -73,7 +73,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ExternalIncludePath>C:\Program Files %28x86%29\yaLanTingLibs\include;$(ExternalIncludePath)</ExternalIncludePath>
     <IncludePath>D:\Projects\CppProjects\BlackWhite\include;$(IncludePath)</IncludePath>
-    <SourcePath>D:\Projects\CppProjects\BlackWhite\src;$(SourcePath)</SourcePath>
+    <SourcePath>D:\Projects\CppProjects\BlackWhite\src;D:\Projects\CppProjects\editor_tui\third-party\tree-sitter-cpp\src;$(SourcePath)</SourcePath>
     <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
     <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
   </PropertyGroup>
@@ -159,6 +159,7 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <DisableAnalyzeExternal>true</DisableAnalyzeExternal>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -197,9 +198,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\grid-container.cpp" />
-    <ClCompile Include="src\ipv4.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\tui\grid-container.cpp" />
+    <ClCompile Include="src\tui\ipv4.cpp" />
+    <ClCompile Include="src\tui\text_editor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\ataxx\board.hpp" />
@@ -213,7 +215,7 @@
     <ClInclude Include="include\game.hpp" />
     <ClInclude Include="include\basic_Game.hpp" />
     <ClInclude Include="include\gamer.hpp" />
-    <ClInclude Include="include\gamer\lua.hpp" />
+    <ClInclude Include="include\gamer\basic_lua_gamer.hpp" />
     <ClInclude Include="include\games.hpp" />
     <ClInclude Include="include\globals.hpp" />
     <ClInclude Include="include\grid-container.hpp" />
@@ -233,16 +235,18 @@
     <ClInclude Include="include\othello\ai.hpp" />
     <ClInclude Include="include\othello\ai\practise.hpp" />
     <ClInclude Include="include\othello\board.hpp" />
-    <ClInclude Include="include\othello\components.hpp" />
     <ClInclude Include="include\othello\game.hpp" />
     <ClInclude Include="include\othello\gamer.hpp" />
     <ClInclude Include="include\othello\gamer\computer.hpp" />
     <ClInclude Include="include\othello\gamer\human.hpp" />
+    <ClInclude Include="include\othello\gamer\lua_gamer.hpp" />
     <ClInclude Include="include\othello\gamer\online.hpp" />
-    <ClInclude Include="include\othello\gamer\remote.hpp" />
+    <ClInclude Include="include\othello\gamer\remote_tcp.hpp" />
     <ClInclude Include="include\othello\move.hpp" />
     <ClInclude Include="include\othello\moves.hpp" />
     <ClInclude Include="include\othello\online.hpp" />
+    <ClInclude Include="include\othello\tui\components.hpp" />
+    <ClInclude Include="include\othello\tui\gamer_prepare.hpp" />
     <ClInclude Include="include\practise.hpp" />
     <ClInclude Include="include\safe_vector.hpp" />
     <ClInclude Include="include\stdafx.h" />
@@ -253,6 +257,7 @@
     <ClInclude Include="include\tictactoe\gamer.hpp" />
     <ClInclude Include="include\tictactoe\gamer\computer.hpp" />
     <ClInclude Include="include\tictactoe\gamer\human.hpp" />
+    <ClInclude Include="include\tictactoe\gamer\lua_gamer.hpp" />
     <ClInclude Include="include\tictactoe\gamer\online.hpp" />
     <ClInclude Include="include\tictactoe\move.hpp" />
     <ClInclude Include="include\tictactoe\moves.hpp" />
@@ -260,8 +265,10 @@
     <ClInclude Include="include\tui\bwlocale.hpp" />
     <ClInclude Include="include\tui\components.hpp" />
     <ClInclude Include="include\tui\ftxui_screen.hpp" />
+    <ClInclude Include="include\tui\game\gamer_prepare.hpp" />
     <ClInclude Include="include\tui\screen.hpp" />
     <ClInclude Include="include\tui\settings_page.hpp" />
+    <ClInclude Include="include\tui\text_editor.hpp" />
     <ClInclude Include="include\tui\ui.hpp" />
     <ClInclude Include="include\utility.hpp" />
   </ItemGroup>

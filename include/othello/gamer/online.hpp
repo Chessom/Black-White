@@ -10,10 +10,12 @@ namespace bw::othello {
 	public:
 		using timer = boost::asio::steady_timer;
 		using timer_ptr = std::shared_ptr<timer>;
-		online_gamer() :gamer(), basic_online_gamer() { name = "Anonymous"; gamertype = online; }
-		online_gamer(basic_gamer_info info) :gamer(info), basic_online_gamer() {}
+		online_gamer() :gamer(), basic_online_gamer() { name = "Anonymous"; gamertype = online; detailed_gamer_type = detailed_type::online; }
+		online_gamer(basic_gamer_info info) :gamer(info), basic_online_gamer() { detailed_gamer_type = detailed_type::online; }
 		online_gamer(color Color, int ID = 0, const std::string& Name = "Anonymous")
-			:gamer(Color, ID, Name, online) {};
+			:gamer(Color, ID, Name, online) {
+			detailed_gamer_type = detailed_type::online;
+		};
 		boost::cobalt::task<move> getmove(dynamic_brd& brd, std::chrono::seconds limit = 0s) {
 			if (limit == 0s) {
 				rd_dq->tim.expires_at(std::chrono::steady_clock::time_point::max());

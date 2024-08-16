@@ -2,7 +2,7 @@
 #include"stdafx.h"
 #include"core.hpp"
 #include"othello/gamer.hpp"
-#include"othello/components.hpp"
+#include"othello/tui/components.hpp"
 #include"othello/ai.hpp"
 namespace bw::othello {
 	using namespace std::chrono_literals;
@@ -20,9 +20,9 @@ namespace bw::othello {
 	};
 	class computer_gamer_random :public bw::othello::computer_gamer {
 	public:
-		computer_gamer_random(core::color Color, int ID = 0, const std::string& Name = "computer_gamer_random")
+		computer_gamer_random(core::color Color, int ID = 0, const std::string& Name = gettext("computer_gamer_random"))
 			:computer_gamer(Color, ID, Name, basic_gamer::computer) {
-			name = gettext("computer_gamer_random");
+			detailed_gamer_type = detailed_type::computer_random;
 		};
 		virtual boost::cobalt::task<move> getmove(dynamic_brd& brd, std::chrono::seconds limit = 0s) override {
 			mvs.update(brd, col);
@@ -36,9 +36,9 @@ namespace bw::othello {
 	};
 	class computer_gamer_ai :public bw::othello::computer_gamer {
 	public:
-		computer_gamer_ai(core::color Color, int ID = 1, const std::string& Name = "computer_gamer_ai", int GamerType = basic_gamer::computer)
+		computer_gamer_ai(core::color Color, int ID = 1, const std::string& Name = gettext("computer_gamer_ai"), int GamerType = basic_gamer::computer)
 			:computer_gamer(Color, ID, Name, GamerType) {
-			name = gettext("computer_gamer_ai");
+			detailed_gamer_type = detailed_type::computer_ai;
 		};
 		virtual boost::cobalt::task<move> getmove(dynamic_brd& brd, std::chrono::seconds limit = 0s) override {
 			mvs.update(brd, col);

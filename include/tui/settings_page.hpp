@@ -49,17 +49,11 @@ namespace bw::components {
 			auto SaveButton = Button(gettext("Save to local"),
 				[this, save_handler] {
 					save_handler();
-					if (global_config->config_t == config::type::binary) {
-						conf.dump_binary_file(config::bin_config_path);
-					}
-					else
-					{
-						std::string config_json;
-						struct_json::to_json(conf, config_json);
-						std::ofstream fout(config::json_config_path, std::ios::out);
-						fout << config_json;
-						fout.close();
-					}
+					std::string config_json;
+					struct_json::to_json(conf, config_json);
+					std::ofstream fout(json_config_path, std::ios::out);
+					fout << config_json;
+					fout.close();
 				},
 				ButtonOption::Animated(Color::Blue)
 			);

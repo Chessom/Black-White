@@ -6,7 +6,7 @@
 #include"bwlocale.hpp"
 #include"tui/components.hpp"
 #include"tui/settings_page.hpp"
-#include"othello/components.hpp"
+#include"othello/tui/components.hpp"
 #include"online/components.hpp"
 #include"tictactoe/components.hpp"
 namespace bw {
@@ -74,13 +74,17 @@ namespace bw {
 			Button(gettext("Othello"),[&,this] {
 				bw::othello::components::Game Game;
 				if (Game.GamePreparing()) {
-					Game.GamePageLocal();
+					do {
+						Game.GamePageLocal();
+					} while (Game.another_round);
 				}
 				},ButtonOption::Animated()) | center,
 			Button(gettext("TicTacToe"),[&,this] {
 				bw::tictactoe::components::Game Game;
 				if (Game.GamePreparing()) {
-					Game.GamePageLocal();
+					do {
+						Game.GamePageLocal();
+					} while (Game.another_round);
 				}
 				},ButtonOption::Animated()) | center,
 			Button(gettext("Ataxx"),[&,this] { 
@@ -153,10 +157,31 @@ namespace bw {
 	}
 	void cui::HelpPage() {
 		using namespace ftxui;
-		ui::msgbox(gettext("Developing."));
+		ScreenInteractive screen = ScreenInteractive::Fullscreen();
+		Component HelpContent = Renderer([] {
+			return vbox(
+				hbox(text(gettext("GitHub url of this project :")), hyperlink(R"(https://github.com/Chessom/Black-White)") | underlined),
+				paragraphAlignJustify(
+					gettext("This is a TUI(CUI) game set program, you can interact with the program using a mouse.")
+				)
+
+			);
+		});
+
 	}
 	void cui::AboutPage() {
 		using namespace ftxui;
-		ui::msgbox(gettext("Developing."));
+		ScreenInteractive screen = ScreenInteractive::Fullscreen();
+		/*Component HelpContent = Renderer([] {
+			return vbox(
+				hbox(text(gettext("GitHub url of this project :")), hyperlink(R"(https://github.com/Chessom/Black-White)") | underlined),
+				paragraphAlignJustify(
+					gettext("This is a TUI(CUI) game set program, you can interact with the program using a mouse.")
+				)
+
+			);
+		});*/
+		/*Component tvr = ftxui::Make<components::TextViewer>(R"(D:\Projects\CppProjects\BlackWhite\include\core.hpp)");
+		screen.Loop(Container::Vertical({ tvr | flex , Button(gettext("Quit"),screen.ExitLoopClosure(),ButtonOption::Animated()) | center }));*/
 	}
 }

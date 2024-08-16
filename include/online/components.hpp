@@ -4,7 +4,7 @@
 #include"tui/components.hpp"
 #include"online/user.hpp"
 #include"othello/gamer/online.hpp"
-#include"othello/components.hpp"
+#include"othello/tui/components.hpp"
 #include"tictactoe/gamer/online.hpp"
 #include"tictactoe/components.hpp"
 namespace bw::online::components {
@@ -239,24 +239,33 @@ namespace bw::online::components {
 		ftxui::Component MakeWindow() {
 			using namespace ftxui;
 			auto InputChatComp = Input(&chatmsg, gettext("Enter your message here"), InputOption::Spacious());
-			auto SendChatBut = Button(gettext("Send"), [this] {
-				if (self->in_room()) {
-					if (chatmsg != "") {
-						self->broadcast(chatmsg);
-						chatmsg = "";
-					}
-				}
-				else {
-					show_content = false;
-					showRoomChatTaskBar = false;
-				}
+			auto NextlineBut = Button(gettext("Next line"), [InputChatComp] {
+				InputChatComp->OnEvent(Event::Return);
+				InputChatComp->TakeFocus();
 				}, ButtonOption::Animated(Color::Orange1));
-			auto SendChatCom = ftxui::Container::Vertical({
-				InputChatComp | flex,
-				Renderer(SendChatBut, [SendChatBut] {
-					return hbox(text(gettext("Press enter to line feed.")) , SendChatBut->Render() | align_right | vcenter);
-				})
-				}) | flex;
+			auto SendChatCom = 
+				ftxui::Container::Vertical({
+					InputChatComp | flex ,
+					Renderer(NextlineBut, [NextlineBut] {
+						return hbox(text(gettext("Press enter to send")) ,filler(), NextlineBut->Render() | vcenter);
+					})
+				}) | flex | ftxui::CatchEvent(
+					[this](Event e) {
+						if (e == Event::Return) {
+							if (self->in_room()) {
+								if (chatmsg != "") {
+									self->broadcast(chatmsg);
+									chatmsg = "";
+								}
+							}
+							else {
+								show_content = false;
+								showRoomChatTaskBar = false;
+							}
+							return true;
+						}
+						return false;
+					});
 			auto temp_ = ResizableSplitBottom(
 				SendChatCom, 
 				RoomChatMsgs | Renderer([this] (Element e){
@@ -578,7 +587,11 @@ namespace bw::online::components {
 				if (setDefault) {
 					global_config->first_login = false;
 					global_config->default_name = loginName;
-					global_config->dump_binary_file("config.bin");
+					std::string config_json;
+					struct_json::to_json(*global_config, config_json);
+					std::ofstream fout(json_config_path, std::ios::out);
+					fout << config_json;
+					fout.close();
 				}
 				self->name = loginName;
 			}

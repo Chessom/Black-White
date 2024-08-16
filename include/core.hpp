@@ -17,7 +17,7 @@ namespace bw::core {
 	namespace gameid {
 		enum { unspecific, othello, ataxx, gobang, tictactoe };
 	}
-	enum { none = -1, col0 = 0, col1 = 1 };//color0,color1,none
+	enum { none = -1, col0 = 0, col1 = 1, col2, col3 };//none,color0,color1
 	inline constexpr color op_col(const color& c) { return c ^ 1; }
 	namespace directions {
 		enum { R = 0, RD, D, DL, L, LU, U, UR };	//directions

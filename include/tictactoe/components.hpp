@@ -116,142 +116,18 @@ namespace bw::tictactoe::components {
 	public:
 		Game() { pctx = std::make_shared<boost::asio::io_context>(); }
 		Game(std::shared_ptr<boost::asio::io_context> context_ptr) :basic_Game(context_ptr) {};
-		inline std::string censtr(const std::string& str, int width) {
-			return std::format("{0:^{1}}", str, width);
-		}
-		inline string gbk2utf8(std::string_view s) {
-			return boost::locale::conv::to_utf<char>(s.data(), "gbk");
-		}
-		virtual ftxui::Component GamePage(ftxui::ScreenInteractive& screen, basic_game_ptr gm_ptr) override {
+		ftxui::Component AnotherRoundButton(game_ptr gm) {
 			using namespace ftxui;
-			assert(gptr[col0] != nullptr && gptr[col1] != nullptr);
-			std::shared_ptr<game> gm = std::dynamic_pointer_cast<game>(gm_ptr);
-			Board brd_ptr = Make<BoardBase>(pctx, gm);
-
-			gm->regret_sig.connect([brd_ptr] {
-				brd_ptr->pmvdq->q.push_back({ .mvtype = move::regret });
-				brd_ptr->pmvdq->tim.cancel_one();
-				});
-			gm->end_sig.connect([brd_ptr,gm] {
-				auto winner = gm->brd.check_winner();
-				if (winner != core::none) {
-					ui::msgbox(std::format("{} {}", gm->g[winner]->name, gettext("Win!")));
-				}
-				else if (gm->brd.cnt == 9) {
-					ui::msgbox(gettext("Draw!"));
-				}
-				});
-			gm->flush_sig.connect([brd_ptr, gm,&screen] {
-				screen.Post([brd_ptr, gm] { brd_ptr->brd = gm->current_board(); });
-				});
-			gm->save_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
-			gm->suspend_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
-
-			Component buttons = Container::Vertical({
-				Button(censtr(gettext("Quit"), 8), [this,gm,&screen] {gm->end_game(); if (!pctx->stopped()) { pctx->stop(); } screen.Exit(); }, ButtonOption::Animated()) | center,
-				Renderer([] {return separator(); }),
-				Button(censtr(gettext("Regret"), 8), [gm] {gm->regret_sig(); }, ButtonOption::Animated()) | center,
-				Renderer([] {return separator(); }),
-				Button(censtr(gettext("Suspend"), 8), [gm] {gm->suspend_sig(); }, ButtonOption::Animated()) | center,
-				Renderer([] {return separator(); }),
-				Button(censtr(gettext("Save"), 8), [gm] {gm->save_sig(); }, ButtonOption::Animated()) | center,
-				}) | ftxui::border;
-			Component brd = brd_ptr | center;
-			return 
-			Container::Vertical({
-				Container::Horizontal({
-					buttons,
-					brd,
-				}),
-				Renderer([this, gm] { return text(std::format("{}:{}",gettext("Current player"),gptr[gm->current_color()]->name)) | center; }),
-			});
+			return Button(gettext("Another round"), [gm, this] {
+				another_round = true;
+				gm->end_game();
+				if (!pctx->stopped()) { pctx->stop(); }
+				ftxui::ScreenInteractive::Active()->Exit();
+				}, ButtonOption::Animated());
 		}
-		virtual ftxui::Component OnlinePrepareCom(bw::online::basic_user_ptr uptr) override {
-			using namespace ftxui;
-			auto layout = Container::Vertical({
-				ui::TextComp(gettext("TicTacToe")),
-				Button(gettext("Match"),[this, uptr]
-				{
-					static boost::asio::steady_timer tim(*pctx);
-					static std::atomic_flag flag;
-					auto tictactoe_Game = shared_from_this();
-					if (!flag.test()) {
-						if (uptr->state != online::user_st::gaming) {
-							uptr->Game_ptr = tictactoe_Game;
-							basic_gamer_info info(core::none, uptr->id, uptr->name, basic_gamer::online, core::gameid::tictactoe);
-							std::string infostr;
-							struct_json::to_json(info, infostr);
-							uptr->deliver(wrap(
-								game_msg{
-									.type = game_msg::prepare,
-									.id = uptr->id,
-									.movestr = infostr,
-									.board = std::format("{} {}", "tictactoe","3"),
-								},
-								msg_t::game
-								));
-							uptr->state = online::user_st::prepared;
-						}
-						else {
-							ui::msgbox(gettext("Cannot match during game!"));
-						}
-						flag.test_and_set();
-						tim.expires_after(5s);
-						tim.async_wait([](boost::system::error_code ec) {
-							flag.clear();
-						});
-					}
-					else {
-						ui::msgbox(gettext("The operation is too fast, please match later."));
-					}
-				},ButtonOption::Animated()) | center
-				});
-			return layout;
-		}
-		virtual ftxui::Component OnlineGamePage(ftxui::ScreenInteractive& screen, basic_game_ptr gm_ptr) {
-			using namespace ftxui;
-			assert(gptr[col0] != nullptr && gptr[col1] != nullptr);
-			std::shared_ptr<game> gm = std::dynamic_pointer_cast<game>(gm_ptr);
-			Board brd_ptr = Make<BoardBase>(pctx, gm);
-
-			gm->regret_sig.connect([brd_ptr] {
-				brd_ptr->pmvdq->q.push_back({ .mvtype = move::regret });
-				brd_ptr->pmvdq->tim.cancel_one();
-				});
-			gm->end_sig.connect([brd_ptr, gm] {
-				auto winner = gm->brd.check_winner();
-				if (winner != core::none) {
-					ui::msgbox(std::format("{} {}", gm->g[winner]->name, gettext("Win!")));
-				}
-				else {
-					ui::msgbox(gettext("Draw!"));
-				}
-				});
-			gm->flush_sig.connect([brd_ptr, gm, &screen] {
-				screen.Post([brd_ptr, gm] { brd_ptr->brd = gm->current_board(); });
-				});
-			gm->save_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
-			gm->suspend_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
-
-			Component buttons = Container::Vertical({
-				Button(censtr(gettext("Quit"), 8), [gm] {gm->end_game(); }, ButtonOption::Animated()) | center,
-				Renderer([] {return separator(); }),
-				Button(censtr(gettext("Regret"), 8), [gm] {gm->regret_sig(); }, ButtonOption::Animated()) | center,
-				Renderer([] {return separator(); }),
-				Button(censtr(gettext("Suspend"), 8), [gm] {gm->suspend_sig(); }, ButtonOption::Animated()) | center,
-				Renderer([] {return separator(); }),
-				Button(censtr(gettext("Save"), 8), [gm] {gm->save_sig(); }, ButtonOption::Animated()) | center,
-				}) | ftxui::border;
-			Component brd = brd_ptr | center;
-			return
-				Container::Vertical({
-					Container::Horizontal({
-						buttons | center,
-						brd | center,
-					}),
-					Renderer([this, gm] { return text(std::format("{}:{}",gettext("Current player"),gptr[gm->current_color()]->name)) | center; }),
-					});
-		}
+		virtual ftxui::Component GamePage(ftxui::ScreenInteractive& screen, basic_game_ptr gm_ptr) override;
+		virtual ftxui::Component OnlinePrepareCom(bw::online::basic_user_ptr uptr) override;
+		virtual ftxui::Component OnlineGamePage(ftxui::ScreenInteractive& screen, basic_game_ptr gm_ptr);
 		virtual void join(basic_gamer_ptr gp) override {
 			assert(gp != nullptr);
 			gptr[gp->col] = std::dynamic_pointer_cast<gamer>(gp);
@@ -279,65 +155,203 @@ namespace bw::tictactoe::components {
 			return gm;
 		}
 		void set_board_size(int size) override {}
-		bool GamePreparing() {
-			using namespace ftxui;
-			bool ret = true;
-			ScreenInteractive screen = ftxui::ScreenInteractive::Fullscreen();
-			int selected_2 = 0, selected_1 = 0, selected_3 = 2;
-			ui::auto_close_modal _f;
-
-			Component layout = Container::Vertical({
-				Container::Horizontal({Renderer([] {return ftxui::text(gettext("First Player:")); }) | center,Dropdown(&gamer_list,&selected_1) | align_right,}),
-				Container::Horizontal({Renderer([] {return ftxui::text(gettext("Second Player:")); }) | center,Dropdown(&gamer_list,&selected_2) | align_right,}),
-				Button(censtr(gettext("Start"), 8), screen.ExitLoopClosure(), ButtonOption::Animated()) | center,
-				Button(censtr(gettext("Back"), 8), [&ret,&screen] { ret = false; screen.Exit(); }, ButtonOption::Animated()) | center
-				}) | ui::EnableMessageBox();
-			screen.Loop(Renderer(layout, [&layout, &ret] {return dbox(layout->Render() | center); }));
-			if (!ret)
-				return ret;
-			switch (selected_1)
-			{
-			case 0:gptr[col0] = std::make_shared<human_gamer>(col0); break;
-			case 1:gptr[col0] = std::make_shared<computer_gamer_random>(col0); break;
-			default:
-				break;
-			}
-			switch (selected_2)
-			{
-			case 0:gptr[col1] = std::make_shared<human_gamer>(col1); break;
-			case 1:gptr[col1] = std::make_shared<computer_gamer_random>(col1); break;
-			default:
-				break;
-			}
-			return ret;
-		}
-		void GamePageLocal() {
-			using namespace ftxui;
-
-			ui::auto_close_modal _f;
-			ScreenInteractive screen = ScreenInteractive::Fullscreen();
-			std::shared_ptr<game> gm = std::make_shared<game>(gptr[core::col0], gptr[core::col1]);
-			auto GamePageComp = GamePage(screen, gm) | center | ui::EnableMessageBox();
-			std::jthread j([this, gm, &screen] {
-				try
-				{
-					boost::cobalt::spawn(*pctx, gm->start(), boost::asio::detached);
-					pctx->run();
-				}
-				catch (const std::exception& e)
-				{
-					ui::msgbox(gbk2utf8(e.what()));
-					screen.Exit();
-				}
-				});
-			screen.Loop(GamePageComp);
-			if(!pctx->stopped())
-				pctx->stop();
-		}
+		bool GamePreparing();
+		void GamePageLocal();
 
 		gamer_ptr gptr[2] = { nullptr,nullptr };
 		using context_ptr = std::shared_ptr<boost::asio::io_context>;
 
 	};
 	using ttt_Game_ptr = std::shared_ptr<Game>;
+
+	ftxui::Component Game::GamePage(ftxui::ScreenInteractive& screen, basic_game_ptr gm_ptr) {
+		using namespace ftxui;
+		assert(gptr[col0] != nullptr && gptr[col1] != nullptr);
+		std::shared_ptr<game> gm = std::dynamic_pointer_cast<game>(gm_ptr);
+		Board brd_ptr = Make<BoardBase>(pctx, gm);
+
+		gm->regret_sig.connect([brd_ptr] {
+			brd_ptr->pmvdq->q.push_back({ .mvtype = move::regret });
+			brd_ptr->pmvdq->tim.cancel_one();
+			});
+		gm->end_sig.connect([brd_ptr, gm, this] {
+			auto winner = gm->brd.check_winner();
+			if (winner != core::none) {
+				ui::msgbox(std::format("{} {}", gm->g[winner]->name, gettext("Win!")), { ui::MakeOKButton(),ui::TextComp(" "),AnotherRoundButton(gm) });
+			}
+			else if (gm->brd.cnt == 9) {
+				ui::msgbox(gettext("Draw!"), { ui::MakeOKButton(), ui::TextComp(" "), AnotherRoundButton(gm) });
+			}
+			});
+		gm->flush_sig.connect([brd_ptr, gm, &screen] {
+			screen.Post([brd_ptr, gm] { brd_ptr->brd = gm->current_board(); });
+			});
+		gm->save_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
+		gm->suspend_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
+
+		Component buttons = Container::Vertical({
+			Button(censtr(gettext("Quit"), 8), [this,gm,&screen] {gm->end_game(); if (!pctx->stopped()) { pctx->stop(); } screen.Exit(); }, ButtonOption::Animated()) | center,
+			Renderer([] {return separator(); }),
+			Button(censtr(gettext("Regret"), 8), [gm] {gm->regret_sig(); }, ButtonOption::Animated()) | center,
+			Renderer([] {return separator(); }),
+			Button(censtr(gettext("Suspend"), 8), [gm] {gm->suspend_sig(); }, ButtonOption::Animated()) | center,
+			Renderer([] {return separator(); }),
+			Button(censtr(gettext("Save"), 8), [gm] {gm->save_sig(); }, ButtonOption::Animated()) | center,
+			}) | ftxui::border;
+		Component brd = brd_ptr | center;
+		return
+			Container::Vertical({
+				Container::Horizontal({
+					buttons,
+					brd,
+				}),
+				Renderer([this, gm] { return text(std::format("{}:{}",gettext("Current player"),gptr[gm->current_color()]->name)) | center; }),
+				});
+	}
+	
+	ftxui::Component Game::OnlinePrepareCom(bw::online::basic_user_ptr uptr) {
+		using namespace ftxui;
+		auto layout = Container::Vertical({
+			ui::TextComp(gettext("TicTacToe")),
+			Button(gettext("Match"),[this, uptr]
+			{
+				static boost::asio::steady_timer tim(*pctx);
+				static std::atomic_flag flag;
+				auto tictactoe_Game = shared_from_this();
+				if (!flag.test()) {
+					if (uptr->state != online::user_st::gaming) {
+						uptr->Game_ptr = tictactoe_Game;
+						basic_gamer_info info(core::none, uptr->id, uptr->name, basic_gamer::online, core::gameid::tictactoe);
+						std::string infostr;
+						struct_json::to_json(info, infostr);
+						uptr->deliver(wrap(
+							game_msg{
+								.type = game_msg::prepare,
+								.id = uptr->id,
+								.movestr = infostr,
+								.board = std::format("{} {}", "tictactoe","3"),
+							},
+							msg_t::game
+							));
+						uptr->state = online::user_st::prepared;
+					}
+					else {
+						ui::msgbox(gettext("Cannot match during game!"));
+					}
+					flag.test_and_set();
+					tim.expires_after(5s);
+					tim.async_wait([](boost::system::error_code ec) {
+						flag.clear();
+					});
+				}
+				else {
+					ui::msgbox(gettext("The operation is too fast, please match later."));
+				}
+			},ButtonOption::Animated()) | center
+			});
+		return layout;
+	}
+	
+	ftxui::Component Game::OnlineGamePage(ftxui::ScreenInteractive& screen, basic_game_ptr gm_ptr) {
+		using namespace ftxui;
+		assert(gptr[col0] != nullptr && gptr[col1] != nullptr);
+		std::shared_ptr<game> gm = std::dynamic_pointer_cast<game>(gm_ptr);
+		Board brd_ptr = Make<BoardBase>(pctx, gm);
+
+		gm->regret_sig.connect([brd_ptr] {
+			brd_ptr->pmvdq->q.push_back({ .mvtype = move::regret });
+			brd_ptr->pmvdq->tim.cancel_one();
+			});
+		gm->end_sig.connect([brd_ptr, gm] {
+			auto winner = gm->brd.check_winner();
+			if (winner != core::none) {
+				ui::msgbox(std::format("{} {}", gm->g[winner]->name, gettext("Win!")));
+			}
+			else {
+				ui::msgbox(gettext("Draw!"));
+			}
+			});
+		gm->flush_sig.connect([brd_ptr, gm, &screen] {
+			screen.Post([brd_ptr, gm] { brd_ptr->brd = gm->current_board(); });
+			});
+		gm->save_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
+		gm->suspend_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
+
+		Component buttons = Container::Vertical({
+			Button(censtr(gettext("Quit"), 8), [gm] {gm->end_game(); }, ButtonOption::Animated()) | center,
+			Renderer([] {return separator(); }),
+			Button(censtr(gettext("Regret"), 8), [gm] {gm->regret_sig(); }, ButtonOption::Animated()) | center,
+			Renderer([] {return separator(); }),
+			Button(censtr(gettext("Suspend"), 8), [gm] {gm->suspend_sig(); }, ButtonOption::Animated()) | center,
+			Renderer([] {return separator(); }),
+			Button(censtr(gettext("Save"), 8), [gm] {gm->save_sig(); }, ButtonOption::Animated()) | center,
+			}) | ftxui::border;
+		Component brd = brd_ptr | center;
+		return
+			Container::Vertical({
+				Container::Horizontal({
+					buttons | center,
+					brd | center,
+				}),
+				Renderer([this, gm] { return text(std::format("{}:{}",gettext("Current player"),gptr[gm->current_color()]->name)) | center; }),
+				});
+	}
+	
+	bool Game::GamePreparing() {
+		using namespace ftxui;
+		bool ret = true;
+		ScreenInteractive screen = ftxui::ScreenInteractive::Fullscreen();
+		int selected_2 = 0, selected_1 = 0, selected_3 = 2;
+		ui::auto_close_modal _f;
+
+		Component layout = Container::Vertical({
+			Container::Horizontal({Renderer([] {return ftxui::text(gettext("First Player:")); }) | center,Dropdown(&gamer_list,&selected_1) | align_right,}),
+			Container::Horizontal({Renderer([] {return ftxui::text(gettext("Second Player:")); }) | center,Dropdown(&gamer_list,&selected_2) | align_right,}),
+			Button(censtr(gettext("Start"), 8), screen.ExitLoopClosure(), ButtonOption::Animated()) | center,
+			Button(censtr(gettext("Back"), 8), [&ret,&screen] { ret = false; screen.Exit(); }, ButtonOption::Animated()) | center
+			}) | ui::EnableMessageBox();
+		screen.Loop(Renderer(layout, [&layout, &ret] {return dbox(layout->Render() | center); }));
+		if (!ret)
+			return ret;
+		switch (selected_1)
+		{
+		case 0:gptr[col0] = std::make_shared<human_gamer>(col0); break;
+		case 1:gptr[col0] = std::make_shared<computer_gamer_random>(col0); break;
+		default:
+			break;
+		}
+		switch (selected_2)
+		{
+		case 0:gptr[col1] = std::make_shared<human_gamer>(col1); break;
+		case 1:gptr[col1] = std::make_shared<computer_gamer_random>(col1); break;
+		default:
+			break;
+		}
+		return ret;
+	}
+	
+	void Game::GamePageLocal() {
+		using namespace ftxui;
+		another_round = false;
+		ui::auto_close_modal _f;
+		ScreenInteractive screen = ScreenInteractive::Fullscreen();
+		std::shared_ptr<game> gm = std::make_shared<game>(gptr[core::col0], gptr[core::col1]);
+		auto GamePageComp = GamePage(screen, gm) | center | ui::EnableMessageBox();
+		std::jthread j([this, gm, &screen] {
+			try
+			{
+				boost::cobalt::spawn(*pctx, gm->start(), boost::asio::detached);
+				pctx->run();
+			}
+			catch (const std::exception& e)
+			{
+				ui::msgbox(gbk2utf8(e.what()));
+				screen.Exit();
+			}
+			});
+		screen.Loop(GamePageComp);
+		if (!pctx->stopped())
+			pctx->stop();
+		pctx->restart();
+	}
 }
