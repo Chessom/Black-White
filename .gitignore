@@ -365,3 +365,12 @@ FodyWeavers.xsd
 # ClassDiagram
 *.cd
 /locale.zip
+/script.lua
+/config.json
+/locale.7z
+/locale.7z
+/locale.7z
+/locale.7z
+/config.json
+/log.txt
+/locale/zh_CN/LC_MESSAGES/zh_CN.mo
