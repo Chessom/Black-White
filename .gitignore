@@ -374,3 +374,6 @@ FodyWeavers.xsd
 /config.json
 /log.txt
 /locale/zh_CN/LC_MESSAGES/zh_CN.mo
+*.exe
+*.lua
+*.py
