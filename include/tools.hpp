@@ -64,21 +64,6 @@ namespace bw::tools {
     inline bool is_vaild_movestr(const string& s) {
         return s[0] >= 'A' && s[0] <= 'Z' && s[1] >= '0' && s[1] <= '9';
     }
-    inline void test_applymove() {
-        using namespace othello;
-        ull bm, wm;
-        cin >> std::hex >> bm >> wm;
-        bitbrd brd(bm, wm);
-        arrbrd abrd(brd);
-        while (true) {
-            moves mvs(brd, col0);
-            print("{:sm<}\n{:sm<}\n{:c}\n", brd, abrd, mvs);
-            string s;
-            cin >> s;
-            brd.applymove(fromstr(s), col0);
-            abrd.applymove(fromstr(s), col0);
-        }
-    }
     inline void cls() {
         std::system("cls");
     }

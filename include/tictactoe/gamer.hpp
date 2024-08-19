@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include"gamer.hpp"
+#include"basic_gamer.hpp"
 #include"tictactoe/move.hpp"
 #include"tictactoe/board.hpp"
 namespace bw::tictactoe {

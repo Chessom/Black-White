@@ -61,6 +61,7 @@ namespace bw::othello {
 			pmvdq->q.push_back({ .mvtype = move::quit });
 			pmvdq->tim.cancel();
 		}
+		virtual bool good()const override { return true; }
 		void set_move_queue(timdq_ptr move_queue) {
 			pmvdq = std::move(move_queue);
 		}

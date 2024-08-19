@@ -230,7 +230,7 @@ namespace std {
 			return it;
 		}
 		template<typename FormatContext>
-		auto format(const bw::othello::moves& mvs, FormatContext& fc) {
+		auto format(const bw::othello::moves& mvs, FormatContext& fc) const {
 			if (mvs.empty())return fc.out();
 			if (number) {
 				std::format_to(fc.out(), "{}", mvs.coords[0]);

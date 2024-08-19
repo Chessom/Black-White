@@ -3,6 +3,7 @@
 #include"othello/gamer/computer.hpp"
 #include"othello/gamer/remote_tcp.hpp"
 #include"othello/gamer/lua_gamer.hpp"
+#include"othello/gamer/python_gamer.hpp"
 #include"tui/text_editor.hpp"
 #include"tui/components.hpp"
 namespace bw::components {
@@ -13,10 +14,11 @@ namespace bw::components {
 		othello::lua_gamer_ptr gptr = std::dynamic_pointer_cast<othello::lua_gamer>(_p);
 		{
 			std::ifstream fin;
-			fin.open("othello.lua", std::ios::in);
+			fin.open(gptr->default_script_path(), std::ios::in);
 			if (fin.is_open()) {
-				gptr->script.clear();
-				fin >> gptr->script;
+				std::stringstream ss;
+				ss << fin.rdbuf();
+				gptr->script = ss.str();
 			}
 			fin.close();
 		}
@@ -68,11 +70,19 @@ namespace bw::components {
 					fin.close();
 					return;
 				}
-				gptr->script.clear();
-				fin >> gptr->script;
+				std::stringstream ss;
+				ss << fin.rdbuf();
+				gptr->script = ss.str();
 				fin.close();
 			},ButtonOption::Animated()) | hcenter,
-			ui::TextComp(gettext("File name\n\"othello.lua\""),hcenter) | border | hcenter
+			Container::Vertical({
+				ui::TextComp(gettext("File name:"),hcenter) | hcenter,
+				Input(&gptr->script_filename,gettext("enter path")) | hcenter
+				}) | border,
+			Container::Vertical({
+				ui::TextComp(gettext("get move function name:"),hcenter) | hcenter,
+				Input(&gptr->getmove_func_signature,gettext("enter function signature")) | hcenter
+				}) | border
 		});
 		return ResizableSplit(ResizableSplitOption{
 			.main = Container::Vertical({error_msg | flex ,ui::ToCom(separator()),Buttons | hcenter }),
@@ -80,6 +90,95 @@ namespace bw::components {
 			.direction = Direction::Right,
 			.main_size = 15
 		});
+	}
+
+	template<>
+	ftxui::Component GamerSetting<othello::python_gamer>(basic_gamer_ptr _p) {
+		using namespace ftxui;
+		std::shared_ptr<std::string> error_str = std::make_shared<std::string>("");
+		othello::python_gamer_ptr gptr = std::dynamic_pointer_cast<othello::python_gamer>(_p);
+		auto test_op = [gptr, error_str] {
+			try {
+				gptr->test();
+				error_str->clear();
+			}
+			catch (const pybind11::error_already_set& e) {
+				*error_str = e.what();
+				return;
+			}
+			catch (const std::exception& e) {
+				*error_str = e.what();
+				return;
+			};
+		};
+		{
+			std::ifstream fin;
+			fin.open(gptr->default_script_path(), std::ios::in);
+			if (fin.is_open()) {
+				std::stringstream ss;
+				ss << fin.rdbuf();
+				gptr->script = ss.str();
+				test_op();
+			}
+			fin.close();
+		}
+		
+		TextEditorOption option = TextEditorOption::Default();
+		option.line_number_renderer = [](int number) {
+			return text(std::to_string(number)) | color(Color::Cyan);
+			};
+		Component editor = TextEditor(&gptr->script, gettext("Code Python here"), option) | flex | borderRounded;
+		Component error_msg = Renderer([error_str] {
+			if (error_str->empty()) {
+				return window(text(gettext("Error Output")), text(gettext("No errors")) | color(Color::Green));
+			}
+			else {
+				return window(text(gettext("Error Output")), ui::autolines(*error_str) | color(Color::RedLight));
+			}
+			});
+		Component Buttons = Container::Vertical({
+			Button(gettext("Save Script"),[gptr, error_str] {
+				std::ofstream fout;
+				fout.open(gptr->default_script_path(), std::ios::out);
+				if (fout.is_open()) {
+					fout << gptr->script;
+				}
+				else {
+					*error_str = gettext("Failed to save script to ") + gptr->default_script_path();
+				}
+				fout.close();
+				},ButtonOption::Animated(Color::GreenLight)) | hcenter,
+			Button(gettext("Test Script"),
+				test_op
+				,ButtonOption::Animated(Color::Blue)) | hcenter,
+			Button(gettext("Load Script"),[gptr,error_str] {
+				std::ifstream fin;
+				fin.open(gptr->default_script_path(), std::ios::in);
+				if (!fin) {
+					ui::msgbox(gettext("Failed to open script file: ") + gptr->default_script_path());
+					fin.close();
+					return;
+				}
+				std::stringstream ss;
+				ss << fin.rdbuf();
+				gptr->script = ss.str();
+				fin.close();
+			},ButtonOption::Animated()) | hcenter,
+			Container::Vertical({
+				ui::TextComp(gettext("File name:"),hcenter) | hcenter,
+				Input(&gptr->script_filename,gettext("enter path")) | hcenter
+				}) | border,
+			Container::Vertical({
+				ui::TextComp(gettext("getmove function name:"),hcenter) | hcenter,
+				Input(&gptr->getmove_func_signature,gettext("enter function signature")) | hcenter
+				}) | border
+			});
+		return ResizableSplit(ResizableSplitOption{
+			.main = Container::Vertical({error_msg | flex ,ui::ToCom(separator()),Buttons | hcenter }),
+			.back = editor,
+			.direction = Direction::Right,
+			.main_size = 15
+			});
 	}
 	
 	template<>

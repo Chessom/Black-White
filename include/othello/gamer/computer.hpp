@@ -2,7 +2,7 @@
 #include"stdafx.h"
 #include"core.hpp"
 #include"othello/gamer.hpp"
-#include"othello/tui/components.hpp"
+#include"tui/components.hpp"
 #include"othello/ai.hpp"
 namespace bw::othello {
 	using namespace std::chrono_literals;
@@ -31,7 +31,7 @@ namespace bw::othello {
 			std::uniform_int_distribution<> distrib(0, mvs.size - 1);
 			co_return move{ .mvtype = move::mv, .pos = mvs.coords[distrib(gen)],.c = col };
 		}
-		
+		virtual bool good()const override { return true; }
 		virtual ~computer_gamer_random() = default;
 	};
 	class computer_gamer_ai :public bw::othello::computer_gamer {
@@ -55,6 +55,7 @@ namespace bw::othello {
 			}
 			co_return mv;
 		}
+		virtual bool good()const override { return true; }
 		virtual ~computer_gamer_ai() = default;
 	private:
 		ai::evaluator e;

@@ -5,4 +5,4 @@
 #include"othello/gamer/human.hpp"
 #include"othello/gamer/remote_tcp.hpp"
 #include"othello/gamer/online.hpp"
-#include"othello/tui/components.hpp"
+#include"othello/components.hpp"

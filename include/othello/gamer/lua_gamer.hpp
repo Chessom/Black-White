@@ -52,11 +52,11 @@ namespace bw::othello {
 			);
 		}
 		std::string default_script_path() {
-			return global_config->default_script_directory + "othello.lua";
+			return global_config->default_script_directory + script_filename;
 		}
 		void test() {
 			lua.safe_script(script);
-			sol::protected_function getmv = lua["getmove"];
+			sol::protected_function getmv = lua[getmove_func_signature];
 			dynamic_brd brd;
 			brd.initialize();
 			auto res = getmv(brd, col0);
@@ -72,15 +72,17 @@ namespace bw::othello {
 			if (mvs.find(crd) == moves::npos) {
 				throw std::runtime_error(std::format("{}:{}", gettext("Invalid move returned by the script"), crd));
 			}
+			is_good = true;
 		}
 		virtual boost::cobalt::task<move> getmove(dynamic_brd& brd, std::chrono::seconds limit = std::chrono::seconds(0)) {
-			auto resfunc = lua["getmove"];
+			auto resfunc = lua[getmove_func_signature];
 			sol::protected_function getmv;
 			if (resfunc.valid()) {
 				getmv = resfunc;
 			}
 			else {
-				co_return move{ .mvtype = move::invalid,.msg = "getmove fucntion not found!" };
+				sol::error err = resfunc;
+				co_return move{ .mvtype = move::invalid,.msg = err.what() };
 			}
 			
 			auto res = getmv(brd, col);
@@ -109,7 +111,11 @@ namespace bw::othello {
 		virtual void cancel() {
 
 		};
+		virtual bool good()const override { return is_good; }
 		virtual ~lua_gamer() = default;
+		bool is_good = false;
+		std::string getmove_func_signature = "getmove";
+		std::string script_filename = "othello.lua";
 	};
 	using lua_gamer_ptr = std::shared_ptr<lua_gamer>;
 }

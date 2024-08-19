@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include"stdafx.h"
 #include"core.hpp"
-#include"gamer.hpp"
+#include"basic_gamer.hpp"
 #include"othello/move.hpp"
 #include"othello/moves.hpp"
 #include"othello/board.hpp"
@@ -21,8 +21,7 @@ namespace bw {
 	using timdq_ptr = std::shared_ptr<timdq>;
 }
 namespace bw::othello {
-	class gamer :public bw::basic_gamer {
-	public:
+	struct gamer :public bw::basic_gamer {
 		using context = boost::asio::io_context;
 		using context_ptr = std::shared_ptr<context>;
 		enum { pass, end, suspended };

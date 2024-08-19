@@ -7,7 +7,7 @@
 #include"tui/components.hpp"
 #include"tui/ftxui_screen.hpp"
 #include"tui/game/gamer_prepare.hpp"
-#include"othello/tui/gamer_prepare.hpp"
+#include"othello/gamer_prepare.hpp"
 #include"online/signals.hpp"
 namespace bw::othello::components {
 	class BoardBase : public ftxui::ComponentBase {
@@ -61,8 +61,14 @@ namespace bw::othello::components {
 				for (int y = 0; y < brd.size; ++y) {
 					col = brd.getcol({ x,y });
 					if (col == core::none) {
-						row.emplace_back(text(game_ptr->valid_move(game_ptr->current_color(), { x,y }) ? " • " : "   ")
-							| ftxui::color(Color::Red) | bgcolor(Color::Green));
+						if (game_ptr->current_gamer()->is_human() || game_ptr->current_gamer()->gamertype == gamer::online) {
+							mvs.update(brd, game_ptr->current_color());
+							row.emplace_back(text(mvs.find({ x,y }) != moves::npos ? " • " : "   ")
+								| ftxui::color(Color::Red) | bgcolor(Color::Green));
+						}
+						else {
+							row.emplace_back(text("   ")| ftxui::color(Color::Red) | bgcolor(Color::Green));
+						}
 					}
 					else if (col == core::col0) {
 						row.emplace_back(text(" ● ") | style);
@@ -114,7 +120,7 @@ namespace bw::othello::components {
 		timdq_ptr pmvdq;
 		std::shared_ptr<game> game_ptr = nullptr;
 		dynamic_brd brd;
-		
+		moves mvs;
 	protected:
 		bool mouse_hover = false;
 		ftxui::Box box;
@@ -336,6 +342,11 @@ namespace bw::othello::components {
 					Tabs->Add(bw::components::GamerSetting<lua_gamer>(gptr[col]));
 					advanced = true;
 					break;
+				case std::to_underlying(detailed_type::python_script_gamer):
+					gptr[col] = std::make_shared<python_gamer>(col);
+					Tabs->Add(bw::components::GamerSetting<python_gamer>(gptr[col]));
+					advanced = true;
+					break;
 				default:
 					break;
 				}
@@ -383,7 +394,17 @@ namespace bw::othello::components {
 			Tabs | flex
 			});
 		auto Buttons = Container::Vertical({
-			Button(gettext("Start"),[] {ftxui::ScreenInteractive::Active()->Exit(); },ButtonOption::Animated(Color::Green)) | center,
+			Button(gettext("Start"),[this] {
+				if (!gptr[col0]->good()) {
+					ui::msgbox(gettext("The setting information of the first gamer is incomplete or incorrect."));
+				}
+				else if (!gptr[col1]->good()) {
+					ui::msgbox(gettext("The setting information of the second gamer is incomplete or incorrect."));
+				}
+				else {
+					ftxui::ScreenInteractive::Active()->Exit();
+				}
+				},ButtonOption::Animated(Color::Green)) | center,
 			Button(gettext("Back"),[&ret] {ftxui::ScreenInteractive::Active()->Exit(); ret = false; },ButtonOption::Animated(Color::Red)) | center
 			}) | center;
 		return ResizableSplit(
@@ -445,14 +466,22 @@ namespace bw::othello::components {
 				Renderer([gm,this] { return text(std::format("{}:{}",gettext("Current player"),gptr[gm->current_color()]->get_name())) | center; }),
 				Renderer([brd_ptr,this] {return text(std::format("{}-{}:{}",gettext("Black"),gptr[col0]->get_name(),brd_ptr->brd.countpiece(col0))) | center; }),
 				Renderer([brd_ptr,this] {return text(std::format("{}-{}:{}",gettext("White"),gptr[col1]->get_name(),brd_ptr->brd.countpiece(col1))) | center; }),
-				Renderer([brd_ptr,this] {return text(std::format("{}-{} {}:{}",gettext("Black"),gptr[col0]->get_name(),gettext("state"),
-				gptr[col0]->is_remote() ?
-					(std::dynamic_pointer_cast<remote_tcp_gamer>(gptr[col0])->connected() ? gettext("Good") : gettext("Disconnetced"))
-					: gettext("Good"))) | center; }),
-				Renderer([&] {return text(std::format("{}-{} {}:{}",gettext("White"),gptr[col1]->get_name(),gettext("state"),
-				gptr[col1]->is_remote() ?
-					(std::dynamic_pointer_cast<remote_tcp_gamer>(gptr[col1])->connected() ? gettext("Good") : gettext("Disconnetced"))
-					: gettext("Good"))) | center; }),
+				Renderer([this] {
+					return text(std::format("{}-{} {}:{}",
+					gettext("Black"),
+					gptr[col0]->get_name(),
+					gettext("state"),
+					gptr[col0]->good() ? gettext("Good") : gettext("Bad")
+					)) | center; 
+					}),
+				Renderer([this] {
+					return text(std::format("{}-{} {}:{}",
+					gettext("White"),
+					gptr[col1]->get_name(),
+					gettext("state"),
+					gptr[col1]->good() ? gettext("Good") : gettext("Bad")
+					)) | center; 
+					}),
 			}) | center | border
 			});
 		return layout;
@@ -470,7 +499,16 @@ namespace bw::othello::components {
 		if (!ret)
 			return false;
 		if (advanced) {
-			screen.Loop(GameAdvancedSettingPage(Tabs, selector, ret));
+			if (gptr[col0]->detailed_gamer_type == detailed_type::python_script_gamer
+				&& gptr[col1]->detailed_gamer_type == detailed_type::python_script_gamer)
+				ui::msgbox(gettext(
+R"(Due to the implementation of Python, 
+there will only be one interpreter instance 
+during program execution, so please change 
+the signatures of the "getmove" function for 
+both players, otherwise one of them 
+will be overwritten by the other.)"));
+			screen.Loop(GameAdvancedSettingPage(Tabs, selector, ret) | ui::EnableMessageBox());
 		}
 		return ret;
 	}

@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include"stdafx.h"
 #include"core.hpp"
-#include"gamer.hpp"
+#include"basic_gamer.hpp"
 #include"tui/screen.hpp"
 namespace bw {
 	class basic_game {//基础的game

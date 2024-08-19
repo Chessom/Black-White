@@ -6,7 +6,7 @@
 #include"online/basic_online_gamer.hpp"
 namespace bw::othello {
 	using namespace std::chrono_literals;
-	class online_gamer :public gamer, public online::basic_online_gamer {
+	struct online_gamer :public gamer, public online::basic_online_gamer {
 	public:
 		using timer = boost::asio::steady_timer;
 		using timer_ptr = std::shared_ptr<timer>;
@@ -83,6 +83,7 @@ namespace bw::othello {
 			rd_dq->q.push_back(cancel_mv);
 			rd_dq->tim.cancel();
 		}
+		virtual bool good()const override { return u_ptr != nullptr && rd_dq != nullptr; }
 		std::string mvstr;
 	};
 }

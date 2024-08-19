@@ -3,7 +3,7 @@
 #include"core.hpp"
 namespace bw {
 	using std::string;
-	class basic_gamer {//gamer的基础数据
+	struct basic_gamer {//gamer的基础数据
 	public:
 		enum { human, computer, remote, online, external, invalid };//作为基础类别
 		basic_gamer() = default;
@@ -25,6 +25,7 @@ namespace bw {
 		bool is_remote() const {
 			return gamertype == remote;
 		}
+		virtual bool good() const { return true; };
 	};
 	
 	using basic_gamer_ptr = std::shared_ptr<basic_gamer>;

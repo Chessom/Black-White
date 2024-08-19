@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include"gamer.hpp"
+#include"basic_gamer.hpp"
 #include"tui/components.hpp"
 namespace bw::components {
 	inline ftxui::Component HumanGamerSetting(basic_gamer_ptr ptr) {

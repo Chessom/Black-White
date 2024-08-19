@@ -72,15 +72,6 @@ namespace bw::othello {
 		}
 		move consume_one_move() {
 			move mv;
-			/*{
-				std::unique_lock<std::mutex> uqmtx(rdq->mtx);
-				if (rdq->q.empty()) {
-					rdq->conv.wait(uqmtx);
-				}
-			}
-			std::unique_lock<std::mutex> uqmtx(rdq->mtx);
-			mv = rdq->q.front();
-			rdq->q.pop_front();*/
 			return mv;
 		}
 		void start() {
@@ -218,6 +209,7 @@ namespace bw::othello {
 		}
 		void clear_handler() { handle_move_ = nullptr; }
 		void post(std::function<void()> task) const { context_ptr->post(task); }
+		virtual bool good()const override { return context_ptr != nullptr && connected(); }
 		timdq_ptr rdq, wtq;
 		std::shared_ptr<acceptor> acceptor_ptr = nullptr;
 		std::shared_ptr<socket> socket_ptr = nullptr;

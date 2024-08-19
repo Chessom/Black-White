@@ -9,6 +9,28 @@ namespace bw::ui {
 		auto_close_modal() { _show_modal = false; }
 		~auto_close_modal() { _show_modal = false; }
 	};
+	inline ftxui::Component ToCom(ftxui::Element e) {
+		return ftxui::Renderer([e] {return e; });
+	}
+	inline ftxui::Element autolines(const std::string& str, ftxui::ElementDecorator style = ftxui::nothing) {
+		using namespace ftxui;
+		Elements es;
+		int pre = 0;
+		for (int i = 0; i < str.size(); ++i) {
+			if (str[i] == '\n') {
+				es.push_back(paragraphAlignJustify(str.substr(pre, i - pre)) | style);
+				pre = i + 1;
+			}
+		}
+		if (pre != str.size()) {
+			es.push_back(paragraphAlignJustify(str.substr(pre, str.size() - pre)) | style);
+		}
+		return vbox(es);
+	}
+	inline ftxui::Component TextComp(std::string str, ftxui::ElementDecorator style = ftxui::nothing) {
+		using namespace ftxui;
+		return Renderer([str, style]() {return autolines(str.data(), style); });
+	}
 	inline ftxui::Component MakeOKButton() {
 		return ftxui::Button(gettext("OK"), [] {_show_modal = false; _msgbox_call_back(); }, ftxui::ButtonOption::Animated());
 	}
@@ -19,9 +41,9 @@ namespace bw::ui {
 			return vbox({
 				text(""),
 				separator(),
-				text(MessageBoxString) | center,
+				autolines(MessageBoxString,center) | center,
 				inner | center,
-				})| borderRounded | center | clear_under ;
+				}) | borderRounded | center ;
 			});
 		return Container::Vertical({ component });
 	}
@@ -48,35 +70,14 @@ namespace bw::ui {
 	}
 	inline ftxui::ComponentDecorator EnableMessageBox() {
 		using namespace ftxui;
-		return Modal(MessageBoxComp = MessageBoxComponent(), &_show_modal) ;
+		MessageBoxComp = MessageBoxComponent();
+		return Modal(MessageBoxComp | bgcolor(Color::Black), &_show_modal);
 	}
 	inline ftxui::ComponentDecorator EnableStackedMessageBox() {
 		using namespace ftxui;
 		return [](Component comp) {
 			return Container::Stacked({ MessageBoxComp = StackedMsgBoxComp(),std::move(comp) });
 		};
-	}
-	inline ftxui::Component ToCom(ftxui::Element e) {
-		return ftxui::Renderer([e] {return e; });
-	}
-	inline ftxui::Element autolines(const std::string& str, ftxui::ElementDecorator style = ftxui::nothing) {
-		using namespace ftxui;
-		Elements es;
-		int pre = 0;
-		for (int i = 0; i < str.size(); ++i) {
-			if (str[i] == '\n') {
-				es.push_back(paragraphAlignJustify(str.substr(pre, i - pre)) | style);
-				pre = i + 1;
-			}
-		}
-		if (pre != str.size()) {
-			es.push_back(paragraphAlignJustify(str.substr(pre, str.size() - pre)) | style);
-		}
-		return vbox(es);
-	}
-	inline ftxui::Component TextComp(std::string str, ftxui::ElementDecorator style = ftxui::nothing) {
-		using namespace ftxui;
-		return Renderer([str, style]() {return autolines(str.data(), style); });
 	}
 	inline ftxui::Component Focusable() {
 		struct Impl : public ftxui::ComponentBase {
@@ -105,10 +106,10 @@ namespace bw::ui {
 			return vbox({
 				text(""),
 				separator(),
-				text(MessageBoxString) | center,
+				autolines(MessageBoxString,center) | center,
 				inner | center,
 				})
-				| borderRounded | center | clear_under;
+				| borderRounded | center;
 			});
 		MessageBoxComp->Add(box);
 		_show_modal = true;

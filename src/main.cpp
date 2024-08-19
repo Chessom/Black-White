@@ -8,13 +8,14 @@ int main() {
 		bw::initialize();
 	}
 	catch (const std::exception& e) {
-		std::cerr << "Exception: " << e.what();
+		std::cerr << "Exception: " << e.what() << std::endl;
 		std::cerr << "Initialize failed, please delete the configuration file and retry!\n";
 		std::cerr << "初始化失败，请删除配置文件后重试！\n";
+		std::cerr << std::stacktrace().current();
 		auto c = std::getchar();
 		return 0;
 	}
 	bw::cui cui;
-	cui.HomePage();
+	cui.start();
 	return 0;
 }

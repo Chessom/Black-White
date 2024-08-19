@@ -4,7 +4,7 @@
 #include"tui/components.hpp"
 #include"online/user.hpp"
 #include"othello/gamer/online.hpp"
-#include"othello/tui/components.hpp"
+#include"othello/components.hpp"
 #include"tictactoe/gamer/online.hpp"
 #include"tictactoe/components.hpp"
 namespace bw::online::components {

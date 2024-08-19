@@ -84,6 +84,9 @@
     <ClCompile Include="src\tui\text_editor.cpp">
       <Filter>源文件\tui</Filter>
     </ClCompile>
+    <ClCompile Include="src\tui\scroller.cpp">
+      <Filter>源文件\tui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\net\message.hpp">
@@ -170,7 +173,7 @@
     <ClInclude Include="include\game.hpp">
       <Filter>头文件\bw\shared</Filter>
     </ClInclude>
-    <ClInclude Include="include\gamer.hpp">
+    <ClInclude Include="include\basic_gamer.hpp">
       <Filter>头文件\bw\shared</Filter>
     </ClInclude>
     <ClInclude Include="include\gamer\basic_lua_gamer.hpp">
@@ -281,11 +284,20 @@
     <ClInclude Include="include\tui\game\gamer_prepare.hpp">
       <Filter>头文件\bw\tui\game</Filter>
     </ClInclude>
-    <ClInclude Include="include\othello\tui\components.hpp">
+    <ClInclude Include="include\gamer\basic_python_gamer.hpp">
+      <Filter>头文件\bw\shared\gamer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\othello\gamer\python_gamer.hpp">
+      <Filter>头文件\othello\othello.gamer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\othello\components.hpp">
       <Filter>头文件\othello\tui</Filter>
     </ClInclude>
-    <ClInclude Include="include\othello\tui\gamer_prepare.hpp">
+    <ClInclude Include="include\othello\gamer_prepare.hpp">
       <Filter>头文件\othello\tui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tui\scroller.hpp">
+      <Filter>头文件\bw\tui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

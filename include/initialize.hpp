@@ -4,17 +4,38 @@
 #include"config.hpp"
 #include"globals.hpp"
 #include<spdlog/sinks/rotating_file_sink.h>
+#include<stacktrace>
 namespace bw {
 	inline void initialize() {
 
 		using namespace std::filesystem;
-		auto logger = spdlog::rotating_logger_mt("mylogger", "log.txt", 5ll * 1024 * 1024, 3);
-		spdlog::set_default_logger(logger);
+		try{
+			auto logger = spdlog::rotating_logger_mt("mylogger", "log.txt", 5ll * 1024 * 1024, 3);
+			spdlog::set_default_logger(logger);
+		}
+		catch (const std::exception& e)
+		{
+			spdlog::error(e.what());
+			std::cerr << "日志初始化错误\n";
+			std::cerr << std::stacktrace().current();
+			auto c = std::getchar();
+			return;
+		}
 
-		bw::env::set_codepage(CP_UTF8);
-		bw::env::set_font(boost::nowide::widen("Consolas"));
-		bw::env::set_window_size(101, 45);
-
+		try {
+			bw::env::set_codepage(CP_UTF8);
+			//bw::env::set_font(L"Consolas");
+			bw::env::set_window_size(101, 45);
+		}
+		catch (const std::exception& e)
+		{
+			spdlog::error(e.what());
+			std::cerr << "设置代码页错误\n";
+			std::cerr << std::stacktrace().current();
+			auto c = std::getchar();
+			return;
+		}
+		
 		bw::global_config = std::make_shared<bw::config>();
 
 		try {
@@ -54,6 +75,17 @@ namespace bw {
 			std::locale::global(locale_gen(global_config->locale_id + ".utf8"));
 			std::cout.imbue(std::locale());
 		}
-		bw::initialize_globals();
+		try
+		{
+			bw::initialize_globals();
+		}
+		catch (const std::exception& e)
+		{
+			spdlog::error(e.what());
+			std::cerr << "初始化数据错误\n";
+			std::cerr << std::stacktrace().current();
+			auto c = std::getchar();
+			return;
+		}
 	}
 }

@@ -59,30 +59,38 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="BlackWhite.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="BlackWhite.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="BlackWhite.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="BlackWhite.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ExternalIncludePath>C:\Program Files %28x86%29\yaLanTingLibs\include;$(ExternalIncludePath)</ExternalIncludePath>
-    <IncludePath>D:\Projects\CppProjects\BlackWhite\include;$(IncludePath)</IncludePath>
-    <SourcePath>D:\Projects\CppProjects\BlackWhite\src;D:\Projects\CppProjects\editor_tui\third-party\tree-sitter-cpp\src;$(SourcePath)</SourcePath>
-    <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
-    <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ExternalIncludePath>C:\Program Files %28x86%29\yaLanTingLibs\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>$(PythonPath)\include;C:\Program Files %28x86%29\yaLanTingLibs\include;$(ExternalIncludePath)</ExternalIncludePath>
     <IncludePath>D:\Projects\CppProjects\BlackWhite\include;$(IncludePath)</IncludePath>
     <SourcePath>D:\Projects\CppProjects\BlackWhite\src;$(SourcePath)</SourcePath>
     <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
     <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
+    <LibraryPath>$(PythonPath)\libs;$(LibraryPath)</LibraryPath>
+    <ExecutablePath>$(PythonPath);$(ExecutablePath)</ExecutablePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ExternalIncludePath>$(PythonPath)\include;C:\Program Files %28x86%29\yaLanTingLibs\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <IncludePath>D:\Projects\CppProjects\BlackWhite\include;$(IncludePath)</IncludePath>
+    <SourcePath>D:\Projects\CppProjects\BlackWhite\src;$(SourcePath)</SourcePath>
+    <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
+    <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
+    <LibraryPath>$(PythonPath)\libs;$(LibraryPath)</LibraryPath>
+    <ExecutablePath>$(PythonPath);$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg">
     <VcpkgAutoLink>true</VcpkgAutoLink>
@@ -160,11 +168,12 @@
       <Optimization>Disabled</Optimization>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <DisableAnalyzeExternal>true</DisableAnalyzeExternal>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>python3$(PythonVersion)_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -173,7 +182,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;_WIN32_WINNT=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
@@ -195,12 +204,14 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>python3$(PythonVersion).lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\tui\grid-container.cpp" />
     <ClCompile Include="src\tui\ipv4.cpp" />
+    <ClCompile Include="src\tui\scroller.cpp" />
     <ClCompile Include="src\tui\text_editor.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -214,8 +225,9 @@
     <ClInclude Include="include\exceptions.hpp" />
     <ClInclude Include="include\game.hpp" />
     <ClInclude Include="include\basic_Game.hpp" />
-    <ClInclude Include="include\gamer.hpp" />
+    <ClInclude Include="include\basic_gamer.hpp" />
     <ClInclude Include="include\gamer\basic_lua_gamer.hpp" />
+    <ClInclude Include="include\gamer\basic_python_gamer.hpp" />
     <ClInclude Include="include\games.hpp" />
     <ClInclude Include="include\globals.hpp" />
     <ClInclude Include="include\grid-container.hpp" />
@@ -235,18 +247,19 @@
     <ClInclude Include="include\othello\ai.hpp" />
     <ClInclude Include="include\othello\ai\practise.hpp" />
     <ClInclude Include="include\othello\board.hpp" />
+    <ClInclude Include="include\othello\components.hpp" />
     <ClInclude Include="include\othello\game.hpp" />
     <ClInclude Include="include\othello\gamer.hpp" />
     <ClInclude Include="include\othello\gamer\computer.hpp" />
     <ClInclude Include="include\othello\gamer\human.hpp" />
     <ClInclude Include="include\othello\gamer\lua_gamer.hpp" />
     <ClInclude Include="include\othello\gamer\online.hpp" />
+    <ClInclude Include="include\othello\gamer\python_gamer.hpp" />
     <ClInclude Include="include\othello\gamer\remote_tcp.hpp" />
+    <ClInclude Include="include\othello\gamer_prepare.hpp" />
     <ClInclude Include="include\othello\move.hpp" />
     <ClInclude Include="include\othello\moves.hpp" />
     <ClInclude Include="include\othello\online.hpp" />
-    <ClInclude Include="include\othello\tui\components.hpp" />
-    <ClInclude Include="include\othello\tui\gamer_prepare.hpp" />
     <ClInclude Include="include\practise.hpp" />
     <ClInclude Include="include\safe_vector.hpp" />
     <ClInclude Include="include\stdafx.h" />
@@ -267,6 +280,7 @@
     <ClInclude Include="include\tui\ftxui_screen.hpp" />
     <ClInclude Include="include\tui\game\gamer_prepare.hpp" />
     <ClInclude Include="include\tui\screen.hpp" />
+    <ClInclude Include="include\tui\scroller.hpp" />
     <ClInclude Include="include\tui\settings_page.hpp" />
     <ClInclude Include="include\tui\text_editor.hpp" />
     <ClInclude Include="include\tui\ui.hpp" />
