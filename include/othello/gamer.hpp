@@ -35,7 +35,9 @@ namespace bw::othello {
 		virtual boost::cobalt::task<void> pass_msg(std::string) = 0;
 		virtual boost::cobalt::task<void> pass_move(move mv) = 0;
 		virtual void cancel() = 0;//cancel getmove
-		virtual ~gamer() = default;
+		virtual ~gamer() {
+			spdlog::trace("Othello gamer Destructor");
+		}
 		detailed_type detailed_gamer_type = detailed_type::invalid;
 		moves mvs;
 	};

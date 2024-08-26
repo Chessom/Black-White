@@ -6,8 +6,14 @@
 namespace bw::ui {
 	using namespace core;
 	struct auto_close_modal {
-		auto_close_modal() { _show_modal = false; }
-		~auto_close_modal() { _show_modal = false; }
+		auto_close_modal() { 
+			_show_modal = false; 
+			MessageBoxComp->DetachAllChildren();
+		}
+		~auto_close_modal() { 
+			_show_modal = false;
+			MessageBoxComp->DetachAllChildren();
+		}
 	};
 	inline ftxui::Component ToCom(ftxui::Element e) {
 		return ftxui::Renderer([e] {return e; });

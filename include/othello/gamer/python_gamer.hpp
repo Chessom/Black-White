@@ -2,6 +2,7 @@
 #include"othello/gamer.hpp"
 #include"gamer/basic_python_gamer.hpp"
 namespace bw::othello {
+	inline bool py_othello_class_binded = false;
 	struct python_gamer :othello::gamer, plugin::basic_python_gamer {
 		python_gamer() :basic_python_gamer(), gamer() {
 			name = gettext("python_othello_gamer"); 
@@ -20,9 +21,10 @@ namespace bw::othello {
 		virtual void bind_class() override {
             namespace py = pybind11;
 			try {
-				if (global_config->py_use_embedded_module) {
-					basic_python_gamer::bind_class();
+				basic_python_gamer::bind_class();
+				if (global_config->py_use_embedded_module && !py_othello_class_binded) {
 					do_bind_class();
+					py_othello_class_binded = true;
 				}
 			}
 			catch (const py::error_already_set& e) {
@@ -53,6 +55,7 @@ namespace bw::othello {
 			namespace py = pybind11;
 			try {
 				coord crd;
+				py::gil_scoped_acquire acquire;
 				py::function getmv_py = py::globals()[getmove_func_signature.data()];
 				auto res = getmv_py(brd, col);
 				crd = res.cast<coord>();
@@ -74,13 +77,16 @@ namespace bw::othello {
 		};
 		virtual void cancel() {};
 		virtual bool good()const override { return is_good; }
-		virtual ~python_gamer() = default;
+		virtual ~python_gamer() {
+			spdlog::trace("Python Gamer Destructor");
+		};
 		bool is_good = false;
 		std::string getmove_func_signature = "getmove";
 		std::string script_filename = "othello.py";
 	private:
 		void do_bind_class() {
 			namespace py = pybind11;
+			py::gil_scoped_acquire acquire;
 			py::module bw_m = py::module::import("bw_embed");
 			using namespace bw::othello;
 			auto othello_m = bw_m.def_submodule("othello", "submodule for othello game");
@@ -110,6 +116,7 @@ namespace bw::othello {
 				.def_readwrite("coords", &moves::coords)
 				.def_property_readonly("npos", [] {return moves::npos; })
 				.def("__repr__", [](const moves& mvs) {return std::format("{}", mvs); });
+			py::gil_scoped_release release;
 		}
 	};
 	using python_gamer_ptr = std::shared_ptr<python_gamer>;

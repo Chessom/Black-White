@@ -105,6 +105,7 @@ namespace bw::online {
 			thread_ptr = std::make_shared<std::jthread>(
 				[this] {
 					context_ptr->run(); 
+					spdlog::trace("user thread quitted");
 				});
 		}
 		inline void handle_msg(const message& msg);//Implement below
@@ -229,7 +230,7 @@ namespace bw::online {
 			}
 		}
 		void refresh_screen() const {
-			if (scr_ptr && scr_ptr->good()) {
+			if (scr_ptr&&scr_ptr->good()) {
 				scr_ptr->refresh();
 			}
 		}
@@ -253,6 +254,8 @@ namespace bw::online {
 			}
 			signals::end_game.disconnect_all_slots();
 			signals::start_game.disconnect_all_slots();
+			spdlog::trace("user Destructor");
+			spdlog::trace("pctx use_count:{}", context_ptr.use_count());
 		};
 		
 		//boost::signals2::signal<void()> refresh_room_info, search_roon_info;
@@ -288,15 +291,6 @@ namespace bw::online {
 		
 		boost::cobalt::task<void> cobalt_reader();
 		boost::cobalt::task<void> cobalt_writer();
-
-		boost::cobalt::task<void> heart_beat() {//unused
-			boost::asio::steady_timer t(*context_ptr);
-			while (socket.is_open()) {
-				using namespace std;
-				t.expires_after(2min);
-				co_await t.async_wait(boost::cobalt::use_op);
-			}
-		}
 
 		void handle_game_msg(const message&);
 		
@@ -466,6 +460,7 @@ namespace bw::online {
 					auto& chan = chan_gamer_map.at(gmmsg.id);
 					chan.first->q.push_back(gmmsg.movestr);
 					chan.first->tim.cancel();
+					refresh_screen();
 				}
 			}
 				break;

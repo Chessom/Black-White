@@ -143,7 +143,7 @@ namespace bw::othello::components {
 		ftxui::Component GameAdvancedSettingPage(ftxui::Component, int&, bool&);
 		virtual ftxui::Component OnlinePrepareCom(bw::online::basic_user_ptr uptr) override;
 		virtual ftxui::Component OnlineGamePage(ftxui::ScreenInteractive& screen, basic_game_ptr gm_ptr) override;
-		virtual ftxui::Component GamePage(ftxui::ScreenInteractive& screen, basic_game_ptr gm_ptr) override;
+		virtual ftxui::Component GamePage(ftxui::ScreenInteractive& screen) override;
 		virtual void join(basic_gamer_ptr gp) override {
 			assert(gp != nullptr);
 			gptr[gp->col] = std::dynamic_pointer_cast<gamer>(gp);
@@ -186,8 +186,12 @@ namespace bw::othello::components {
 			board_size = size;
 		}
 		gamer_ptr gptr[2] = { nullptr,nullptr };
+		game_ptr gm = nullptr;
 		int board_size = 8;
-		
+		~Game() {
+			spdlog::trace("Othello Game Destructor");
+			spdlog::trace("pctx use_count:{} game object use_count:{}", pctx.use_count(), gm.use_count());
+		}
 	protected:
 		std::string s_size = "8";
 	};
@@ -245,7 +249,7 @@ namespace bw::othello::components {
 				else {
 					ui::msgbox(gettext("The operation is too fast, please match later."));
 				}
-			},ButtonOption::Animated()) | center
+			},ButtonOption::Animated(Color::Green)) | center
 			});
 		return layout;
 	}
@@ -253,40 +257,44 @@ namespace bw::othello::components {
 	ftxui::Component Game::OnlineGamePage(ftxui::ScreenInteractive& screen, basic_game_ptr gm_ptr) {
 		assert(gptr[col0] != nullptr && gptr[col1] != nullptr);
 		using namespace ftxui;
-		game_ptr gm = std::dynamic_pointer_cast<game>(gm_ptr);
+		gm = std::dynamic_pointer_cast<game>(gm_ptr);
 
 		Board brd_ptr = Make<BoardBase>(pctx, gm);
-
-		gm->regret_sig.connect([brd_ptr] {
-			brd_ptr->pmvdq->q.push_back({ .mvtype = move::regret });
-			brd_ptr->pmvdq->tim.cancel_one();
+		std::weak_ptr<BoardBase> weak_brd = brd_ptr;//防止循环引用brd_ptr->gm,gm->some_signal->brd_ptr
+		gm->regret_sig.connect([weak_brd] {
+			auto brd = weak_brd.lock();
+			if (brd != nullptr) {
+				brd->pmvdq->q.push_back({ .mvtype = move::regret });
+				brd->pmvdq->tim.cancel_one();
+			}
 			});
-		gm->end_sig.connect([brd_ptr, gm] {
-			int points0 = gm->current_board().countpiece(col0), points1 = gm->current_board().countpiece(col1);
+		gm->end_sig.connect([this] {
+			auto crt_brd = gm->current_board();
+			int points0 = crt_brd.countpiece(col0), points1 = crt_brd.countpiece(col1);
 			if (points0 > points1) {
-				ui::msgbox(gettext("Black win!"));
+				ui::msgbox(gettext("Black win!"), { ui::MakeOKButton(),ui::TextComp(" "),AnotherRoundButton(gm) });
 			}
 			else if (points0 < points1) {
-				ui::msgbox(gettext("White win!"));
+				ui::msgbox(gettext("White win!"), { ui::MakeOKButton(),ui::TextComp(" "), AnotherRoundButton(gm) });
 			}
 			else {
-				ui::msgbox(gettext("Draw!"));
+				ui::msgbox(gettext("Draw!"), { ui::MakeOKButton(),ui::TextComp(" "), AnotherRoundButton(gm) });
 			}
 			});
-		gm->flush_sig.connect([brd_ptr, gm, &screen] {
-			screen.Post([brd_ptr, gm] { brd_ptr->brd = gm->current_board(); });
+		gm->flush_sig.connect([this, &brd = brd_ptr->brd, &screen] {
+			screen.Post([this, &brd] { brd = gm->current_board(); });
 			});
 		gm->save_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
 		gm->suspend_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
 
 		Component buttons = Container::Vertical({
-			Button(censtr(gettext("Quit"), 8), [gm] {gm->end_game(); }, ButtonOption::Animated()) | center,
+			Button(censtr(gettext("Quit"), 8), [this] {gm->end_game(); }, ButtonOption::Animated()) | center,
 			Renderer([] {return separator(); }),
-			Button(censtr(gettext("Regret"), 8), [gm] {gm->regret_sig(); }, ButtonOption::Animated()) | center,
+			Button(censtr(gettext("Regret"), 8), [this] {gm->regret_sig(); }, ButtonOption::Animated()) | center,
 			Renderer([] {return separator(); }),
-			Button(censtr(gettext("Suspend"), 8), [gm] {gm->suspend_sig(); } , ButtonOption::Animated()) | center,
+			Button(censtr(gettext("Suspend"), 8), [this] {gm->suspend_sig(); } , ButtonOption::Animated()) | center,
 			Renderer([] {return separator(); }),
-			Button(censtr(gettext("Save"), 8), [gm] {gm->save_sig(); } , ButtonOption::Animated()) | center,
+			Button(censtr(gettext("Save"), 8), [this] {gm->save_sig(); } , ButtonOption::Animated()) | center,
 			}) | ftxui::border;
 		Component brd = Container::Horizontal({ brd_ptr }) | center;
 		Component layout = Container::Vertical({
@@ -418,19 +426,22 @@ namespace bw::othello::components {
 		);
 	}
 	
-	ftxui::Component Game::GamePage(ftxui::ScreenInteractive& screen, basic_game_ptr gm_ptr) {
+	ftxui::Component Game::GamePage(ftxui::ScreenInteractive& screen) {
 		assert(gptr[col0] != nullptr && gptr[col1] != nullptr);
 		using namespace ftxui;
-		game_ptr gm = std::dynamic_pointer_cast<game>(gm_ptr);
 
 		Board brd_ptr = Make<BoardBase>(pctx, gm);
-
-		gm->regret_sig.connect([brd_ptr] {
-			brd_ptr->pmvdq->q.push_back({ .mvtype = move::regret });
-			brd_ptr->pmvdq->tim.cancel_one();
-			});
-		gm->end_sig.connect([brd_ptr, gm, this] {
-			int points0 = gm->current_board().countpiece(col0), points1 = gm->current_board().countpiece(col1);
+		std::weak_ptr<BoardBase> weak_brd;
+		gm->regret_sig.connect([weak_brd] {
+			auto brd = weak_brd.lock();
+			if (brd != nullptr) {
+				brd->pmvdq->q.push_back({ .mvtype = move::regret });
+				brd->pmvdq->tim.cancel_one();
+			}
+		});
+		gm->end_sig.connect([this] {
+			auto crt_brd = gm->current_board();
+			int points0 = crt_brd.countpiece(col0), points1 = crt_brd.countpiece(col1);
 			if (points0 > points1) {
 				ui::msgbox(gettext("Black win!"), { ui::MakeOKButton(),ui::TextComp(" "),AnotherRoundButton(gm) });
 			}
@@ -441,20 +452,20 @@ namespace bw::othello::components {
 				ui::msgbox(gettext("Draw!"), { ui::MakeOKButton(),ui::TextComp(" "), AnotherRoundButton(gm) });
 			}
 			});
-		gm->flush_sig.connect([brd_ptr, gm, &screen] {
-			screen.Post([brd_ptr, gm] { brd_ptr->brd = gm->current_board(); });
+		gm->flush_sig.connect([this, &brd=brd_ptr->brd, &screen] {
+			screen.Post([this, &brd] { brd = gm->current_board(); });
 			});
 		gm->save_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
 		gm->suspend_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
 
 		Component buttons = Container::Vertical({
-			Button(censtr(gettext("Quit"), 8),[=, &screen] { gm->end_game(); if (!pctx->stopped()) { pctx->stop(); } screen.Exit(); }, ButtonOption::Animated()) | center,
+			Button(censtr(gettext("Quit"), 8),[this, &screen] { gm->end_game(); if (!pctx->stopped()) { pctx->stop(); } screen.Exit(); }, ButtonOption::Animated()) | center,
 			Renderer([] {return separator(); }),
-			Button(censtr(gettext("Regret"), 8), [gm] {gm->regret_sig(); }, ButtonOption::Animated()) | center,
+			Button(censtr(gettext("Regret"), 8), [this] {gm->regret_sig(); }, ButtonOption::Animated()) | center,
 			Renderer([] {return separator(); }),
-			Button(censtr(gettext("Suspend"), 8), [gm] {gm->suspend_sig(); } , ButtonOption::Animated()) | center,
+			Button(censtr(gettext("Suspend"), 8), [this] {gm->suspend_sig(); } , ButtonOption::Animated()) | center,
 			Renderer([] {return separator(); }),
-			Button(censtr(gettext("Save"), 8), [gm] {gm->save_sig(); } , ButtonOption::Animated()) | center,
+			Button(censtr(gettext("Save"), 8), [this] {gm->save_sig(); } , ButtonOption::Animated()) | center,
 			}) | ftxui::border;
 		Component brd = Container::Horizontal({ brd_ptr }) | center;
 		Component layout = Container::Vertical({
@@ -463,7 +474,7 @@ namespace bw::othello::components {
 				brd,
 			}),
 			Container::Vertical({
-				Renderer([gm,this] { return text(std::format("{}:{}",gettext("Current player"),gptr[gm->current_color()]->get_name())) | center; }),
+				Renderer([this] { return text(std::format("{}:{}",gettext("Current player"),gptr[gm->current_color()]->get_name())) | center; }),
 				Renderer([brd_ptr,this] {return text(std::format("{}-{}:{}",gettext("Black"),gptr[col0]->get_name(),brd_ptr->brd.countpiece(col0))) | center; }),
 				Renderer([brd_ptr,this] {return text(std::format("{}-{}:{}",gettext("White"),gptr[col1]->get_name(),brd_ptr->brd.countpiece(col1))) | center; }),
 				Renderer([this] {
@@ -520,14 +531,14 @@ will be overwritten by the other.)"));
 		ui::auto_close_modal _f;
 		ScreenInteractive screen = ScreenInteractive::Fullscreen();
 
-		std::shared_ptr<game> gm =
-			std::make_shared<game>(gptr[col0], gptr[col1], board_size, std::make_shared<bw::components::ftxui_screen>(&screen));
-		Component GamePageComponent = GamePage(screen, gm) | center | ui::EnableMessageBox();
-		std::jthread j([this, gm, &screen] {
+		gm = std::make_shared<game>(gptr[col0], gptr[col1], board_size, std::make_shared<bw::components::ftxui_screen>(&screen));
+		Component GamePageComponent = GamePage(screen) | center | ui::EnableMessageBox();
+		std::jthread j([this, &screen] {
 			try
 			{
 				boost::cobalt::spawn(*pctx, gm->start(), boost::asio::detached);
 				pctx->run();
+				spdlog::trace("pctx use_count:{} game object use_count:{}", pctx.use_count(), gm.use_count());
 			}
 			catch (const std::exception& e)
 			{

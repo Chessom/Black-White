@@ -99,7 +99,7 @@
     <VcpkgUseStatic>true</VcpkgUseStatic>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <VcpkgUseStatic>false</VcpkgUseStatic>
+    <VcpkgUseStatic>true</VcpkgUseStatic>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -149,7 +149,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level2</WarningLevel>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_WIN32_WINNT=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
@@ -164,7 +164,7 @@
       <AdditionalOptions>/utf-8 /bigobj %(AdditionalOptions)</AdditionalOptions>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <DisableAnalyzeExternal>true</DisableAnalyzeExternal>
@@ -198,6 +198,9 @@
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <ControlFlowGuard>false</ControlFlowGuard>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
+      <DisableAnalyzeExternal>true</DisableAnalyzeExternal>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -228,6 +231,7 @@
     <ClInclude Include="include\basic_gamer.hpp" />
     <ClInclude Include="include\gamer\basic_lua_gamer.hpp" />
     <ClInclude Include="include\gamer\basic_python_gamer.hpp" />
+    <ClInclude Include="include\gamer\basic_ws_gamer.hpp" />
     <ClInclude Include="include\games.hpp" />
     <ClInclude Include="include\globals.hpp" />
     <ClInclude Include="include\grid-container.hpp" />
@@ -245,6 +249,11 @@
     <ClInclude Include="include\online\room.hpp" />
     <ClInclude Include="include\othello.hpp" />
     <ClInclude Include="include\othello\ai.hpp" />
+    <ClInclude Include="include\othello\ai\alphabeta.hpp" />
+    <ClInclude Include="include\othello\ai\common.hpp" />
+    <ClInclude Include="include\othello\ai\eval_methods.hpp" />
+    <ClInclude Include="include\othello\ai\mcts.hpp" />
+    <ClInclude Include="include\othello\ai\minmax.hpp" />
     <ClInclude Include="include\othello\ai\practise.hpp" />
     <ClInclude Include="include\othello\board.hpp" />
     <ClInclude Include="include\othello\components.hpp" />
@@ -259,7 +268,6 @@
     <ClInclude Include="include\othello\gamer_prepare.hpp" />
     <ClInclude Include="include\othello\move.hpp" />
     <ClInclude Include="include\othello\moves.hpp" />
-    <ClInclude Include="include\othello\online.hpp" />
     <ClInclude Include="include\practise.hpp" />
     <ClInclude Include="include\safe_vector.hpp" />
     <ClInclude Include="include\stdafx.h" />

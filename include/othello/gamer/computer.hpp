@@ -37,27 +37,15 @@ namespace bw::othello {
 	class computer_gamer_ai :public bw::othello::computer_gamer {
 	public:
 		computer_gamer_ai(core::color Color, int ID = 1, const std::string& Name = gettext("computer_gamer_ai"), int GamerType = basic_gamer::computer)
-			:computer_gamer(Color, ID, Name, GamerType) {
+			:computer_gamer(Color, ID, Name, GamerType),e(Color) {
 			detailed_gamer_type = detailed_type::computer_ai;
+			//e.option.threads = 4;
 		};
 		virtual boost::cobalt::task<move> getmove(dynamic_brd& brd, std::chrono::seconds limit = 0s) override {
-			mvs.update(brd, col);
-			move mv;
-			int points = -9999;
-			dynamic_brd board = brd;
-			for (int i = 0; i < mvs.size; ++i) {
-				board.applymove(mvs.coords[i], col);
-				auto mark = e.simple_evaluate_dynamic(board, col);
-				if (mark > points) {
-					points = mark;
-					mv = { move::mv, mvs.coords[i], col };
-				}
-			}
-			co_return mv;
+			co_return{ move::mv, e.best_move(brd,col), col };
 		}
 		virtual bool good()const override { return true; }
 		virtual ~computer_gamer_ai() = default;
-	private:
 		ai::evaluator e;
 	};
 	inline basic_gamer_ptr computer_gamer_from_id(int ID, color c) {

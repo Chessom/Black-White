@@ -70,6 +70,9 @@
     <Filter Include="头文件\othello\tui">
       <UniqueIdentifier>{0bf04a00-ef41-46e7-9462-c69aaf6eb7a0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\othello\othello.ai\eval_methods">
+      <UniqueIdentifier>{6ab02961-619f-4358-af71-55c726463411}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -129,9 +132,6 @@
       <Filter>头文件\othello</Filter>
     </ClInclude>
     <ClInclude Include="include\othello\moves.hpp">
-      <Filter>头文件\othello</Filter>
-    </ClInclude>
-    <ClInclude Include="include\othello\online.hpp">
       <Filter>头文件\othello</Filter>
     </ClInclude>
     <ClInclude Include="include\tictactoe\gamer\computer.hpp">
@@ -298,6 +298,24 @@
     </ClInclude>
     <ClInclude Include="include\tui\scroller.hpp">
       <Filter>头文件\bw\tui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gamer\basic_ws_gamer.hpp">
+      <Filter>头文件\bw\shared\gamer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\othello\ai\minmax.hpp">
+      <Filter>头文件\othello\othello.ai</Filter>
+    </ClInclude>
+    <ClInclude Include="include\othello\ai\mcts.hpp">
+      <Filter>头文件\othello\othello.ai</Filter>
+    </ClInclude>
+    <ClInclude Include="include\othello\ai\common.hpp">
+      <Filter>头文件\othello\othello.ai</Filter>
+    </ClInclude>
+    <ClInclude Include="include\othello\ai\alphabeta.hpp">
+      <Filter>头文件\othello\othello.ai</Filter>
+    </ClInclude>
+    <ClInclude Include="include\othello\ai\eval_methods.hpp">
+      <Filter>头文件\othello\othello.ai</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

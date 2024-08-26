@@ -1,4 +1,5 @@
-﻿#include"stdafx.h"
+﻿#define SPDLOG_ACTIVE_LEVEL 0
+#include"stdafx.h"
 #include"tui/ui.hpp"
 #include"initialize.hpp"
 #include"tools.hpp"
@@ -15,7 +16,7 @@ int main() {
 		auto c = std::getchar();
 		return 0;
 	}
-	bw::cui cui;
-	cui.start();
+	bw::tui tui;
+	tui.start();
 	return 0;
 }

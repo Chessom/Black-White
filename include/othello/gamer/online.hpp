@@ -46,31 +46,33 @@ namespace bw::othello {
 		}
 		string get_name() { return name; }
 		boost::cobalt::task<void> pass_msg(std::string msg) override {
-			assert(u_ptr != nullptr);
-			u_ptr->deliver(wrap(
+			assert(!u_ptr.expired());
+			auto us = u_ptr.lock();
+			us->deliver(wrap(
 				str_msg{
 					.content = msg,
 					.target_type = str_msg::g,
-					.id1 = u_ptr->id,
+					.id1 = us->id,
 					.id2 = id,
-					.name = u_ptr->name,
+					.name = us->name,
 				},
 				msg_t::str
-			));
+				));
 			co_return;
 		}
 		boost::cobalt::task<void> pass_move(move mv) override {
-			assert(u_ptr != nullptr);
+			assert(!u_ptr.expired());
+			auto us = u_ptr.lock();
 			if (mv.mvtype == move::str) {
 				co_await pass_msg(mv.msg);
 			}
-			else if (u_ptr->state == online::user_st::gaming) {
+			else if (us->state == online::user_st::gaming) {
 				mvstr = "";
 				struct_json::to_json(mv, mvstr);
-				u_ptr->deliver(wrap(
+				us->deliver(wrap(
 					game_msg{
 						.type = game_msg::move,
-						.id = u_ptr->id,
+						.id = us->id,
 						.movestr = mvstr
 					},msg_t::game
 				));
@@ -83,7 +85,12 @@ namespace bw::othello {
 			rd_dq->q.push_back(cancel_mv);
 			rd_dq->tim.cancel();
 		}
-		virtual bool good()const override { return u_ptr != nullptr && rd_dq != nullptr; }
+		virtual bool good()const override { 
+			return !u_ptr.expired() && rd_dq != nullptr;
+		}
+		virtual ~online_gamer() {
+			spdlog::trace("Online gamer Destructor");
+		}
 		std::string mvstr;
 	};
 }

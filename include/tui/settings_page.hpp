@@ -2,6 +2,7 @@
 #include"config.hpp"
 #include"globals.hpp"
 #include"components.hpp"
+#include"utility.hpp"
 namespace bw::components {
 	struct SettingsPageImpl {
 		SettingsPageImpl() {
@@ -88,7 +89,7 @@ namespace bw::components {
 					std::string config_json;
 					struct_json::to_json(conf, config_json);
 					std::ofstream fout(json_config_path, std::ios::out);
-					fout << config_json;
+					fout << json_format(config_json);
 					fout.close();
 				},
 				ButtonOption::Animated(Color::Blue)

@@ -52,7 +52,7 @@ namespace bw::othello {
 						end_sig();
 						st = ended;
 						end_game();
-						break;
+						co_return;
 					}
 					else {
 						pass_sig();
@@ -157,7 +157,9 @@ namespace bw::othello {
 				g[col]->gamertype == gamer::remote ||
 				g[op_col(col)]->gamertype == gamer::remote;
 		}
-		virtual ~game() = default;
+		virtual ~game() {
+			spdlog::trace("Othello game Destructor");
+		};
 	protected:
 		void suspend() {
 

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2024-08-19 16:53+0800\n"
-"PO-Revision-Date: 2024-08-19 16:53+0800\n"
+"POT-Creation-Date: 2024-08-26 12:24+0800\n"
+"PO-Revision-Date: 2024-08-26 12:25+0800\n"
 "Last-Translator: Vemy <chessom@foxmail.com>\n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -48,7 +48,7 @@ msgstr "计算机(随机下)"
 msgid "Submit"
 msgstr "提交"
 
-#: include/online/components.hpp:22 include/tui/settings_page.hpp:96
+#: include/online/components.hpp:22 include/tui/settings_page.hpp:97
 msgid "Cancel"
 msgstr "取消"
 
@@ -69,9 +69,9 @@ msgid "Edit Name"
 msgstr "编辑用户名"
 
 #: include/online/components.hpp:50 include/online/components.hpp:174
-#: include/online/components.hpp:553 include/othello/components.hpp:283
-#: include/othello/components.hpp:451 include/tictactoe/components.hpp:193
-#: include/tictactoe/components.hpp:281
+#: include/online/components.hpp:573 include/othello/components.hpp:291
+#: include/othello/components.hpp:462 include/tictactoe/components.hpp:195
+#: include/tictactoe/components.hpp:286
 msgid "Quit"
 msgstr "退出"
 
@@ -85,7 +85,7 @@ msgstr "房间ID"
 
 #: include/online/components.hpp:56 include/online/components.hpp:121
 #: include/online/components.hpp:123 include/online/components.hpp:125
-#: include/online/components.hpp:127 include/othello/gamer_prepare.hpp:358
+#: include/online/components.hpp:127 include/othello/gamer_prepare.hpp:360
 msgid "None"
 msgstr "无"
 
@@ -109,8 +109,8 @@ msgstr "当前房间："
 msgid "Num"
 msgstr "人数"
 
-#: include/online/components.hpp:117 include/online/components.hpp:464
-#: include/othello/gamer_prepare.hpp:229 include/othello/gamer_prepare.hpp:300
+#: include/online/components.hpp:117 include/online/components.hpp:484
+#: include/othello/gamer_prepare.hpp:231 include/othello/gamer_prepare.hpp:302
 msgid "State"
 msgstr "状态"
 
@@ -139,7 +139,7 @@ msgid "You are already in a room."
 msgstr "你已经在一个房间里了。"
 
 #: include/online/components.hpp:171 include/online/components.hpp:182
-#: include/online/components.hpp:369
+#: include/online/components.hpp:369 include/online/components.hpp:392
 msgid "Please wait for the information update to be completed."
 msgstr "请等待信息更新完成。"
 
@@ -167,16 +167,16 @@ msgstr "换行"
 msgid "Press enter to send"
 msgstr "按回车发送"
 
-#: include/online/components.hpp:294 include/online/components.hpp:639
+#: include/online/components.hpp:294 include/online/components.hpp:660
 msgid "Chat"
 msgstr "聊天"
 
-#: include/online/components.hpp:347 include/othello/components.hpp:199
+#: include/online/components.hpp:347 include/othello/components.hpp:203
 #: include/tui/ui.hpp:100
 msgid "Othello"
 msgstr "黑白棋"
 
-#: include/online/components.hpp:348 include/tictactoe/components.hpp:215
+#: include/online/components.hpp:348 include/tictactoe/components.hpp:217
 #: include/tui/ui.hpp:108
 msgid "TicTacToe"
 msgstr "井字棋"
@@ -185,85 +185,93 @@ msgstr "井字棋"
 msgid "Watch"
 msgstr "观看"
 
-#: include/online/components.hpp:383
+#: include/online/components.hpp:384
 msgid "You can only watch games in an \"Free\" state"
 msgstr "你只能在”空闲“状态下观看对局"
 
-#: include/online/components.hpp:396
+#: include/online/components.hpp:390
+msgid "Clear"
+msgstr "清空"
+
+#: include/online/components.hpp:402
+msgid "You can only clear the board in an \"Free\" state"
+msgstr "你只能在”空闲“状态下清除界面"
+
+#: include/online/components.hpp:416
 msgid ""
 "When you are in the \"Watching\" state,if there is a game going on,you can "
 "watch the game from the sidelines"
 msgstr "如果你在“观看”状态下，如果有游戏正在进行，你可以旁观对局"
 
-#: include/online/components.hpp:422 include/online/components.hpp:431
+#: include/online/components.hpp:442 include/online/components.hpp:451
 msgid "The game ends."
 msgstr "游戏结束。"
 
-#: include/online/components.hpp:425 include/online/components.hpp:434
+#: include/online/components.hpp:445 include/online/components.hpp:454
 msgid "Server end the game."
 msgstr "服务器结束了游戏。"
 
-#: include/online/components.hpp:455
+#: include/online/components.hpp:475
 msgid "No ongoing games"
 msgstr "没有进行中的游戏"
 
-#: include/online/components.hpp:465
+#: include/online/components.hpp:485
 msgid "Matching"
 msgstr "匹配中"
 
-#: include/online/components.hpp:465
+#: include/online/components.hpp:485
 msgid "Gaming"
 msgstr "游戏中"
 
-#: include/online/components.hpp:465
+#: include/online/components.hpp:485
 msgid "Free"
 msgstr "空闲"
 
-#: include/online/components.hpp:465
+#: include/online/components.hpp:485
 msgid "Watching"
 msgstr "观看"
 
-#: include/online/components.hpp:476 include/online/components.hpp:644
+#: include/online/components.hpp:496 include/online/components.hpp:665
 msgid "Game"
 msgstr "游戏"
 
-#: include/online/components.hpp:539 include/othello/gamer_prepare.hpp:201
+#: include/online/components.hpp:559 include/othello/gamer_prepare.hpp:203
 msgid "Address:"
 msgstr "地址："
 
-#: include/online/components.hpp:539 include/othello/gamer_prepare.hpp:201
+#: include/online/components.hpp:559 include/othello/gamer_prepare.hpp:203
 msgid "Port:"
 msgstr "端口："
 
-#: include/online/components.hpp:542
+#: include/online/components.hpp:562
 msgid "IP or Domain Name"
 msgstr "IP地址或者域名"
 
-#: include/online/components.hpp:547 include/othello/gamer_prepare.hpp:209
+#: include/online/components.hpp:567 include/othello/gamer_prepare.hpp:211
 msgid "Connect"
 msgstr "连接"
 
-#: include/online/components.hpp:580
+#: include/online/components.hpp:600
 msgid "Enter your name to login"
 msgstr "输入用户名并登录"
 
-#: include/online/components.hpp:582
+#: include/online/components.hpp:602
 msgid "You name:"
 msgstr "你的名字："
 
-#: include/online/components.hpp:583
+#: include/online/components.hpp:603
 msgid "Set this name as default"
 msgstr "记住我"
 
-#: include/online/components.hpp:584
+#: include/online/components.hpp:604
 msgid "Login"
 msgstr "登录"
 
-#: include/online/components.hpp:625
+#: include/online/components.hpp:646
 msgid "Failed to login"
 msgstr "登录失败"
 
-#: include/online/components.hpp:634
+#: include/online/components.hpp:655
 msgid "Room Info"
 msgstr "房间信息"
 
@@ -279,178 +287,186 @@ msgid ""
 "connection. Error code:"
 msgstr "服务器响应异常，请检查地址或您的网络连接。错误码："
 
-#: include/online/user.hpp:432
+#: include/online/user.hpp:426
 msgid "Error: Invalid Game"
 msgstr "错误：无效的Game"
 
-#: include/online/user.hpp:525 include/online/user.hpp:547
+#: include/online/user.hpp:520 include/online/user.hpp:542
 msgid "Room not found"
 msgstr "房间不存在"
 
-#: include/online/user.hpp:550
+#: include/online/user.hpp:545
 msgid "Server message: "
 msgstr "服务器消息："
 
-#: include/online/user.hpp:553
+#: include/online/user.hpp:548
 msgid "You can only match in a room"
 msgstr "你只能在房间里匹配"
 
-#: include/online/user.hpp:575
+#: include/online/user.hpp:570
 msgid "Error"
 msgstr "错误"
 
-#: include/online/user.hpp:585
+#: include/online/user.hpp:580
 msgid "Data structure damaged. msg"
 msgstr "数据结构损坏。错误消息"
 
-#: include/online/user.hpp:597
+#: include/online/user.hpp:592
 msgid "Bad Filter. msg"
 msgstr "过滤失败。错误消息"
 
-#: include/online/user.hpp:606
+#: include/online/user.hpp:601
 msgid "Failed to process data. msg"
 msgstr "数据处理失败。错误消息"
 
-#: include/online/user.hpp:645
+#: include/online/user.hpp:640
 msgid "Failed to send ... Error: "
 msgstr "发送数据失败。错误消息："
+
+#: include/othello/ai/alphabeta.hpp:21 include/othello/game.hpp:230
+msgid "black"
+msgstr "黑"
+
+#: include/othello/ai/alphabeta.hpp:21 include/othello/game.hpp:230
+msgid "white"
+msgstr "白"
 
 #: include/othello/components.hpp:135 include/tictactoe/components.hpp:121
 msgid "Another round"
 msgstr "再来一局"
 
-#: include/othello/components.hpp:201
+#: include/othello/components.hpp:205
 msgid "Board Size: "
 msgstr "棋盘大小："
 
-#: include/othello/components.hpp:209 include/tictactoe/components.hpp:216
+#: include/othello/components.hpp:213 include/tictactoe/components.hpp:218
 msgid "Match"
 msgstr "匹配"
 
-#: include/othello/components.hpp:216
+#: include/othello/components.hpp:220
 msgid "The size of the othello board must be even."
 msgstr "黑白棋的棋盘大小必须为偶数。"
 
-#: include/othello/components.hpp:237 include/tictactoe/components.hpp:239
+#: include/othello/components.hpp:241 include/tictactoe/components.hpp:241
 msgid "Cannot match during game!"
 msgstr "正在游戏时无法匹配！"
 
-#: include/othello/components.hpp:246 include/tictactoe/components.hpp:248
+#: include/othello/components.hpp:250 include/tictactoe/components.hpp:250
 msgid "The operation is too fast, please match later."
 msgstr "操作太快了， 请稍后再匹配。"
 
-#: include/othello/components.hpp:267 include/othello/components.hpp:435
+#: include/othello/components.hpp:275 include/othello/components.hpp:446
 msgid "Black win!"
 msgstr "黑方获胜！"
 
-#: include/othello/components.hpp:270 include/othello/components.hpp:438
+#: include/othello/components.hpp:278 include/othello/components.hpp:449
 msgid "White win!"
 msgstr "白方获胜！"
 
-#: include/othello/components.hpp:273 include/othello/components.hpp:441
-#: include/tictactoe/components.hpp:183 include/tictactoe/components.hpp:271
+#: include/othello/components.hpp:281 include/othello/components.hpp:452
+#: include/tictactoe/components.hpp:185 include/tictactoe/components.hpp:276
 msgid "Draw!"
 msgstr "平局！"
 
-#: include/othello/components.hpp:279 include/othello/components.hpp:280
-#: include/othello/components.hpp:447 include/othello/components.hpp:448
-#: include/tictactoe/components.hpp:189 include/tictactoe/components.hpp:190
-#: include/tictactoe/components.hpp:277 include/tictactoe/components.hpp:278
+#: include/othello/components.hpp:287 include/othello/components.hpp:288
+#: include/othello/components.hpp:458 include/othello/components.hpp:459
+#: include/tictactoe/components.hpp:191 include/tictactoe/components.hpp:192
+#: include/tictactoe/components.hpp:282 include/tictactoe/components.hpp:283
 msgid "Function in Developing"
 msgstr "功能还在开发中"
 
-#: include/othello/components.hpp:285 include/othello/components.hpp:453
-#: include/tictactoe/components.hpp:195 include/tictactoe/components.hpp:283
+#: include/othello/components.hpp:293 include/othello/components.hpp:464
+#: include/tictactoe/components.hpp:197 include/tictactoe/components.hpp:288
 msgid "Regret"
 msgstr "悔棋"
 
-#: include/othello/components.hpp:287 include/othello/components.hpp:455
-#: include/tictactoe/components.hpp:197 include/tictactoe/components.hpp:285
+#: include/othello/components.hpp:295 include/othello/components.hpp:466
+#: include/tictactoe/components.hpp:199 include/tictactoe/components.hpp:290
 msgid "Suspend"
 msgstr "暂停"
 
-#: include/othello/components.hpp:289 include/othello/components.hpp:457
-#: include/tictactoe/components.hpp:199 include/tictactoe/components.hpp:287
+#: include/othello/components.hpp:297 include/othello/components.hpp:468
+#: include/tictactoe/components.hpp:201 include/tictactoe/components.hpp:292
 msgid "Save"
 msgstr "保存"
 
-#: include/othello/components.hpp:298 include/othello/components.hpp:466
-#: include/tictactoe/components.hpp:208 include/tictactoe/components.hpp:296
+#: include/othello/components.hpp:306 include/othello/components.hpp:477
+#: include/tictactoe/components.hpp:210 include/tictactoe/components.hpp:301
 msgid "Current player"
 msgstr "当前玩家"
 
-#: include/othello/components.hpp:299 include/othello/components.hpp:301
-#: include/othello/components.hpp:467 include/othello/components.hpp:471
+#: include/othello/components.hpp:307 include/othello/components.hpp:309
+#: include/othello/components.hpp:478 include/othello/components.hpp:482
 msgid "Black"
 msgstr "黑"
 
-#: include/othello/components.hpp:300 include/othello/components.hpp:305
-#: include/othello/components.hpp:468 include/othello/components.hpp:479
+#: include/othello/components.hpp:308 include/othello/components.hpp:313
+#: include/othello/components.hpp:479 include/othello/components.hpp:490
 msgid "White"
 msgstr "白"
 
-#: include/othello/components.hpp:301 include/othello/components.hpp:305
-#: include/othello/components.hpp:473 include/othello/components.hpp:481
+#: include/othello/components.hpp:309 include/othello/components.hpp:313
+#: include/othello/components.hpp:484 include/othello/components.hpp:492
 msgid "state"
 msgstr "状态"
 
-#: include/othello/components.hpp:303 include/othello/components.hpp:304
-#: include/othello/components.hpp:307 include/othello/components.hpp:308
-#: include/othello/components.hpp:474 include/othello/components.hpp:482
+#: include/othello/components.hpp:311 include/othello/components.hpp:312
+#: include/othello/components.hpp:315 include/othello/components.hpp:316
+#: include/othello/components.hpp:485 include/othello/components.hpp:493
 msgid "Good"
 msgstr "正常"
 
-#: include/othello/components.hpp:303 include/othello/components.hpp:307
+#: include/othello/components.hpp:311 include/othello/components.hpp:315
 msgid "Disconnetced"
 msgstr "断联"
 
-#: include/othello/components.hpp:360 include/tictactoe/components.hpp:308
+#: include/othello/components.hpp:368 include/tictactoe/components.hpp:313
 msgid "First Player:"
 msgstr "先手："
 
-#: include/othello/components.hpp:361 include/tictactoe/components.hpp:309
+#: include/othello/components.hpp:369 include/tictactoe/components.hpp:314
 msgid "Second Player:"
 msgstr "后手："
 
-#: include/othello/components.hpp:362
+#: include/othello/components.hpp:370
 msgid "Board size:"
 msgstr "棋盘大小："
 
-#: include/othello/components.hpp:364 include/othello/components.hpp:397
-#: include/tictactoe/components.hpp:310
+#: include/othello/components.hpp:372 include/othello/components.hpp:405
+#: include/tictactoe/components.hpp:315
 msgid "Start"
 msgstr "开始"
 
-#: include/othello/components.hpp:366
+#: include/othello/components.hpp:374
 msgid "Advanced"
 msgstr "高级"
 
-#: include/othello/components.hpp:368 include/othello/components.hpp:408
-#: include/tictactoe/components.hpp:311
+#: include/othello/components.hpp:376 include/othello/components.hpp:416
+#: include/tictactoe/components.hpp:316
 msgid "Back"
 msgstr "返回"
 
-#: include/othello/components.hpp:376
+#: include/othello/components.hpp:384
 msgid "First Player"
 msgstr "先手"
 
-#: include/othello/components.hpp:376
+#: include/othello/components.hpp:384
 msgid "Second Player"
 msgstr "后手"
 
-#: include/othello/components.hpp:399
+#: include/othello/components.hpp:407
 msgid "The setting information of the first gamer is incomplete or incorrect."
 msgstr "先手的设置信息不全或错误。"
 
-#: include/othello/components.hpp:402
+#: include/othello/components.hpp:410
 msgid "The setting information of the second gamer is incomplete or incorrect."
 msgstr "后手的设置信息不全或者错误。"
 
-#: include/othello/components.hpp:474 include/othello/components.hpp:482
+#: include/othello/components.hpp:485 include/othello/components.hpp:493
 msgid "Bad"
 msgstr "错误"
 
-#: include/othello/components.hpp:505
+#: include/othello/components.hpp:516
 msgid ""
 "Due to the implementation of Python, \n"
 "there will only be one interpreter instance \n"
@@ -484,14 +500,6 @@ msgstr "现在不支持悔棋！"
 msgid "move type id"
 msgstr "move的编号"
 
-#: include/othello/game.hpp:228
-msgid "black"
-msgstr "黑"
-
-#: include/othello/game.hpp:228
-msgid "white"
-msgstr "白"
-
 #: include/othello/gamer/computer.hpp:23
 #: include/tictactoe/gamer/computer.hpp:28
 msgid "computer_gamer_random"
@@ -506,12 +514,12 @@ msgid "lua_othello_gamer"
 msgstr "Lua黑白棋玩家"
 
 #: include/othello/gamer/lua_gamer.hpp:73
-#: include/othello/gamer/python_gamer.hpp:48
+#: include/othello/gamer/python_gamer.hpp:50
 msgid "Invalid move returned by the script"
 msgstr "脚本返回的无效走棋"
 
-#: include/othello/gamer/python_gamer.hpp:7
-#: include/othello/gamer/python_gamer.hpp:11
+#: include/othello/gamer/python_gamer.hpp:8
+#: include/othello/gamer/python_gamer.hpp:12
 msgid "python_othello_gamer"
 msgstr "Python黑白棋玩家"
 
@@ -524,39 +532,39 @@ msgid "Code Lua here"
 msgstr "在这里用Lua编码"
 
 #: include/othello/gamer_prepare.hpp:32 include/othello/gamer_prepare.hpp:35
-#: include/othello/gamer_prepare.hpp:133 include/othello/gamer_prepare.hpp:136
+#: include/othello/gamer_prepare.hpp:135 include/othello/gamer_prepare.hpp:138
 msgid "Error Output"
 msgstr "错误输出"
 
-#: include/othello/gamer_prepare.hpp:32 include/othello/gamer_prepare.hpp:133
+#: include/othello/gamer_prepare.hpp:32 include/othello/gamer_prepare.hpp:135
 msgid "No errors"
 msgstr "无错误"
 
-#: include/othello/gamer_prepare.hpp:39 include/othello/gamer_prepare.hpp:140
+#: include/othello/gamer_prepare.hpp:39 include/othello/gamer_prepare.hpp:142
 msgid "Save Script"
 msgstr "保存脚本"
 
-#: include/othello/gamer_prepare.hpp:46 include/othello/gamer_prepare.hpp:147
+#: include/othello/gamer_prepare.hpp:46 include/othello/gamer_prepare.hpp:149
 msgid "Failed to save script to "
 msgstr "无法保存脚本到文件 "
 
-#: include/othello/gamer_prepare.hpp:50 include/othello/gamer_prepare.hpp:151
+#: include/othello/gamer_prepare.hpp:50 include/othello/gamer_prepare.hpp:153
 msgid "Test Script"
 msgstr "测试脚本"
 
-#: include/othello/gamer_prepare.hpp:65 include/othello/gamer_prepare.hpp:154
+#: include/othello/gamer_prepare.hpp:65 include/othello/gamer_prepare.hpp:156
 msgid "Load Script"
 msgstr "载入脚本"
 
-#: include/othello/gamer_prepare.hpp:69 include/othello/gamer_prepare.hpp:158
+#: include/othello/gamer_prepare.hpp:69 include/othello/gamer_prepare.hpp:160
 msgid "Failed to open script file: "
 msgstr "打开脚本文件失败："
 
-#: include/othello/gamer_prepare.hpp:79 include/othello/gamer_prepare.hpp:168
+#: include/othello/gamer_prepare.hpp:79 include/othello/gamer_prepare.hpp:170
 msgid "File name:"
 msgstr "文件名："
 
-#: include/othello/gamer_prepare.hpp:80 include/othello/gamer_prepare.hpp:169
+#: include/othello/gamer_prepare.hpp:80 include/othello/gamer_prepare.hpp:171
 msgid "enter path"
 msgstr "输入路径"
 
@@ -564,67 +572,67 @@ msgstr "输入路径"
 msgid "get move function name:"
 msgstr "getmove函数名："
 
-#: include/othello/gamer_prepare.hpp:84 include/othello/gamer_prepare.hpp:173
+#: include/othello/gamer_prepare.hpp:84 include/othello/gamer_prepare.hpp:175
 msgid "enter function signature"
 msgstr "输入函数签名"
 
-#: include/othello/gamer_prepare.hpp:130
+#: include/othello/gamer_prepare.hpp:132
 msgid "Code Python here"
 msgstr "在这里用Python编码"
 
-#: include/othello/gamer_prepare.hpp:172
+#: include/othello/gamer_prepare.hpp:174
 msgid "getmove function name:"
 msgstr "getmove函数名："
 
-#: include/othello/gamer_prepare.hpp:211
+#: include/othello/gamer_prepare.hpp:213
 msgid "Accepting Now"
 msgstr "正在等待连接"
 
-#: include/othello/gamer_prepare.hpp:229 include/othello/gamer_prepare.hpp:300
+#: include/othello/gamer_prepare.hpp:231 include/othello/gamer_prepare.hpp:302
 msgid "Connected"
 msgstr "连接成功"
 
-#: include/othello/gamer_prepare.hpp:229
+#: include/othello/gamer_prepare.hpp:231
 msgid "Disconnected"
 msgstr "连接已断开"
 
-#: include/othello/gamer_prepare.hpp:258
+#: include/othello/gamer_prepare.hpp:260
 msgid "Listening port:"
 msgstr "监听端口："
 
-#: include/othello/gamer_prepare.hpp:265
+#: include/othello/gamer_prepare.hpp:267
 msgid "remote Address:"
 msgstr "远程玩家地址："
 
-#: include/othello/gamer_prepare.hpp:266
+#: include/othello/gamer_prepare.hpp:268
 msgid "remote Port:"
 msgstr "远程端口："
 
-#: include/othello/gamer_prepare.hpp:276
+#: include/othello/gamer_prepare.hpp:278
 msgid "Start Accept"
 msgstr "开始监听"
 
-#: include/othello/gamer_prepare.hpp:290
+#: include/othello/gamer_prepare.hpp:292
 msgid "Stop Accept"
 msgstr "停止监听"
 
-#: include/othello/gamer_prepare.hpp:296
+#: include/othello/gamer_prepare.hpp:298
 msgid "Not Accepting"
 msgstr "监听已停止"
 
-#: include/othello/gamer_prepare.hpp:300
+#: include/othello/gamer_prepare.hpp:302
 msgid "Accepting"
 msgstr "正在监听"
 
-#: include/othello/gamer_prepare.hpp:300
+#: include/othello/gamer_prepare.hpp:302
 msgid "Stopped"
 msgstr "已停止"
 
-#: include/othello/gamer_prepare.hpp:317
+#: include/othello/gamer_prepare.hpp:319
 msgid "WARNING: This mode has been deprecated!"
 msgstr "警告！"
 
-#: include/othello/gamer_prepare.hpp:319
+#: include/othello/gamer_prepare.hpp:321
 msgid ""
 "The purpose of this mode is to provide users\n"
 "with a customized interface for the game.\n"
@@ -641,15 +649,43 @@ msgstr ""
 "想要获得更多关于这个模式的信息，\n"
 "请前往主页面，点击“更多”"
 
-#: include/othello/gamer_prepare.hpp:357
+#: include/othello/gamer_prepare.hpp:359
 msgid "Actively Connect"
 msgstr "主动连接"
 
-#: include/othello/gamer_prepare.hpp:357
+#: include/othello/gamer_prepare.hpp:359
 msgid "Wait for Connection"
 msgstr "等待连接"
 
-#: include/tictactoe/components.hpp:180 include/tictactoe/components.hpp:268
+#: include/othello/gamer_prepare.hpp:397
+msgid "Search method"
+msgstr "搜索算法"
+
+#: include/othello/gamer_prepare.hpp:403
+msgid "Evaluate method"
+msgstr "估值方法"
+
+#: include/othello/gamer_prepare.hpp:409
+msgid "Device"
+msgstr "设备"
+
+#: include/othello/gamer_prepare.hpp:416
+msgid "Enter threads number"
+msgstr "输入使用线程数"
+
+#: include/othello/gamer_prepare.hpp:418
+msgid "Thread number:"
+msgstr "使用线程数："
+
+#: include/othello/gamer_prepare.hpp:420
+msgid "Enter search depth"
+msgstr "输入搜索深度"
+
+#: include/othello/gamer_prepare.hpp:422
+msgid "Search depth:"
+msgstr "搜索深度："
+
+#: include/tictactoe/components.hpp:182 include/tictactoe/components.hpp:273
 msgid "Win!"
 msgstr "胜出！"
 
@@ -657,11 +693,11 @@ msgstr "胜出！"
 msgid "lua_tictactoe_gamer"
 msgstr "lua井字棋玩家"
 
-#: include/tui/components.hpp:35 include/tui/components.hpp:54
+#: include/tui/components.hpp:41 include/tui/components.hpp:60
 msgid "OK"
 msgstr "好的"
 
-#: include/tui/components.hpp:59
+#: include/tui/components.hpp:65
 msgid "Tip"
 msgstr "提示"
 
@@ -677,71 +713,71 @@ msgstr "玩家名字："
 msgid "Enter name"
 msgstr "输入名字"
 
-#: include/tui/settings_page.hpp:13
+#: include/tui/settings_page.hpp:14
 msgid "Chinese"
 msgstr "中文"
 
-#: include/tui/settings_page.hpp:14
+#: include/tui/settings_page.hpp:15
 msgid "English"
 msgstr "English"
 
-#: include/tui/settings_page.hpp:18
+#: include/tui/settings_page.hpp:19
 msgid "ON"
 msgstr "开"
 
-#: include/tui/settings_page.hpp:19
+#: include/tui/settings_page.hpp:20
 msgid "OFF"
 msgstr "关"
 
-#: include/tui/settings_page.hpp:69
+#: include/tui/settings_page.hpp:70
 msgid "Enter the name"
 msgstr "输入你的用户名"
 
-#: include/tui/settings_page.hpp:71
+#: include/tui/settings_page.hpp:72
 msgid "Enter the address"
 msgstr "输入IP地址"
 
-#: include/tui/settings_page.hpp:74
+#: include/tui/settings_page.hpp:75
 msgid "Enter the port number"
 msgstr "输入端口号"
 
-#: include/tui/settings_page.hpp:76
+#: include/tui/settings_page.hpp:77
 msgid "Path of the language files"
 msgstr "语言文件路径"
 
-#: include/tui/settings_page.hpp:80
+#: include/tui/settings_page.hpp:81
 msgid "Apply"
 msgstr "应用"
 
-#: include/tui/settings_page.hpp:85
+#: include/tui/settings_page.hpp:86
 msgid "Save to local"
 msgstr "保存到本地"
 
-#: include/tui/settings_page.hpp:113
+#: include/tui/settings_page.hpp:114
 msgid "Language (Changes take effect after restart): "
 msgstr "语言（更改将会在重启程序后生效）"
 
-#: include/tui/settings_page.hpp:114
+#: include/tui/settings_page.hpp:115
 msgid "Default display name: "
 msgstr "默认用户名："
 
-#: include/tui/settings_page.hpp:115
+#: include/tui/settings_page.hpp:116
 msgid "Default server address: "
 msgstr "默认服务器地址："
 
-#: include/tui/settings_page.hpp:116
+#: include/tui/settings_page.hpp:117
 msgid "Default port number: "
 msgstr "默认端口号："
 
-#: include/tui/settings_page.hpp:117
+#: include/tui/settings_page.hpp:118
 msgid "Locale files path: "
 msgstr "语言环境文件路径："
 
-#: include/tui/settings_page.hpp:118
+#: include/tui/settings_page.hpp:119
 msgid "Python script use embedded module: "
 msgstr "Python脚本使用内嵌模块："
 
-#: include/tui/settings_page.hpp:133
+#: include/tui/settings_page.hpp:134
 msgid ""
 "\"Apply\" means that changes will only \n"
 "take effect until exiting the program, \n"

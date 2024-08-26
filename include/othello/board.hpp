@@ -176,6 +176,7 @@ namespace bw::othello {
 		bitbrd_t() { brd[0] = brd[1] = ull(0); };
 		bitbrd_t(const ull& brd0, const ull& brd1) { brd[0] = brd0; brd[1] = brd1; };
 		bitbrd_t(const arrbrd_t<Size>& abrd) noexcept {
+			brd[0] = brd[1] = ull(0);
 			for (int x = 0; x < Size; ++x) {
 				for (int y = 0; y < Size; ++y) {
 					if (abrd.mat[x][y]) {
@@ -190,6 +191,7 @@ namespace bw::othello {
 			}
 		}
 		bitbrd_t(const dynamic_brd& dbrd) {
+			brd[0] = brd[1] = ull(0);
 			for (int x = 0; x < Size; ++x) {
 				for (int y = 0; y < Size; ++y) {
 					if (dbrd.mat[x][y]) {
@@ -270,13 +272,16 @@ namespace bw::othello {
 			setcol({ Size / 2 ,Size / 2 - 1 }, col0);
 		}
 		void applymove(const coord& crd, const color& col) noexcept {
+			applymove(crd2bit(crd), col);
+		}
+		void applymove(const uint64_t& bit_crd, const color& col) noexcept {
 			ull& brd_blue = brd[col];
 			ull& brd_green = brd[col ^ 1];
 			ull brd_green_inner;
 			ull flip = 0ull;
 			ull brd_flip;
 			ull brd_green_adj;
-			ull it = crd2bit(crd);
+			ull it = bit_crd;
 
 			brd_green_inner = brd_green & bw::inner(Size);
 
@@ -479,10 +484,10 @@ namespace bw::othello {
 			}
 			return brd;
 		}
-		int countpiece(color black_or_white) noexcept {
+		int countpiece(color black_or_white) const noexcept {
 			return std::popcount(brd[black_or_white]);
 		}
-		int count(color col) noexcept {
+		int count(color col) const noexcept{
 			if (col == none) {
 				return std::popcount(~(brd[0] | brd[1]));
 			}
@@ -495,6 +500,9 @@ namespace bw::othello {
 		}
 		void clear() {
 			brd[col0] = brd[col1] = 0ull;
+		}
+		bool operator==(const bitbrd_t<Size>& rhs) const noexcept {
+			return brd[0] == rhs.brd[0] && brd[1] == rhs.brd[1];
 		}
 
 		template <class Archive>
@@ -600,7 +608,7 @@ namespace bw::othello {
 			}
 			return brd;
 		}
-		int countpiece(color col) noexcept {
+		int countpiece(color col) const noexcept {
 			int cnt = 0, t = col + 1;
 			for (int x = 0; x < Size; ++x) {
 				for (int y = 0; y < Size; ++y) {
@@ -609,7 +617,7 @@ namespace bw::othello {
 			}
 			return cnt;
 		}
-		int count(color col) noexcept {
+		int count(color col) const noexcept {
 			int cnt = 0, t = col + 1;
 			for (int x = 0; x < Size; ++x) {
 				for (int y = 0; y < Size; ++y) {
@@ -620,6 +628,16 @@ namespace bw::othello {
 		}
 		constexpr int brd_size() const {
 			return Size;
+		}
+		bool operator==(const arrbrd_t<Size>& rhs) const noexcept {
+			for (int x = 0; x < Size; x++) {
+				for (int y = 0; y < Size; ++y) {
+					if (mat[x][y] != rhs.mat[x][y]) {
+						return false;
+					}
+				}
+			}
+			return true;
 		}
 		void clear() {
 			for (int i = 0; i < Size; ++i) {

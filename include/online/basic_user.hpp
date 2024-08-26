@@ -15,4 +15,5 @@ namespace bw::online {
 		virtual ~basic_user() = default;
 	};
 	using basic_user_ptr = std::shared_ptr<basic_user>;
+	using basic_weak_user_p = std::weak_ptr<basic_user>;
 }

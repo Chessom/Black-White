@@ -39,14 +39,15 @@ namespace bw::tictactoe {
 		}
 		string get_name() const { return name; }
 		boost::cobalt::task<void> pass_msg(std::string msg) override {
-			assert(u_ptr != nullptr);
-			u_ptr->deliver(wrap(
+			assert(!u_ptr.expired());
+			auto us = u_ptr.lock();
+			us->deliver(wrap(
 				str_msg{
 					.content = msg,
 					.target_type = str_msg::g,
-					.id1 = u_ptr->id,
+					.id1 = us->id,
 					.id2 = id,
-					.name = u_ptr->name,
+					.name = us->name,
 				},
 				msg_t::str
 				));
@@ -54,14 +55,15 @@ namespace bw::tictactoe {
 		}
 		//To do
 		boost::cobalt::task<void> pass_move(move mv) override {
-			assert(u_ptr != nullptr);
-			if (u_ptr->state == online::user_st::gaming) {
+			assert(u_ptr.expired());
+			auto us = u_ptr.lock();
+			if (us->state == online::user_st::gaming) {
 				mvstr = "";
 				struct_json::to_json(mv, mvstr);
-				u_ptr->deliver(wrap(
+				us->deliver(wrap(
 					game_msg{
 						.type = game_msg::move,
-						.id = u_ptr->id,
+						.id = us->id,
 						.movestr = mvstr
 					}, msg_t::game
 				));

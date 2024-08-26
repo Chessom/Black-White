@@ -367,6 +367,7 @@ namespace bw::online::components {
 				gettext("Watch"), [this] {
 					if (self->infostate == user::outdated) {
 						ui::msgbox(gettext("Please wait for the information update to be completed."));
+						return;
 					}
 					if (self->in_room()) {
 						if (self->state == user_st::free) {
@@ -385,11 +386,30 @@ namespace bw::online::components {
 					}
 				}, ftxui::ButtonOption::Animated(ftxui::Color::Blue)
 			);
+			auto clear_button = ftxui::Button(
+				gettext("Clear"), [this] {
+					if (self->infostate == user::outdated) {
+						ui::msgbox(gettext("Please wait for the information update to be completed."));
+						return;
+					}
+					if (self->in_room()) {
+						if (self->state == user_st::free) {
+							GamePageCom->DetachAllChildren();
+							self->Game_ptr = nullptr;
+							self->gm_ptr = nullptr;
+						}
+						else {
+							ui::msgbox(gettext("You can only clear the board in an \"Free\" state"));
+						}
+					}
+				}
+			, ftxui::ButtonOption::Animated(ftxui::Color::CyanLight));
 			auto main_container =
 				ftxui::Container::Vertical({
 					tab_selection | ftxui::center,
 					tab_content | ftxui::center,
 					ftxui::Container::Horizontal({exit_button , watch_button  }) | ftxui::center ,
+					clear_button | ftxui::center,
 					ftxui::Renderer(
 					[] {
 						return ftxui::paragraphAlignJustify(gettext(
@@ -590,7 +610,7 @@ namespace bw::online::components {
 					std::string config_json;
 					struct_json::to_json(*global_config, config_json);
 					std::ofstream fout(json_config_path, std::ios::out);
-					fout << config_json;
+					fout << json_format(config_json);
 					fout.close();
 				}
 				self->name = loginName;
@@ -607,6 +627,7 @@ namespace bw::online::components {
 			//}
 			return true;
 		}
+		~HallPages() = default;
 	};
 	void HallPages::startHallPages() {
 		signals::start_game.disconnect_all_slots();

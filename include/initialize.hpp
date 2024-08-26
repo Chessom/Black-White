@@ -12,6 +12,9 @@ namespace bw {
 		try{
 			auto logger = spdlog::rotating_logger_mt("mylogger", "log.txt", 5ll * 1024 * 1024, 3);
 			spdlog::set_default_logger(logger);
+			spdlog::set_level(spdlog::level::trace);
+			spdlog::info("started.");
+			spdlog::flush_every(std::chrono::seconds(2));
 		}
 		catch (const std::exception& e)
 		{
@@ -47,7 +50,7 @@ namespace bw {
 				std::string config_json;
 				struct_json::to_json(*global_config, config_json);
 				std::ofstream fout(json_config_path, std::ios::out);
-				fout << config_json;
+				fout << json_format(config_json);
 				fout.close();
 			}
 

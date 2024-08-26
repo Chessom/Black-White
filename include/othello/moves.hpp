@@ -158,6 +158,44 @@ inline namespace v2{
 				}
 			}
 		}
+		template<int Size>
+		static int calculate_size(const bitbrd_t<Size>& brd, const color& col) {
+			return std::popcount(brd.getmoves(col));
+		}
+		template<mat_brd board>
+		static int calculate_size(const board& brd, const color& col) {
+			int cnt = 0;
+			using drc_t = int;
+			using namespace directions;
+			color opcol = col ^ 1;
+			auto Size = brd.brd_size();
+			for (int x = 0; x < Size; ++x) {
+				for (int y = 0; y < Size; ++y) {
+					coord crd{ x,y };
+					if (brd.getcol(crd) == none) {
+						bool done = false;
+						for (drc_t drc = R; drc <= UR && !done; ++drc) {
+							coord iter(crd);
+							if (brd.in_board(iter.to_next(drc)) && brd.getcol(iter) == opcol) {
+								color c = 0;
+								while (brd.in_board(iter.to_next(drc))) {
+									c = brd.getcol(iter);
+									if (c == col) {
+										++cnt;
+										done = true;
+										break;
+									}
+									else if (c == none) {
+										break;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			return cnt;
+		}
 		void push_back(const coord& crd) {
 			coords.push_back(crd);
 			++size;
@@ -200,6 +238,12 @@ inline namespace v2{
 		enum { npos = -1 };
 		int size = 0;
 		std::vector<coord> coords;
+	};
+	template<int BoardSize>
+	struct static_moves {
+		static_moves() {
+
+		}
 	};
 };
 }

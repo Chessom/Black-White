@@ -13,6 +13,7 @@ namespace bw::othello {
 		human_gamer(basic_gamer_info info) :gamer(info) { detailed_gamer_type = detailed_type::human; }
 		human_gamer(color Color, int ID = 0, const std::string& Name = global_config->default_name)
 			:gamer(Color, ID, Name, human) {
+			spdlog::trace("Othello human_gamer Constructor");
 			detailed_gamer_type = detailed_type::human;
 		};
 		boost::cobalt::task<move> getmove(dynamic_brd& brd, std::chrono::seconds limit = 0s) {
@@ -66,5 +67,8 @@ namespace bw::othello {
 			pmvdq = std::move(move_queue);
 		}
 		timdq_ptr pmvdq;
+		virtual ~human_gamer() {
+			spdlog::trace("Othello human_gamer Destructor");
+		}
 	};
 }

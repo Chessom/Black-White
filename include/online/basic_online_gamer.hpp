@@ -7,7 +7,7 @@ namespace bw::online {
 		basic_online_gamer() = default;
 		basic_online_gamer(core::str_dq_ptr ptr) { set_read_queue(ptr); }
 		core::str_dq_ptr rd_dq = nullptr;
-		basic_user_ptr u_ptr = nullptr;
+		basic_weak_user_p u_ptr;
 		void set_read_queue(core::str_dq_ptr read_queue) {
 			rd_dq = std::move(read_queue);
 		}

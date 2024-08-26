@@ -95,9 +95,11 @@ namespace bw::components {
 	template<>
 	ftxui::Component GamerSetting<othello::python_gamer>(basic_gamer_ptr _p) {
 		using namespace ftxui;
+		namespace py = pybind11;
 		std::shared_ptr<std::string> error_str = std::make_shared<std::string>("");
 		othello::python_gamer_ptr gptr = std::dynamic_pointer_cast<othello::python_gamer>(_p);
 		auto test_op = [gptr, error_str] {
+			py::gil_scoped_acquire acquire;
 			try {
 				gptr->test();
 				error_str->clear();
@@ -109,7 +111,7 @@ namespace bw::components {
 			catch (const std::exception& e) {
 				*error_str = e.what();
 				return;
-			};
+			}; 
 		};
 		{
 			std::ifstream fin;
@@ -362,5 +364,101 @@ namespace bw::components {
 			bool ret = false;
 		};
 		return Make<Impl>(_p);
+	}
+
+	template<>
+	ftxui::Component GamerSetting<othello::computer_gamer_ai>(basic_gamer_ptr _p) {
+		using namespace ftxui;
+		struct Impl :ftxui::ComponentBase {
+			Impl(basic_gamer_ptr ptr){
+				gptr = std::dynamic_pointer_cast<othello::computer_gamer_ai>(ptr);
+				auto& option = gptr->e.option;
+				s_mtd_select = std::to_underlying(option.s_mtd);
+				e_mtd_select = std::to_underlying(option.e_mtd);
+				device_select = std::to_underlying(option.device);
+				threads_str = std::to_string(option.threads);
+				srch_dp_str = std::to_string(option.search_depth);
+
+				auto default_comp = GamerSetting<void>(ptr);
+				auto m_option = MenuOption();
+				auto s_mtd_menu = Menu(&search_method_list, &s_mtd_select, m_option);
+				auto e_mtd_menu = Menu(&eval_method_list, &e_mtd_select, m_option);
+				auto device_menu = Menu(&device_list, &device_select, m_option);
+				auto menus = Container::Horizontal({
+					s_mtd_menu,
+					e_mtd_menu,
+					device_menu
+				});
+				auto menu_renderer = Renderer(menus, 
+					[s_mtd_menu, e_mtd_menu, device_menu] {
+						return 
+						hbox({
+							vbox({
+								hcenter(bold(text(gettext("Search method")))),
+								separator(),
+								s_mtd_menu->Render(),
+							}),
+							separator(),
+							vbox({
+								hcenter(bold(text(gettext("Evaluate method")))),
+								separator(),
+								e_mtd_menu->Render(),
+							}),
+							separator(),
+							vbox({
+								hcenter(bold(text(gettext("Device")))),
+								separator(),
+								device_menu->Render(),
+							}),
+						}) | border;
+					}
+				);
+				auto input0 = Input(&threads_str, gettext("Enter threads number"), InputOption::Spacious());
+				auto threads_input = Renderer(input0, [input0] {
+					return hbox(text(gettext("Thread number:")) | vcenter, input0->Render() | vcenter);
+				});
+				auto input1 = Input(&srch_dp_str, gettext("Enter search depth"), InputOption::Spacious());
+				auto search_depth_input = Renderer(input1, [input1] {
+					return hbox(text(gettext("Search depth:")) | vcenter, input1->Render() | vcenter);
+				});
+				auto layout = Container::Vertical({
+					default_comp | hcenter,
+					menu_renderer | hcenter,
+					threads_input | hcenter,
+					search_depth_input | hcenter,
+					});
+				Add(layout);
+			}
+			~Impl() {
+				auto& option = gptr->e.option;
+				option.s_mtd = othello::ai::ai_option::search_method(s_mtd_select);
+				option.e_mtd = othello::ai::ai_option::eval_method(e_mtd_select);
+				option.device = othello::ai::ai_option::device_type(device_select);
+				option.threads = std::stoi(threads_str);
+				option.search_depth = std::stoi(srch_dp_str);
+			}
+		private:
+			std::shared_ptr<othello::computer_gamer_ai> gptr = nullptr;
+			std::string threads_str;
+			std::string srch_dp_str;
+			int s_mtd_select;
+			std::vector<string> search_method_list = {
+				"alphabeta",
+				"mcts",
+				"minmax"
+			};
+			int e_mtd_select;
+			std::vector<string> eval_method_list = {
+				"traits",
+				"pattern",
+				"nn"
+			};
+			int device_select;
+			std::vector<string> device_list = {
+				"CPU",
+				"GPU"
+			};
+		};
+		return ftxui::Make<Impl>(_p);
 	}
 }

@@ -19,10 +19,10 @@ namespace bw {
 	auto vcon(ftxui::Components children) {
 		return ftxui::Container::Vertical(children);
 	}
-	class cui {
+	class tui {
 	public:
-		cui() {};
-		cui(int X, int Y) :x_width(X), y_height(Y) {}
+		tui() {};
+		tui(int X, int Y) :x_width(X), y_height(Y) {}
 		void start();
 		//void HomePage();
 		ftxui::Component LogoPage();
@@ -38,7 +38,7 @@ namespace bw {
 		}
 		int x_width = 80, y_height = 40;
 	};
-	void cui::start() {
+	void tui::start() {
 		using namespace ftxui;
 
 		auto scr = ScreenInteractive::Fullscreen();
@@ -79,7 +79,7 @@ namespace bw {
 			});
 		scr.Loop(MainPage);
 	}
-	ftxui::Component cui::LogoPage() {
+	ftxui::Component tui::LogoPage() {
 		using namespace ftxui;
 		Canvas c(90, 90);
 		c.DrawPointCircleFilled(22, 20, 20);
@@ -94,15 +94,15 @@ namespace bw {
 			GameIcon | hcenter
 			}) | center;
 	}
-	ftxui::Component cui::LocalGamePage() {
+	ftxui::Component tui::LocalGamePage() {
 		using namespace ftxui;
 		Components buttons = { 
 			Button(gettext("Othello"),[&,this] {
-				bw::othello::components::Game Game;
-				if (Game.GamePreparing()) {
+				bw::othello::components::othello_Game_ptr Game = std::make_shared<bw::othello::components::Game>();
+				if (Game->GamePreparing()) {
 					do {
-						Game.GamePageLocal();
-					} while (Game.another_round);
+						Game->GamePageLocal();
+					} while (Game->another_round);
 				}
 				},ButtonOption::Animated()) | center,
 			Button(gettext("TicTacToe"),[&,this] {
@@ -126,7 +126,7 @@ namespace bw {
 		auto vertial_buttons = vcon(buttons);
 		return vertial_buttons | center | ui::EnableMessageBox();
 	}
-	ftxui::Component cui::OnlinePage() {
+	ftxui::Component tui::OnlinePage() {
 		using namespace ftxui;
 		Components  buttons = {
 			Button(censtr(gettext("Online Hall"),6),[&,this] {
@@ -140,20 +140,20 @@ namespace bw {
 		auto HBox = Container::Vertical(buttons);
 		return HBox | ui::EnableMessageBox() | center;
 	}
-	void cui::SimpleOnlinePage() {
+	void tui::SimpleOnlinePage() {
 		using namespace ftxui;
 		ui::msgbox(gettext("Developing."));
 	}
-	void cui::OnlineGameHallPage() {
+	void tui::OnlineGameHallPage() {
 		using namespace ftxui;
 		bw::online::components::HallPages Pages;
 		Pages.startHallPages();
 	}
-	ftxui::Component cui::SettingsPage() {
+	ftxui::Component tui::SettingsPage() {
 		using namespace ftxui;
 		return bw::components::SettingsPage();
 	}
-	ftxui::Component cui::HelpPage() {
+	ftxui::Component tui::HelpPage() {
 		using namespace ftxui;
 		ScreenInteractive screen = ScreenInteractive::Fullscreen();
 		Component HelpContent = Renderer([] {
@@ -167,12 +167,12 @@ namespace bw {
 		});
 		return HelpContent;
 	}
-	ftxui::Component cui::AboutPage() {
+	ftxui::Component tui::AboutPage() {
 		using namespace ftxui;
 		return InDeveloping();
 	}
 }
-/*void cui::HomePage() {
+/*void tui::HomePage() {
 		using namespace ftxui;
 		auto scr = ScreenInteractive::Fullscreen();
 		Components buttons;

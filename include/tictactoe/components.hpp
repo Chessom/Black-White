@@ -125,7 +125,7 @@ namespace bw::tictactoe::components {
 				ftxui::ScreenInteractive::Active()->Exit();
 				}, ButtonOption::Animated());
 		}
-		virtual ftxui::Component GamePage(ftxui::ScreenInteractive& screen, basic_game_ptr gm_ptr) override;
+		virtual ftxui::Component GamePage(ftxui::ScreenInteractive& screen) override;
 		virtual ftxui::Component OnlinePrepareCom(bw::online::basic_user_ptr uptr) override;
 		virtual ftxui::Component OnlineGamePage(ftxui::ScreenInteractive& screen, basic_game_ptr gm_ptr);
 		virtual void join(basic_gamer_ptr gp) override {
@@ -157,24 +157,26 @@ namespace bw::tictactoe::components {
 		void set_board_size(int size) override {}
 		bool GamePreparing();
 		void GamePageLocal();
-
+		~Game() {
+			spdlog::trace("Tictactoe Game Destructor");
+			spdlog::trace("pctx use_count:{} game object use_count:{}", pctx.use_count(), gm.use_count());
+		}
 		gamer_ptr gptr[2] = { nullptr,nullptr };
 		using context_ptr = std::shared_ptr<boost::asio::io_context>;
-
+		game_ptr gm = nullptr;
 	};
 	using ttt_Game_ptr = std::shared_ptr<Game>;
 
-	ftxui::Component Game::GamePage(ftxui::ScreenInteractive& screen, basic_game_ptr gm_ptr) {
+	ftxui::Component Game::GamePage(ftxui::ScreenInteractive& screen) {
 		using namespace ftxui;
 		assert(gptr[col0] != nullptr && gptr[col1] != nullptr);
-		std::shared_ptr<game> gm = std::dynamic_pointer_cast<game>(gm_ptr);
 		Board brd_ptr = Make<BoardBase>(pctx, gm);
 
 		gm->regret_sig.connect([brd_ptr] {
 			brd_ptr->pmvdq->q.push_back({ .mvtype = move::regret });
 			brd_ptr->pmvdq->tim.cancel_one();
 			});
-		gm->end_sig.connect([brd_ptr, gm, this] {
+		gm->end_sig.connect([brd_ptr, this] {
 			auto winner = gm->brd.check_winner();
 			if (winner != core::none) {
 				ui::msgbox(std::format("{} {}", gm->g[winner]->name, gettext("Win!")), { ui::MakeOKButton(),ui::TextComp(" "),AnotherRoundButton(gm) });
@@ -183,20 +185,20 @@ namespace bw::tictactoe::components {
 				ui::msgbox(gettext("Draw!"), { ui::MakeOKButton(), ui::TextComp(" "), AnotherRoundButton(gm) });
 			}
 			});
-		gm->flush_sig.connect([brd_ptr, gm, &screen] {
-			screen.Post([brd_ptr, gm] { brd_ptr->brd = gm->current_board(); });
+		gm->flush_sig.connect([this, brd_ptr, &screen] {
+			screen.Post([brd_ptr, this] { brd_ptr->brd = gm->current_board(); });
 			});
 		gm->save_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
 		gm->suspend_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
 
 		Component buttons = Container::Vertical({
-			Button(censtr(gettext("Quit"), 8), [this,gm,&screen] {gm->end_game(); if (!pctx->stopped()) { pctx->stop(); } screen.Exit(); }, ButtonOption::Animated()) | center,
+			Button(censtr(gettext("Quit"), 8), [this, &screen] {gm->end_game(); if (!pctx->stopped()) { pctx->stop(); } screen.Exit(); }, ButtonOption::Animated()) | center,
 			Renderer([] {return separator(); }),
-			Button(censtr(gettext("Regret"), 8), [gm] {gm->regret_sig(); }, ButtonOption::Animated()) | center,
+			Button(censtr(gettext("Regret"), 8), [this] {gm->regret_sig(); }, ButtonOption::Animated()) | center,
 			Renderer([] {return separator(); }),
-			Button(censtr(gettext("Suspend"), 8), [gm] {gm->suspend_sig(); }, ButtonOption::Animated()) | center,
+			Button(censtr(gettext("Suspend"), 8), [this] {gm->suspend_sig(); }, ButtonOption::Animated()) | center,
 			Renderer([] {return separator(); }),
-			Button(censtr(gettext("Save"), 8), [gm] {gm->save_sig(); }, ButtonOption::Animated()) | center,
+			Button(censtr(gettext("Save"), 8), [this] {gm->save_sig(); }, ButtonOption::Animated()) | center,
 			}) | ftxui::border;
 		Component brd = brd_ptr | center;
 		return
@@ -205,7 +207,7 @@ namespace bw::tictactoe::components {
 					buttons,
 					brd,
 				}),
-				Renderer([this, gm] { return text(std::format("{}:{}",gettext("Current player"),gptr[gm->current_color()]->name)) | center; }),
+				Renderer([this] { return text(std::format("{}:{}",gettext("Current player"),gptr[gm->current_color()]->name)) | center; }),
 				});
 	}
 	
@@ -255,14 +257,17 @@ namespace bw::tictactoe::components {
 	ftxui::Component Game::OnlineGamePage(ftxui::ScreenInteractive& screen, basic_game_ptr gm_ptr) {
 		using namespace ftxui;
 		assert(gptr[col0] != nullptr && gptr[col1] != nullptr);
-		std::shared_ptr<game> gm = std::dynamic_pointer_cast<game>(gm_ptr);
+		gm = std::dynamic_pointer_cast<game>(gm_ptr);
 		Board brd_ptr = Make<BoardBase>(pctx, gm);
-
-		gm->regret_sig.connect([brd_ptr] {
-			brd_ptr->pmvdq->q.push_back({ .mvtype = move::regret });
-			brd_ptr->pmvdq->tim.cancel_one();
+		std::weak_ptr<BoardBase> weak_brd = brd_ptr;//防止循环引用brd_ptr->gm,gm->some_signal->brd_ptr
+		gm->regret_sig.connect([weak_brd] {
+			auto brd_ptr = weak_brd.lock();
+			if (brd_ptr) {
+				brd_ptr->pmvdq->q.push_back({ .mvtype = move::regret });
+				brd_ptr->pmvdq->tim.cancel_one();
+			}
 			});
-		gm->end_sig.connect([brd_ptr, gm] {
+		gm->end_sig.connect([this] {
 			auto winner = gm->brd.check_winner();
 			if (winner != core::none) {
 				ui::msgbox(std::format("{} {}", gm->g[winner]->name, gettext("Win!")));
@@ -271,20 +276,20 @@ namespace bw::tictactoe::components {
 				ui::msgbox(gettext("Draw!"));
 			}
 			});
-		gm->flush_sig.connect([brd_ptr, gm, &screen] {
-			screen.Post([brd_ptr, gm] { brd_ptr->brd = gm->current_board(); });
+		gm->flush_sig.connect([&brd = brd_ptr->brd, this, &screen] {
+			screen.Post([&brd, this] { brd = gm->current_board(); });
 			});
 		gm->save_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
 		gm->suspend_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
 
 		Component buttons = Container::Vertical({
-			Button(censtr(gettext("Quit"), 8), [gm] {gm->end_game(); }, ButtonOption::Animated()) | center,
+			Button(censtr(gettext("Quit"), 8), [this] {gm->end_game(); }, ButtonOption::Animated()) | center,
 			Renderer([] {return separator(); }),
-			Button(censtr(gettext("Regret"), 8), [gm] {gm->regret_sig(); }, ButtonOption::Animated()) | center,
+			Button(censtr(gettext("Regret"), 8), [this] {gm->regret_sig(); }, ButtonOption::Animated()) | center,
 			Renderer([] {return separator(); }),
-			Button(censtr(gettext("Suspend"), 8), [gm] {gm->suspend_sig(); }, ButtonOption::Animated()) | center,
+			Button(censtr(gettext("Suspend"), 8), [this] {gm->suspend_sig(); }, ButtonOption::Animated()) | center,
 			Renderer([] {return separator(); }),
-			Button(censtr(gettext("Save"), 8), [gm] {gm->save_sig(); }, ButtonOption::Animated()) | center,
+			Button(censtr(gettext("Save"), 8), [this] {gm->save_sig(); }, ButtonOption::Animated()) | center,
 			}) | ftxui::border;
 		Component brd = brd_ptr | center;
 		return
@@ -293,7 +298,7 @@ namespace bw::tictactoe::components {
 					buttons | center,
 					brd | center,
 				}),
-				Renderer([this, gm] { return text(std::format("{}:{}",gettext("Current player"),gptr[gm->current_color()]->name)) | center; }),
+				Renderer([this] { return text(std::format("{}:{}",gettext("Current player"),gptr[gm->current_color()]->name)) | center; }),
 				});
 	}
 	
@@ -336,15 +341,13 @@ namespace bw::tictactoe::components {
 		ui::auto_close_modal _f;
 		ScreenInteractive screen = ScreenInteractive::Fullscreen();
 		std::shared_ptr<game> gm = std::make_shared<game>(gptr[core::col0], gptr[core::col1]);
-		auto GamePageComp = GamePage(screen, gm) | center | ui::EnableMessageBox();
+		auto GamePageComp = GamePage(screen) | center | ui::EnableMessageBox();
 		std::jthread j([this, gm, &screen] {
-			try
-			{
+			try {
 				boost::cobalt::spawn(*pctx, gm->start(), boost::asio::detached);
 				pctx->run();
 			}
-			catch (const std::exception& e)
-			{
+			catch (const std::exception& e) {
 				ui::msgbox(gbk2utf8(e.what()));
 				screen.Exit();
 			}
