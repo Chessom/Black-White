@@ -6,9 +6,9 @@ namespace bw::othello {
 	enum { max_move_num = 100 };
 	struct move {
 		enum { mv, pass, lose, win, draw, suspend, regret, quit, invalid, str, start, prepared, brd };
-		int mvtype;
+		int mvtype = invalid;
 		coord pos;
-		color c;
+		color c = core::none;
 		std::string msg;
 	};
 	REFLECTION(move, mvtype, pos, c, msg);

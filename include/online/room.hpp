@@ -2,7 +2,6 @@
 #include"stdafx.h"
 #include"net/message.hpp"
 #include"online/user_info.hpp"
-#include"boost/static_string.hpp"
 namespace bw::online {
 	struct room_info {
 	public:
@@ -23,7 +22,6 @@ namespace bw::online {
 			.usersize = 0,
 			.infostate = room_info::outdated,
 		};
-		std::is_trivially_copyable<boost::static_string<15>>::value;
 	}
 	REFLECTION(room_info, id, owner, name, state, usersize);
 	//struct room_info {

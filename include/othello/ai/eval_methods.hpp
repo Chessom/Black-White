@@ -5,14 +5,14 @@ namespace bw::othello::ai {
 	struct traits_eval {
 		using val_t = value_type;
 		static const inline value_type position_weights[8][8] = {
-				{40, -3, 11, 8, 8, 11, -3, 40},
+				{45, -3, 11, 8, 8, 11, -3, 45},
 				{-3, -10, -4, 1, 1, -4, -10, -3},
 				{11, -4, 2, 2, 2, 2, -4, 11},
 				{8, 1, 2, -3, -3, 2, 1, 8},
 				{8, 1, 2, -3, -3, 2, 1, 8},
 				{11, -4, 2, 2, 2, 2, -4, 11},
 				{-3, -10, -4, 1, 1, -4, -10, -3},
-				{40, -3, 11, 8, 8, 11, -3, 40}
+				{45, -3, 11, 8, 8, 11, -3, 45}
 		};
 		template<int BoardSize>
 		value_type eval_board(const bitbrd_t<BoardSize>& brd, color setter, color player) {
@@ -148,6 +148,31 @@ namespace bw::othello::ai {
 		template<int BoardSize>
 		value_type eval_end_game_board(const arrbrd_t<BoardSize>& brd, color player) {
 			return brd.countpiece(player) - brd.countpiece(op_col(player)) * 15;
+		}
+	};
+	template<typename value_type = float>
+	struct random_eval {
+		using val_t = value_type;
+		std::random_device rnd;
+		template<int BoardSize>
+		value_type eval_board(const static_brd<BoardSize>& brd, color setter, color player) {
+			return static_cast<value_type>(rnd());
+		}
+		template<int BoardSize>
+		value_type eval_end_game_board(const static_brd<BoardSize>& brd, color player) {
+			return static_cast<value_type>(rnd());
+		}
+	};
+	template<typename value_type = float>
+	struct zero_eval {
+		using val_t = value_type;
+		template<int BoardSize>
+		value_type eval_board(const static_brd<BoardSize>& brd, color setter, color player) {
+			return 0;
+		}
+		template<int BoardSize>
+		value_type eval_end_game_board(const static_brd<BoardSize>& brd, color player) {
+			return 0;
 		}
 	};
 }

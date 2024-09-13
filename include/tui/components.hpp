@@ -97,6 +97,12 @@ namespace bw::ui {
 			return event.is_character() && ref().size() > len;
 		});
 	}
+	inline ftxui::ComponentDecorator FloatOnly() {
+		using namespace ftxui;
+		return CatchEvent([](Event event) {
+			return event.is_character() && event.character()[0] != '.' && !std::isdigit(event.character()[0]);
+			});
+	}
 	inline ftxui::Component Focusable() {
 		struct Impl : public ftxui::ComponentBase {
 			bool Focusable() const override { return true; }

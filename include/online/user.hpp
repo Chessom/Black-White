@@ -7,7 +7,6 @@
 #include"tui/components.hpp"
 #include"basic_user.hpp"
 #include"basic_online_gamer.hpp"
-#include"boost/container/flat_map.hpp"
 namespace bw::online {
 	class user :public basic_user, public std::enable_shared_from_this<user> {
 	public:
@@ -24,7 +23,7 @@ namespace bw::online {
 			crt_room_info.store(default_room_info());
 			search_rinfo_res.store(default_room_info());
 		};
-		user(std::shared_ptr<context> io) :context_ptr(std::move(io)), socket(*io), timer_(*io), chat_mutex(0), _gen(0, INT_MAX) {
+		user(std::shared_ptr<context> io) :context_ptr(io), socket(*io), timer_(*io), chat_mutex(0), _gen(0, INT_MAX) {
 			timer_.expires_at(std::chrono::steady_clock::time_point::max());
 			stop_flag.clear();
 			crt_room_info.store(default_room_info());

@@ -99,7 +99,7 @@
     <VcpkgUseStatic>true</VcpkgUseStatic>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <VcpkgUseStatic>true</VcpkgUseStatic>
+    <VcpkgUseStatic>false</VcpkgUseStatic>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -164,7 +164,7 @@
       <AdditionalOptions>/utf-8 /bigobj %(AdditionalOptions)</AdditionalOptions>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <DisableAnalyzeExternal>true</DisableAnalyzeExternal>
@@ -180,7 +180,7 @@
     <ClCompile>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;_WIN32_WINNT=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
@@ -201,6 +201,7 @@
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
       <DisableAnalyzeExternal>true</DisableAnalyzeExternal>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -231,7 +232,7 @@
     <ClInclude Include="include\basic_gamer.hpp" />
     <ClInclude Include="include\gamer\basic_lua_gamer.hpp" />
     <ClInclude Include="include\gamer\basic_python_gamer.hpp" />
-    <ClInclude Include="include\gamer\basic_ws_gamer.hpp" />
+    <ClInclude Include="include\gamer\basic_http_gamer.hpp" />
     <ClInclude Include="include\games.hpp" />
     <ClInclude Include="include\globals.hpp" />
     <ClInclude Include="include\gobang\board.hpp" />
@@ -283,6 +284,7 @@
     <ClInclude Include="include\tictactoe\gamer\online.hpp" />
     <ClInclude Include="include\tictactoe\move.hpp" />
     <ClInclude Include="include\tictactoe\moves.hpp" />
+    <ClInclude Include="include\timer.hpp" />
     <ClInclude Include="include\tools.hpp" />
     <ClInclude Include="include\tree.hpp" />
     <ClInclude Include="include\tui\bwlocale.hpp" />

@@ -285,7 +285,21 @@ namespace bw::othello::components {
 			screen.Post([this, &brd] { brd = gm->current_board(); });
 			screen.PostEvent(Event::Custom);
 			});
-		gm->save_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
+		gm->save_sig.connect([this] {
+			auto str = gm->to_string();
+			std::ofstream fout;
+			if (!std::filesystem::exists(global_config->saved_games_path)) {
+				std::filesystem::create_directories(global_config->saved_games_path);
+			}
+			fout.open(std::format("{}{}-{}.bin", global_config->saved_games_path, "othello", std::chrono::system_clock::now()), std::ios::binary | std::ios::out);
+			if (fout) {
+				fout << str;
+			}
+			else {
+				ui::msgbox(gettext("Save game failed! Failed to create archive file."));
+			}
+			fout.close();
+		});
 		gm->suspend_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
 
 		Component buttons = Container::Vertical({
@@ -463,7 +477,23 @@ namespace bw::othello::components {
 			screen.Post([this, &brd] { brd = gm->current_board(); });
 			screen.PostEvent(Event::Custom);
 			});
-		gm->save_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
+		gm->save_sig.connect([this] {
+			auto str = gm->to_string();
+			std::ofstream fout;
+			if (!std::filesystem::exists(global_config->saved_games_path + "othello\\")) {
+				std::filesystem::create_directories(global_config->saved_games_path + "othello\\");
+			}
+			auto file_name = std::format(R"(.\{}{}\{:%F--%H-%M-%S}.bin)", global_config->saved_games_path, "othello", gm->begin_time);
+			fout.open(file_name, std::ios::binary | std::ios::out);
+			if (fout.is_open()) {
+				fout << str;
+				ui::msgbox(gettext("Save game successfully"));
+			}
+			else {
+				ui::msgbox(gettext("Save game failed! Failed to create archive file."));
+			}
+			fout.close(); 
+			});
 		gm->suspend_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
 
 		Component buttons = Container::Vertical({

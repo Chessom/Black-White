@@ -138,31 +138,14 @@ namespace bw::othello {
 		void serialize(Archive& ar) {
 			ar(mat);
 		}
-		auto& get_underlying_vector() {
-			return mat;
+		vector<pos_type>& get_underlying_vector() const {
+			return const_cast<vector<pos_type>&>(mat);
 		}
 		int size = default_size;
 	private:
 		vector<pos_type> mat;
 	};
-	/*class safe_dynamic_brd :public dynamic_brd {
-	public:
-		safe_dynamic_brd() = default;
-		safe_dynamic_brd(int size) :dynamic_brd(size) {}
-		safe_dynamic_brd(dynamic_brd Board) :dynamic_brd(std::move(Board)) {}
-		virtual color getcol(const coord& crd) override {
-			mtx.lock_shared();
-			return dynamic_brd::getcol(crd);
-			mtx.unlock_shared();
-		}
-		virtual void setcol(const coord& crd, color col) override {
-			mtx.lock();
-			dynamic_brd::setcol(crd, col);
-			mtx.unlock();
-		}
-	private:
-		std::shared_mutex mtx;
-	};*/
+	STRUCT_PACK_REFL(dynamic_brd, get_underlying_vector());
 
 	template<int Size>
 	class bitbrd_t {

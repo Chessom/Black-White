@@ -49,7 +49,7 @@ namespace bw::othello {
 			e.set_algo();
 		}
 		virtual ~computer_gamer_ai() = default;
-		ai::evaluator e;
+		ai::solver e;
 		bool is_good = true;
 	};
 	inline basic_gamer_ptr computer_gamer_from_id(int ID, color c) {

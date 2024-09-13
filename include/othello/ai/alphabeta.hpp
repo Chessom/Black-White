@@ -14,6 +14,7 @@ namespace bw::othello::ai {
 			}
 		}
 		ai_option option;
+		std::vector<std::pair<coord, float>> last_mvs;
 	private:
 		coord choose_move_single_thread(const static_brd<BoardSize>& brd, color c) {
 			moves mvs;
@@ -23,9 +24,11 @@ namespace bw::othello::ai {
 			static_brd<BoardSize> board = brd;
 			int index = 0;
 			if (mvs.size != 0) {
+				last_mvs.clear();
 				for (int i = 0; i < mvs.size; ++i) {
 					board.applymove(mvs.coords[i], c);
 					auto mark = -nega_alphabeta_evaluate(board, op_col(c), option.search_depth, -inf, inf);
+					last_mvs.push_back({ mvs.coords[i], mark });
 					if (mark > points) {
 						points = mark;
 						index = i;

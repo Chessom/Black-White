@@ -296,7 +296,7 @@
     <ClInclude Include="include\tui\scroller.hpp">
       <Filter>头文件\bw\tui</Filter>
     </ClInclude>
-    <ClInclude Include="include\gamer\basic_ws_gamer.hpp">
+    <ClInclude Include="include\gamer\basic_http_gamer.hpp">
       <Filter>头文件\bw\shared\gamer</Filter>
     </ClInclude>
     <ClInclude Include="include\othello\ai\minmax.hpp">
@@ -311,8 +311,17 @@
     <ClInclude Include="include\othello\ai\alphabeta.hpp">
       <Filter>头文件\othello\othello.ai</Filter>
     </ClInclude>
+    <ClInclude Include="include\gobang\board.hpp">
+      <Filter>头文件\gobang</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tree.hpp">
+      <Filter>头文件\external</Filter>
+    </ClInclude>
     <ClInclude Include="include\othello\ai\eval_methods.hpp">
-      <Filter>头文件\othello\othello.ai</Filter>
+      <Filter>头文件\othello\othello.ai\eval_methods</Filter>
+    </ClInclude>
+    <ClInclude Include="include\timer.hpp">
+      <Filter>头文件\bw\shared</Filter>
     </ClInclude>
     <ClInclude Include="include\gobang\board.hpp">
       <Filter>头文件\gobang</Filter>

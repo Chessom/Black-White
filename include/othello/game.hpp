@@ -14,7 +14,7 @@ namespace bw::othello {
 	};
 	struct aspect {
 		dynamic_brd brd;
-		color col;
+		color col = col0;//setter color
 	};
 	using aspects = std::vector<aspect>;
 	class game :public basic_game, public std::enable_shared_from_this<game> {
@@ -37,7 +37,7 @@ namespace bw::othello {
 		}
 		boost::cobalt::task<void> start() override {
 			auto self = shared_from_this();
-
+			begin_time = std::chrono::system_clock::now();
 			st = ongoing;
 			brd.initialize();
 			color op = core::op_col(col);
@@ -52,7 +52,7 @@ namespace bw::othello {
 						end_sig();
 						st = ended;
 						end_game();
-						co_return;
+						goto end_label;
 					}
 					else {
 						pass_sig();
@@ -104,11 +104,11 @@ namespace bw::othello {
 				case move::suspend:
 					st = suspended;
 					suspend();
-					co_return;
+					goto end_label;
 					break;
 				case move::quit:
 					st = ended;
-					co_return;
+					goto end_label;
 					break;
 				case move::str:
 					continue;
@@ -116,7 +116,7 @@ namespace bw::othello {
 				case move::invalid:
 					ui::msgbox(std::format("Invalid move:pos:{},type:{},\nmsg:{}", mv.pos, mv.mvtype, mv.msg));
 					st = ended;
-					co_return;
+					goto end_label;
 					break;
 				default:
 					ui::msgbox(std::format("{}:{}", gettext("move type id"), mv.mvtype));
@@ -127,6 +127,9 @@ namespace bw::othello {
 				col = op;//change the setter
 				op = op_col(col);
 			}
+		end_label:
+			end_time = std::chrono::system_clock::now();
+			co_return;
 		}
 		bool valid_move(color c, const coord& crd) {
 			return mvs[c].find(crd) != moves::npos;
@@ -157,9 +160,22 @@ namespace bw::othello {
 				g[col]->gamertype == gamer::remote ||
 				g[op_col(col)]->gamertype == gamer::remote;
 		}
+		std::string to_string() const {
+			return struct_pack::serialize<std::string>(game_aspects);
+		}
+		void from_string(const std::string& buffer) {
+			auto ex = struct_pack::deserialize<aspects>(buffer);
+			if (ex.has_value()) {
+				game_aspects = ex.value();
+			}
+			else {
+				throw std::runtime_error(gettext("Load game failed!"));
+			}
+		}
 		virtual ~game() {
 			spdlog::trace("Othello game Destructor");
 		};
+		std::chrono::system_clock::time_point begin_time, end_time;
 	protected:
 		void suspend() {
 

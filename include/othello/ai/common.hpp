@@ -1,13 +1,13 @@
 ﻿#pragma once
 #include"othello/board.hpp"
 #include"othello/moves.hpp"
-#include <boost/threadpool.hpp>
+#include<boost/threadpool.hpp>
 namespace bw::othello::ai {
 	template<int BoardSize = 8>
 	struct game_state
 	{
 		static_brd<BoardSize> brd;
-		color setter_color;
+		color setter_color = col0;
 		fast_moves<BoardSize> mvs[2] = {};
 	};
 	struct ai_option {
@@ -32,8 +32,9 @@ namespace bw::othello::ai {
 		int search_depth = 5;
 		int time_limit = 0;
 		struct mcts_option {
-			enum { default_simulations = 10000 };
+			enum { default_simulations = 1000 };
 			int simulations = default_simulations;
+			float explore_factor = 2.0;
 		};
 		mcts_option mcts_opt;
 	};

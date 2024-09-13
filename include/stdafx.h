@@ -16,7 +16,6 @@
 #include <format>
 #include <fstream>
 #include <functional>
-#include <future>
 #include <iostream>
 #include <list>
 #include <locale>

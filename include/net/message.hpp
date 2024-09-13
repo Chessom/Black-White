@@ -8,23 +8,23 @@ namespace bw {
 		enum { create, update, del, leave, join, none };
 		int type = none;
 		std::string content;
-		int id1, id2;
-		int target_type;
+		int id1 = 0, id2 = 0;
+		int target_type = n;
 		enum { r, g, n };
 	};
 	REFLECTION(control_msg, type, content, id1, id2, target_type);
 	struct str_msg {
 		std::string content;
 		int target_type = g;//目标类型，g:单独用户，r:整个房间
-		int id1, id2;//id1为发送者ID, id2为接收者ID/房间ID
+		int id1 = 0, id2 = 0;//id1为发送者ID, id2为接收者ID/房间ID
 		std::string name;//发送者名字
 		enum { r, g, n };
 	};
 	REFLECTION(str_msg, content, target_type, id1, id2, name);
 	struct game_msg {
 		enum { create, prepare, start, move, watch, brd, match, end };
-		int type;
-		int id;
+		int type = move;
+		int id = 0;
 		std::string movestr, board;
 		enum { ok, server_end_game, gamer_quit_or_disconnect, unknown };
 		//create：movestr代表game的名字（种类），而board则是game的详细信息，是一个json字符串

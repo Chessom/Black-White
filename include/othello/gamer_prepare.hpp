@@ -380,6 +380,7 @@ namespace bw::components {
 				srch_dp_str = std::to_string(option.search_depth);
 				mcts_simulation_str = std::to_string(option.mcts_opt.simulations);
 				time_limit_str = std::to_string(option.time_limit);
+				expf_str = std::to_string(option.mcts_opt.explore_factor);
 
 				auto default_comp = GamerSetting<void>(ptr);
 				auto m_option = MenuOption();
@@ -433,13 +434,20 @@ namespace bw::components {
 				auto simulations_input = Renderer(simu_input, [simu_input] {
 					return hbox(text(gettext("Simulation times:")) | vcenter, simu_input->Render() | vcenter);
 					});
+
 				auto tim_lim_input = Input(&time_limit_str, gettext("Enter microseconds")) | ui::NumberOnly();
 				auto time_limit_input = Renderer(tim_lim_input, [tim_lim_input] {
 					return hbox(text(gettext("Time limit(microseconds):")) | vcenter, tim_lim_input->Render() | vcenter);
 					});
+
+				auto expf_input = Input(&expf_str, gettext("Enter explore factor")) | ui::FloatOnly();
+				auto explore_factor_input = Renderer(expf_input, [expf_input] {
+					return hbox(text(gettext("explore factor:")) | vcenter, expf_input->Render() | vcenter);
+					});
 				auto mcts_opt = Container::Vertical({
 					simulations_input,
-					time_limit_input
+					time_limit_input,
+					explore_factor_input
 					});
 
 				auto menu_tabs = Container::Tab({
@@ -469,6 +477,7 @@ namespace bw::components {
 				option.search_depth = srch_dp_str.empty() ? 5 : std::stoi(srch_dp_str);
 				option.mcts_opt.simulations = mcts_simulation_str.empty() ? 0 : std::stoi(mcts_simulation_str);
 				option.time_limit = time_limit_str.empty() ? 0 : std::stoi(time_limit_str);
+				option.mcts_opt.explore_factor = std::stof(expf_str);
 				gptr->e.set_algo();
 			}
 		private:
@@ -477,6 +486,7 @@ namespace bw::components {
 			std::string srch_dp_str;
 			std::string mcts_simulation_str;
 			std::string time_limit_str;
+			std::string expf_str;
 			int s_mtd_select;
 			std::vector<string> search_method_list = {
 				"alphabeta",

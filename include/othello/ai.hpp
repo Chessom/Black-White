@@ -5,8 +5,8 @@
 #include <chrono>
 namespace bw::othello::ai {
 	REFLECTION(ai_option, s_mtd, e_mtd, threads, search_depth, device);
-	struct evaluator {
-		evaluator(color setter_color, int board_size) :setter(setter_color), board_size(board_size) { set_algo(); }
+	struct solver {
+		solver(color setter_color, int board_size) :setter(setter_color), board_size(board_size) { set_algo(); }
 		coord best_move(const dynamic_brd& brd, color c) {
 			switch (brd.size) {
 			case 4:return best_move_static<4>(static_brd<4>(brd), c);
