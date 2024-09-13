@@ -3,7 +3,7 @@
 #include"othello/board.hpp"
 namespace bw::othello::ai {
 	template<int Size>
-	auto generate_random_board(int step) {
+	inline auto generate_random_board(int step) {
 		static_assert(Size <= 8, "Size must be less than 8.");
 		bitbrd_t<Size> brd;
 		std::random_device e;
@@ -30,7 +30,7 @@ namespace bw::othello::ai {
 			for (int i = 0; i < t; ++i) {
 				mvs = mvs & (mvs - 1);
 			}
-			brd.applymove(bitbrd::bit2crd(mvs & (-ll(mvs))), col);
+			brd.applymove(mvs & (-ll(mvs)), col);
 			col = op;
 		}
 		return brd;

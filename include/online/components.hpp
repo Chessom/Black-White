@@ -43,7 +43,7 @@ namespace bw::online::components {
 				.resize_down = false,
 				.render = &ui::AlwaysActiveRenderState,
 				});
-			return Maybe(EditNameWindow, &showEditNameWindow);
+			return Maybe(EditNameWindow, &showEditNameWindow) | bgcolor(Color::Black);
 		}
 		ftxui::Component MakeSideBarComp() {
 			using namespace ftxui;
@@ -202,7 +202,7 @@ namespace bw::online::components {
 				.height = &RoomInfoHeight,
 				.render = &ui::AlwaysActiveRenderState,
 				});
-			return Maybe(RoomInfoWindow, &showRoomInfoPage);
+			return Maybe(RoomInfoWindow, &showRoomInfoPage) | bgcolor(Color::Black);
 		}
 		user_ptr self;
 		int RoomInfoHeight = 13;
@@ -299,7 +299,7 @@ namespace bw::online::components {
 				.render = &ui::AlwaysActiveRenderState,
 				});
 			self->show_room_chats.connect([this] {showRoomChatTaskBar = true; show_content = true; });
-			return Maybe(RoomChatWindow, &show_content);
+			return Maybe(RoomChatWindow, &show_content) | bgcolor(Color::Black);
 		}
 		void RefreshRoomChatMsgs() {
 			if (RoomChatMsgs->ChildCount())
@@ -499,7 +499,7 @@ namespace bw::online::components {
 				.width = &GamePageWidth,
 				.height = &GamePageHeight,
 				.render = &ui::AlwaysActiveRenderState,
-				}), &showGameWindow);
+				}), &showGameWindow) | bgcolor(Color::Black);
 		}
 		user_ptr self;
 		int game_index = 0;

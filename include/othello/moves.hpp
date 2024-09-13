@@ -108,21 +108,22 @@ inline namespace v2{
 		moves() = default;
 		template<int Size>
 		moves(const bitbrd_t<Size>& brd, const color& col) {
-			update(brd, col);
+			coords.reserve(Size * 3.5 - 9);
+			update<Size>(brd, col);
 		}
 		template<mat_brd Board>
 		moves(const Board& brd, const color& col) {
+			coords.reserve(brd.brd_size() * 3.5 - 9);
 			update(brd, col);
 		}
 		template<int Size>
 		void update(const bitbrd_t<Size>& brd, const color& col) {
 			clear();
-			constexpr ull mask = (1ull << (Size * Size)) - 1ull;
-			ull moves = brd.getmoves(col) & mask;
+			ull moves = brd.getmoves(col);
 			bititer iter = 0ull;
 			for (; moves; moves = moves & (moves - 1)) {
 				iter = moves & (-ll(moves));
-				coords[size++] = std::move(bitbrd_t<Size>::bit2crd(iter));
+				push_back(std::move(bitbrd_t<Size>::bit2crd(iter)));
 			}
 		}
 		template<mat_brd board>
@@ -216,7 +217,7 @@ inline namespace v2{
 			coords.clear();
 			size = 0;
 		}
-		int find(const coord& crd) {
+		int find(const coord& crd) const {
 			for (int i = 0; i < coords.size(); ++i) {
 				if (coords[i] == crd) {
 					return i;
@@ -224,7 +225,7 @@ inline namespace v2{
 			}
 			return npos;
 		}
-		coord get_crd(int index) {
+		coord get_crd(int index) const {
 			return coords[index];
 		}
 
@@ -240,11 +241,17 @@ inline namespace v2{
 		std::vector<coord> coords;
 	};
 	template<int BoardSize>
-	struct static_moves {
-		static_moves() {
+	using fast_moves = typename std::conditional<(BoardSize > 8), std::vector<coord>, uint64_t>::type;
 
+	template<int BoardSize>
+	bool empty_moves(const fast_moves<BoardSize>& mvs) {
+		if constexpr (BoardSize > 8) {
+			return mvs.empty();
 		}
-	};
+		else {
+			return !mvs;
+		}
+	}
 };
 }
 namespace std {

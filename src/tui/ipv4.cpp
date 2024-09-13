@@ -1,7 +1,6 @@
 ﻿#include <sstream>
 #include <string>
 #include <vector>
-
 #include "ipv4.hpp"
 #include "ftxui/component/event.hpp"
 #include "ftxui/component/component.hpp"

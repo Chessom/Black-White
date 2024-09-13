@@ -155,7 +155,7 @@ namespace bw::tictactoe::components {
 			return gm;
 		}
 		void set_board_size(int size) override {}
-		bool GamePreparing();
+		bool GameSetting();
 		void GamePageLocal();
 		~Game() {
 			spdlog::trace("Tictactoe Game Destructor");
@@ -302,7 +302,7 @@ namespace bw::tictactoe::components {
 				});
 	}
 	
-	bool Game::GamePreparing() {
+	bool Game::GameSetting() {
 		using namespace ftxui;
 		bool ret = true;
 		ScreenInteractive screen = ftxui::ScreenInteractive::Fullscreen();
@@ -340,9 +340,9 @@ namespace bw::tictactoe::components {
 		another_round = false;
 		ui::auto_close_modal _f;
 		ScreenInteractive screen = ScreenInteractive::Fullscreen();
-		std::shared_ptr<game> gm = std::make_shared<game>(gptr[core::col0], gptr[core::col1]);
+		gm = std::make_shared<game>(gptr[core::col0], gptr[core::col1]);
 		auto GamePageComp = GamePage(screen) | center | ui::EnableMessageBox();
-		std::jthread j([this, gm, &screen] {
+		std::jthread j([this, &screen] {
 			try {
 				boost::cobalt::spawn(*pctx, gm->start(), boost::asio::detached);
 				pctx->run();

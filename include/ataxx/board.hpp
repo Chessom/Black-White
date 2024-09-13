@@ -8,92 +8,102 @@ namespace bw::ataxx {
 	enum { default_size = 7, max_size = 11 };
 	using std::vector;
 	using namespace core;
-	class basic_brd {
-	public:
-		basic_brd() = default;
-		bool in_board(const coord& crd) const {
-			return (crd.x < size && crd.y < size && crd.x >= 0 && crd.y >= 0);
-		}
-		virtual color getcol(const coord& crd) const = 0;
-		virtual void setcol(const coord& crd, color col) = 0;
-		virtual void initialize() {
-			setcol({ size - 1,size - 1 }, col1);
-			setcol({ 0,0 }, col1);
-			setcol({ size - 1,0 }, col0);
-			setcol({ 0,size - 1 }, col0);
-		}
-		virtual void applymove(const coord& from, const coord& to, const color& col) = 0;
-		virtual int count(color col) = 0;
-		virtual void resize(int newsize) = 0;
-		virtual ~basic_brd() = default;
-		int size = default_size;
-	};
 
-	class dynamic_brd :public basic_brd {
-	public:
+	template<int Size, std::integral PosType = int_fast8_t>
+	class arrbrd_t;
+	template<int Size>
+	class bitbrd_t;
+
+	struct dynamic_brd {
+		using pos_type = uint_fast8_t;
+		template<int Size, std::integral PosType>
+		friend class arrbrd_t;
+		template<int Size>
+		friend class bitbrd_t;
 		dynamic_brd() {
 			size = default_size;
-			mat.resize(size);
-			for (auto& v : mat) {
-				v.resize(size);
-			}
+			mat.resize(size * size);
 		}
 		dynamic_brd(int Size) {
 			size = Size;
-			mat.resize(size);
-			for (auto& v : mat) {
-				v.resize(size);
-			}
+			mat.resize(size * size);
 		}
-		virtual color getcol(const coord& crd)const override {
-			return mat[crd.x][crd.y] - 1;
+		bool in_board(const coord& crd) const {
+			return (crd.x < size && crd.y < size && crd.x >= 0 && crd.y >= 0);
 		}
-		virtual void setcol(const coord& crd, color col)override {
-			mat[crd.x][crd.y] = col + 1;
+		color getcol(const coord& crd)const {
+			return mat[crd.x * size + crd.y] - 1;
 		}
-		virtual void applymove(const coord& from, const coord& to, const color& col) override {
-			int dx = abs(from.x - to.x), dy = abs(from.y - to.y);
-			int layer = 1;
-			if (!(dx && dy) && (dx + dy == 2) || (dx + dy > 2)) {
-				++layer;
-			}
-			coord c;
-			if (layer == 1) {
-				setcol(to, col);
-				for (int drc = directions::R; drc <= directions::UR; ++drc) {
-					
+		void setcol(const coord& crd, color col) {
+			mat[crd.x * size + crd.y] = col + 1;
+		}
+		void initialize() {
+			setcol({ size / 2 - 1,size / 2 - 1 }, col1);
+			setcol({ size / 2 ,size / 2 }, col1);
+			setcol({ size / 2 - 1,size / 2 }, col0);
+			setcol({ size / 2 ,size / 2 - 1 }, col0);
+		}
+		void applymove(const coord& crd, const color& col) {
+			using drc_t = int;
+			using namespace directions;
+			color opcol = col ^ 1;
+			for (drc_t drc = R; drc <= UR; ++drc) {
+				coord iter = crd;
+				bool flag = false;
+				int times = 0;
+				if (in_board(iter.to_next(drc)) && getcol(iter) == opcol) {
+					color c = 0;
+					while (in_board(iter.to_next(drc))) {
+						++times;
+						c = getcol(iter);
+						if (c == col) {
+							flag = true;
+							break;
+						}
+						else if (c == none) {
+							break;
+						}
+					}
+				}
+				if (flag) {
+					iter = crd;
+					for (int i = 0; i < times; ++i) {
+						iter.to_next(drc);
+						mat[iter.x * size + iter.y] ^= 0b11;
+					}
 				}
 			}
+			setcol(crd, col);
 		}
-		virtual int countpiece(color col) {
+		int countpiece(color col) {
 			int cnt = 0, t = col + 1;
 			for (int x = 0; x < size; ++x) {
 				for (int y = 0; y < size; ++y) {
-					if (mat[x][y] == t) ++cnt;
+					if (mat[x * size + y] == t) ++cnt;
 				}
 			}
 			return cnt;
 		}
-		virtual int count(color col) override {
+		int count(color col) {
 			int cnt = 0, t = col + 1;
 			for (int x = 0; x < size; ++x) {
 				for (int y = 0; y < size; ++y) {
-					if (mat[x][y] == t) ++cnt;
+					if (mat[x * size + y] == t) ++cnt;
 				}
 			}
 			return cnt;
 		}
-		virtual void resize(int newsize) {
-			mat.resize(newsize);
-			for (auto& v : mat) {
-				v.resize(newsize);
-			}
+		void resize(int newsize) {
+			mat.resize(newsize * newsize);
 			size = newsize;
+		}
+		int brd_size() const {
+			return size;
 		}
 		void clear() {
 			for (int i = 0; i < mat.size(); ++i) {
 				for (int j = 0; j < mat.size(); ++j) {
-					mat[i][j] = none;
+					mat[i * size + j] = none;
 				}
 			}
 		}
@@ -101,32 +111,13 @@ namespace bw::ataxx {
 		void serialize(Archive& ar) {
 			ar(mat);
 		}
-		vector<vector<char>> mat;
-	};
-	/*class safe_dynamic_brd :public dynamic_brd {
-	public:
-		safe_dynamic_brd() = default;
-		safe_dynamic_brd(int size) :dynamic_brd(size) {}
-		safe_dynamic_brd(dynamic_brd Board) :dynamic_brd(std::move(Board)) {}
-		virtual color getcol(const coord& crd) override {
-			mtx.lock_shared();
-			return dynamic_brd::getcol(crd);
-			mtx.unlock_shared();
+		auto& get_underlying_vector() {
+			return mat;
 		}
-		virtual void setcol(const coord& crd, color col) override {
-			mtx.lock();
-			dynamic_brd::setcol(crd, col);
-			mtx.unlock();
-		}
+		int size = default_size;
 	private:
-		std::shared_mutex mtx;
-	};*/
-
-
-	template<int Size, std::integral PosType = char>
-	class arrbrd_t;
-	template<int Size>
-	class bitbrd_t;
+		vector<pos_type> mat;
+	};
 
 	template<int Size>
 	class bitbrd_t {
@@ -136,28 +127,30 @@ namespace bw::ataxx {
 		bitbrd_t() { brd[0] = brd[1] = ull(0); };
 		bitbrd_t(const ull& brd0, const ull& brd1) { brd[0] = brd0; brd[1] = brd1; };
 		bitbrd_t(const arrbrd_t<Size>& abrd) noexcept {
+			brd[0] = brd[1] = ull(0);
 			for (int x = 0; x < Size; ++x) {
 				for (int y = 0; y < Size; ++y) {
-					if (abrd.mat[x][y]) {
+					if (abrd.mat[x * Size + y]) {
 						if constexpr (bw::is_pow2(Size)) {
-							brd[abrd.mat[x][y] >> 1] |= 1ull << ((x << bw::log2(Size)) + y);
+							brd[abrd.mat[x * Size + y] >> 1] |= 1ull << ((x << bw::log2(Size)) + y);
 						}
 						else {
-							brd[abrd.mat[x][y] >> 1] |= 1ull << (x * Size + y);
+							brd[abrd.mat[x * Size + y] >> 1] |= 1ull << (x * Size + y);
 						}
 					}
 				}
 			}
 		}
 		bitbrd_t(const dynamic_brd& dbrd) {
+			brd[0] = brd[1] = ull(0);
 			for (int x = 0; x < Size; ++x) {
 				for (int y = 0; y < Size; ++y) {
-					if (dbrd.mat[x][y]) {
+					if (dbrd.mat[x * Size + y]) {
 						if constexpr (bw::is_pow2(Size)) {
-							brd[dbrd.mat[x][y] >> 1] |= 1ull << ((x << bw::log2(Size)) + y);
+							brd[dbrd.mat[x * Size + y] >> 1] |= 1ull << ((x << bw::log2(Size)) + y);
 						}
 						else {
-							brd[dbrd.mat[x][y] >> 1] |= 1ull << (x * Size + y);
+							brd[dbrd.mat[x * Size + y] >> 1] |= 1ull << (x * Size + y);
 						}
 					}
 				}
@@ -191,6 +184,46 @@ namespace bw::ataxx {
 				crd.y = cnt % 6;
 			}
 			return crd;
+		}
+		static uint64_t shift(uint64_t disks, int dir)
+		{
+			static const uint64_t MASKS[] = {
+				0x7F7F7F7F7F7F7F7FULL, /* Right. */
+				0x007F7F7F7F7F7F7FULL, /* Down-right. */
+				0xFFFFFFFFFFFFFFFFULL, /* Down. */
+				0x00FEFEFEFEFEFEFEULL, /* Down-left. */
+				0xFEFEFEFEFEFEFEFEULL, /* Left. */
+				0xFEFEFEFEFEFEFE00ULL, /* Up-left. */
+				0xFFFFFFFFFFFFFFFFULL, /* Up. */
+				0x7F7F7F7F7F7F7F00ULL  /* Up-right. */
+			};
+			static const uint64_t LSHIFTS[] = {
+				0, /* Right. */
+				0, /* Down-right. */
+				0, /* Down. */
+				0, /* Down-left. */
+				1, /* Left. */
+				9, /* Up-left. */
+				8, /* Up. */
+				7  /* Up-right. */
+			};
+			static const uint64_t RSHIFTS[] = {
+				1, /* Right. */
+				9, /* Down-right. */
+				8, /* Down. */
+				7, /* Down-left. */
+				0, /* Left. */
+				0, /* Up-left. */
+				0, /* Up. */
+				0  /* Up-right. */
+			};
+
+			if (dir < 8 / 2) {
+				return (disks >> RSHIFTS[dir]) & MASKS[dir];
+			}
+			else {
+				return (disks << LSHIFTS[dir]) & MASKS[dir];
+			}
 		}
 		bool in_board(const coord& crd) const noexcept {
 			return (crd.x < Size && crd.y < Size && crd.x >= 0 && crd.y >= 0);
@@ -230,205 +263,13 @@ namespace bw::ataxx {
 			setcol({ Size / 2 ,Size / 2 - 1 }, col0);
 		}
 		void applymove(const coord& crd, const color& col) noexcept {
-			ull& brd_blue = brd[col];
-			ull& brd_green = brd[col ^ 1];
-			ull brd_green_inner;
-			ull flip = 0ull;
-			ull brd_flip;
-			ull brd_green_adj;
-			ull it = crd2bit(crd);
-
-			brd_green_inner = brd_green & bw::inner(Size);
-
-			brd_flip = (it >> 1) & brd_green_inner;
-			brd_flip |= (brd_flip >> 1) & brd_green_inner;
-
-			if constexpr (Size >= 6) {
-				brd_green_adj = brd_green_inner & (brd_green_inner >> 1);
-				brd_flip |= (brd_flip >> 2) & brd_green_adj;
-			}
-			if constexpr (Size == 8) brd_flip |= (brd_flip >> 2) & brd_green_adj;
-			if ((brd_flip >> 1) & brd_blue)flip |= brd_flip;
-
-			brd_flip = (it << 1) & brd_green_inner;
-			brd_flip |= (brd_flip << 1) & brd_green_inner;
-
-			if constexpr (Size >= 6) {
-				brd_green_adj = brd_green_inner & (brd_green_inner << 1);
-				brd_flip |= (brd_flip << 2) & brd_green_adj;
-			}
-			if constexpr (Size == 8) brd_flip |= (brd_flip << 2) & brd_green_adj;
-			if ((brd_flip << 1) & brd_blue)flip |= brd_flip;
-
-			brd_flip = (it >> Size) & brd_green;
-			brd_flip |= (brd_flip >> Size) & brd_green;
-
-			if constexpr (Size >= 6) {
-				brd_green_adj = brd_green & (brd_green >> Size);
-				brd_flip |= (brd_flip >> (Size << 1)) & brd_green_adj;
-			}
-			if constexpr (Size == 8) brd_flip |= (brd_flip >> (Size << 1)) & brd_green_adj;
-			if ((brd_flip >> Size) & brd_blue)flip |= brd_flip;
-
-			brd_flip = (it << Size) & brd_green;
-			brd_flip |= (brd_flip << Size) & brd_green;
-
-			if constexpr (Size >= 6) {
-				brd_green_adj = brd_green & (brd_green << Size);
-				brd_flip |= (brd_flip << (Size << 1)) & brd_green_adj;
-			}
-			if constexpr (Size == 8)brd_flip |= (brd_flip << (Size << 1)) & brd_green_adj;
-			if ((brd_flip << Size) & brd_blue)flip |= brd_flip;
-
-			brd_flip = (it >> (Size - 1)) & brd_green_inner;
-			brd_flip |= (brd_flip >> (Size - 1)) & brd_green_inner;
-
-			if constexpr (Size >= 6) {
-				brd_green_adj = brd_green_inner & (brd_green_inner >> (Size - 1));
-				brd_flip |= (brd_flip >> ((Size - 1) << 1)) & brd_green_adj;
-			}
-			if constexpr (Size == 8)brd_flip |= (brd_flip >> ((Size - 1) << 1)) & brd_green_adj;
-			if ((brd_flip >> (Size - 1)) & brd_blue)flip |= brd_flip;
-
-			brd_flip = (it << (Size - 1)) & brd_green_inner;
-			brd_flip |= (brd_flip << (Size - 1)) & brd_green_inner;
-
-			if constexpr (Size >= 6) {
-				brd_green_adj = brd_green_inner & (brd_green_inner << (Size - 1));
-				brd_flip |= (brd_flip << ((Size - 1) << 1)) & brd_green_adj;
-			}
-			if constexpr (Size == 8)brd_flip |= (brd_flip << ((Size - 1) << 1)) & brd_green_adj;
-			if ((brd_flip << (Size - 1)) & brd_blue)flip |= brd_flip;
-
-			brd_flip = (it >> (Size + 1)) & brd_green_inner;
-			brd_flip |= (brd_flip >> (Size + 1)) & brd_green_inner;
-
-			if constexpr (Size >= 6) {
-				brd_green_adj = brd_green_inner & (brd_green_inner >> (Size + 1));
-				brd_flip |= (brd_flip >> ((Size + 1) << 1)) & brd_green_adj;
-			}
-			if constexpr (Size == 8)brd_flip |= (brd_flip >> ((Size + 1) << 1)) & brd_green_adj;
-			if ((brd_flip >> (Size + 1)) & brd_blue)flip |= brd_flip;
-
-			brd_flip = (it << (Size + 1)) & brd_green_inner;
-			brd_flip |= (brd_flip << (Size + 1)) & brd_green_inner;
-
-			if constexpr (Size >= 6) {
-				brd_green_adj = brd_green_inner & (brd_green_inner << (Size + 1));
-				brd_flip |= (brd_flip << ((Size + 1) << 1)) & brd_green_adj;
-			}
-			if constexpr (Size == 8)brd_flip |= (brd_flip << ((Size + 1) << 1)) & brd_green_adj;
-			if ((brd_flip << (Size + 1)) & brd_blue)flip |= brd_flip;
-
-			brd[col] ^= flip;
-			brd[col ^ 1] ^= flip;
-			brd[col] |= it;
+			applymove(crd2bit(crd), col);
+		}
+		void applymove(const uint64_t& bit_crd, const color& col) noexcept {
+			
 		}
 		ull getmoves(color col) const noexcept {
-			const ull& brd_blue = brd[col];
-			const ull& brd_green = brd[col ^ 1];
-			ull moves;
-			ull brd_green_inner;
-			ull brd_flip;
-			ull brd_green_adj;
-
-			brd_green_inner = brd_green & bw::inner(Size);
-
-
-			brd_flip = (brd_blue >> 1) & brd_green_inner;
-			brd_flip |= (brd_flip >> 1) & brd_green_inner;
-
-			if constexpr (Size >= 6) {
-				brd_green_adj = brd_green_inner & (brd_green_inner >> 1);
-				brd_flip |= (brd_flip >> 2) & brd_green_adj;
-			}
-			if constexpr (Size == 8) brd_flip |= (brd_flip >> 2) & brd_green_adj;
-
-			moves = brd_flip >> 1;
-
-			brd_flip = (brd_blue << 1) & brd_green_inner;
-			brd_flip |= (brd_flip << 1) & brd_green_inner;
-
-			if constexpr (Size >= 6) {
-				brd_green_adj = brd_green_inner & (brd_green_inner << 1);
-				brd_flip |= (brd_flip << 2) & brd_green_adj;
-			}
-			if constexpr (Size == 8) brd_flip |= (brd_flip << 2) & brd_green_adj;
-
-			moves |= brd_flip << 1;
-
-			brd_flip = (brd_blue >> Size) & brd_green;
-			brd_flip |= (brd_flip >> Size) & brd_green;
-
-
-			if constexpr (Size >= 6) {
-				brd_green_adj = brd_green & (brd_green >> Size);
-				brd_flip |= (brd_flip >> (Size << 1)) & brd_green_adj;
-			}
-			if constexpr (Size == 8) brd_flip |= (brd_flip >> (Size << 1)) & brd_green_adj;
-
-
-			moves |= brd_flip >> Size;
-
-			brd_flip = (brd_blue << Size) & brd_green;
-			brd_flip |= (brd_flip << Size) & brd_green;
-
-			if constexpr (Size >= 6) {
-				brd_green_adj = brd_green & (brd_green << Size);
-				brd_flip |= (brd_flip << (Size << 1)) & brd_green_adj;
-			}
-			if constexpr (Size == 8) brd_flip |= (brd_flip << (Size << 1)) & brd_green_adj;
-
-
-			moves |= brd_flip << Size;
-
-			brd_flip = (brd_blue >> (Size - 1)) & brd_green_inner;
-			brd_flip |= (brd_flip >> (Size - 1)) & brd_green_inner;
-
-			if constexpr (Size >= 6) {
-				brd_green_adj = brd_green_inner & (brd_green_inner >> (Size - 1));
-				brd_flip |= (brd_flip >> ((Size - 1) << 1)) & brd_green_adj;
-			}
-			if constexpr (Size == 8) brd_flip |= (brd_flip >> ((Size - 1) << 1)) & brd_green_adj;
-
-			moves |= brd_flip >> (Size - 1);
-
-			brd_flip = (brd_blue << (Size - 1)) & brd_green_inner;
-			brd_flip |= (brd_flip << (Size - 1)) & brd_green_inner;
-
-
-			if constexpr (Size >= 6) {
-				brd_green_adj = brd_green_inner & (brd_green_inner << (Size - 1));
-				brd_flip |= (brd_flip << ((Size - 1) << 1)) & brd_green_adj;
-			}
-			if constexpr (Size == 8) brd_flip |= (brd_flip << ((Size - 1) << 1)) & brd_green_adj;
-
-			moves |= brd_flip << (Size - 1);
-
-			brd_flip = (brd_blue >> (Size + 1)) & brd_green_inner;
-			brd_flip |= (brd_flip >> (Size + 1)) & brd_green_inner;
-
-			if constexpr (Size >= 6) {
-				brd_green_adj = brd_green_inner & (brd_green_inner >> (Size + 1));
-				brd_flip |= (brd_flip >> ((Size + 1) << 1)) & brd_green_adj;
-			}
-			if constexpr (Size == 8) brd_flip |= (brd_flip >> ((Size + 1) << 1)) & brd_green_adj;
-
-			moves |= brd_flip >> (Size + 1);
-
-			brd_flip = (brd_blue << (Size + 1)) & brd_green_inner;
-			brd_flip |= (brd_flip << (Size + 1)) & brd_green_inner;
-
-			if constexpr (Size >= 6) {
-				brd_green_adj = brd_green_inner & (brd_green_inner << (Size + 1));
-				brd_flip |= (brd_flip << ((Size + 1) << 1)) & brd_green_adj;
-			}
-			if constexpr (Size == 8) brd_flip |= (brd_flip << ((Size + 1) << 1)) & brd_green_adj;
-
-			moves |= brd_flip << (Size + 1);
-
-			moves &= ~(brd_blue | brd_green);
-			return moves;
+			
 		}
 		dynamic_brd to_dynamic() const {
 			dynamic_brd brd(Size);
@@ -439,21 +280,26 @@ namespace bw::ataxx {
 			}
 			return brd;
 		}
-		int countpiece(color black_or_white) noexcept {
+		int countpiece(color black_or_white) const noexcept {
 			return std::popcount(brd[black_or_white]);
 		}
-		int count(color col) noexcept {
+		int count(color col) const noexcept {
 			if (col == none) {
 				return std::popcount(~(brd[0] | brd[1]));
 			}
 			else {
-				return std::popcount(col);
+				return std::popcount(brd[col]);
 			}
+		}
+		constexpr int brd_size() const {
+			return Size;
 		}
 		void clear() {
 			brd[col0] = brd[col1] = 0ull;
 		}
-
+		bool operator==(const bitbrd_t<Size>& rhs) const noexcept {
+			return brd[0] == rhs.brd[0] && brd[1] == rhs.brd[1];
+		}
 		template <class Archive>
 		void serialize(Archive& ar) {
 			ar(brd[0], brd[1]);
@@ -478,7 +324,7 @@ namespace bw::ataxx {
 			ull it = 0;
 			for (int x = 0; x < Size; ++x) {
 				for (int y = 0; y < Size; ++y) {
-					mat[x][y] = 0;
+					mat[x * Size + y] = 0;
 					if constexpr (bw::is_pow2(Size)) {
 						it = 1ull << ((x << bw::log2(Size)) + y);
 					}
@@ -486,7 +332,7 @@ namespace bw::ataxx {
 						it = 1ull << (x * Size + y);
 					}
 					if (ful & it) {
-						mat[x][y] = bool(bit1 & it) + 1;
+						mat[x * Size + y] = bool(bit1 & it) + 1;
 					}
 				}
 			}
@@ -494,7 +340,7 @@ namespace bw::ataxx {
 		arrbrd_t(const dynamic_brd& dbrd) {
 			for (int x = 0; x < Size; ++x) {
 				for (int y = 0; y < Size; ++y) {
-					mat[x][y] = dbrd.mat[x][y];
+					mat[x * Size + y] = dbrd.mat[x * Size + y];
 				}
 			}
 		}
@@ -502,10 +348,10 @@ namespace bw::ataxx {
 			return crd.x < Size && crd.y < Size && crd.x >= 0 && crd.y >= 0;
 		}
 		color getcol(const coord& crd) const noexcept {
-			return mat[crd.x][crd.y] - 1;
+			return mat[crd.x * Size + crd.y] - 1;
 		}
 		void setcol(const coord& crd, const color& col) noexcept {
-			mat[crd.x][crd.y] = col + 1;
+			mat[crd.x * Size + crd.y] = col + 1;
 		}
 		void applymove(const coord& crd, const color& col) noexcept {
 			using drc_t = int;
@@ -534,7 +380,7 @@ namespace bw::ataxx {
 					iter = crd;
 					for (int i = 0; i < times; ++i) {
 						iter.to_next(drc);
-						mat[iter.x][iter.y] ^= 0b11;//翻转棋子
+						mat[iter.x * Size + iter.y] ^= 0b11;//翻转棋子
 					}
 				}
 			}
@@ -557,28 +403,41 @@ namespace bw::ataxx {
 			}
 			return brd;
 		}
-		int countpiece(color col) noexcept {
+		int countpiece(color col) const noexcept {
 			int cnt = 0, t = col + 1;
 			for (int x = 0; x < Size; ++x) {
 				for (int y = 0; y < Size; ++y) {
-					if (mat[x][y] == t) ++cnt;
+					if (mat[x * Size + y] == t) ++cnt;
 				}
 			}
 			return cnt;
 		}
-		int count(color col) noexcept {
+		int count(color col) const noexcept {
 			int cnt = 0, t = col + 1;
 			for (int x = 0; x < Size; ++x) {
 				for (int y = 0; y < Size; ++y) {
-					if (mat[x][y] == t) ++cnt;
+					if (mat[x * Size + y] == t) ++cnt;
 				}
 			}
 			return cnt;
+		}
+		constexpr int brd_size() const {
+			return Size;
+		}
+		bool operator==(const arrbrd_t<Size>& rhs) const noexcept {
+			for (int x = 0; x < Size; x++) {
+				for (int y = 0; y < Size; ++y) {
+					if (mat[x * Size + y] != rhs.mat[x * Size + y]) {
+						return false;
+					}
+				}
+			}
+			return true;
 		}
 		void clear() {
 			for (int i = 0; i < Size; ++i) {
 				for (int j = 0; j < Size; ++j) {
-					mat[i][j] = 0;
+					mat[i * Size + j] = 0;
 				}
 			}
 		}
@@ -586,12 +445,12 @@ namespace bw::ataxx {
 		void serialize(Archive& ar) {
 			for (int x = 0; x < Size; ++x) {
 				for (int y = 0; y < Size; ++y) {
-					ar(mat[x][y]);
+					ar(mat[x * Size + y]);
 				}
 			}
 		}
 	private:
-		PosType mat[Size][Size] = { 0 };
+		PosType mat[Size * Size] = { 0 };
 		//color settings:
 		//0:none
 		//1:color0---------0b01>>1
@@ -602,6 +461,14 @@ namespace bw::ataxx {
 
 	template<int Size>
 	using static_brd = typename std::conditional<(Size > 8), arrbrd_t<Size>, bitbrd_t<Size>>::type;
+
+	template<typename Brd>
+	concept mat_brd = requires(Brd b, const coord & crd, color c) {
+		{ b.getcol(crd) } -> std::same_as<color>;
+		b.setcol(crd, c);
+		{ b.in_board(crd) } -> std::same_as<bool>;
+		{ b.brd_size() } -> std::same_as<int>;
+	};
 };
 template<int Size, typename CharT>
 struct std::formatter<bw::ataxx::bitbrd_t<Size>, CharT> {

@@ -28,49 +28,41 @@ namespace bw::othello {
 namespace bw::othello {
 	enum { default_size = 8, max_size = 16 };
 	using std::vector;
-	class basic_brd {
-	public:
-		basic_brd() = default;
+
+	template<int Size, std::integral PosType = int_fast8_t>
+	class arrbrd_t;
+	template<int Size>
+	class bitbrd_t;
+	struct dynamic_brd {
+		using pos_type = uint_fast8_t;
+		template<int Size, std::integral PosType>
+		friend class arrbrd_t;
+		template<int Size>
+		friend class bitbrd_t;
+		dynamic_brd() {
+			size = default_size;
+			mat.resize(size * size);
+		}
+		dynamic_brd(int Size) {
+			size = Size;
+			mat.resize(size * size);
+		}
 		bool in_board(const coord& crd) const {
 			return (crd.x < size && crd.y < size && crd.x >= 0 && crd.y >= 0);
 		}
-		virtual color getcol(const coord& crd) const = 0;
-		virtual void setcol(const coord& crd, color col) = 0;
-		virtual void initialize() {
+		color getcol(const coord& crd)const {
+			return mat[crd.x * size + crd.y] - 1;
+		}
+		void setcol(const coord& crd, color col) {
+			mat[crd.x * size + crd.y] = col + 1;
+		}
+		void initialize() {
 			setcol({ size / 2 - 1,size / 2 - 1 }, col1);
 			setcol({ size / 2 ,size / 2 }, col1);
 			setcol({ size / 2 - 1,size / 2 }, col0);
 			setcol({ size / 2 ,size / 2 - 1 }, col0);
 		}
-		virtual void applymove(const coord& crd, const color& col) = 0;
-		virtual int count(color col) = 0;
-		virtual void resize(int newsize) = 0;
-		virtual ~basic_brd() = default;
-		int size = default_size;
-	};
-
-	struct dynamic_brd :public basic_brd {
-		dynamic_brd() {
-			size = default_size;
-			mat.resize(size);
-			for (auto& v : mat) {
-				v.resize(size);
-			}
-		}
-		dynamic_brd(int Size) {
-			size = Size;
-			mat.resize(size);
-			for (auto& v : mat) {
-				v.resize(size);
-			}
-		}
-		virtual color getcol(const coord& crd)const override {
-			return mat[crd.x][crd.y] - 1;
-		}
-		virtual void setcol(const coord& crd, color col)override {
-			mat[crd.x][crd.y] = col + 1;
-		}
-		virtual void applymove(const coord& crd, const color& col) override {
+		void applymove(const coord& crd, const color& col)  {
 			using drc_t = int;
 			using namespace directions;
 			color opcol = col ^ 1;
@@ -96,44 +88,49 @@ namespace bw::othello {
 					iter = crd;
 					for (int i = 0; i < times; ++i) {
 						iter.to_next(drc);
-						mat[iter.x][iter.y] ^= 0b11;
+						mat[iter.x * size + iter.y] ^= 0b11;
 					}
 				}
 			}
 			setcol(crd, col);
 		}
-		virtual int countpiece(color col) {
+		int countpiece(color col) {
 			int cnt = 0, t = col + 1;
 			for (int x = 0; x < size; ++x) {
 				for (int y = 0; y < size; ++y) {
-					if (mat[x][y] == t) ++cnt;
+					if (mat[x * size + y] == t) ++cnt;
 				}
 			}
 			return cnt;
 		}
-		virtual int count(color col) override {
+		int count(color col)  {
 			int cnt = 0, t = col + 1;
 			for (int x = 0; x < size; ++x) {
 				for (int y = 0; y < size; ++y) {
-					if (mat[x][y] == t) ++cnt;
+					if (mat[x * size + y] == t) ++cnt;
 				}
 			}
 			return cnt;
 		}
-		virtual void resize(int newsize) {
-			mat.resize(newsize);
-			for (auto& v : mat) {
-				v.resize(newsize);
-			}
+		void resize(int newsize) {
+			mat.resize(newsize * newsize);
 			size = newsize;
 		}
 		int brd_size() const {
-			return mat.size();
+			return size;
 		}
 		void clear() {
 			for (int i = 0; i < mat.size(); ++i) {
 				for (int j = 0; j < mat.size(); ++j) {
-					mat[i][j] = none;
+					mat[i * size + j] = none;
+				}
+			}
+		}
+		void swap_color() {
+			for (int i = 0; i < mat.size(); ++i) {
+				auto& c = mat[i];
+				if (!c) {
+					c ^= 0b11;
 				}
 			}
 		}
@@ -141,7 +138,12 @@ namespace bw::othello {
 		void serialize(Archive& ar) {
 			ar(mat);
 		}
-		vector<vector<char>> mat;
+		auto& get_underlying_vector() {
+			return mat;
+		}
+		int size = default_size;
+	private:
+		vector<pos_type> mat;
 	};
 	/*class safe_dynamic_brd :public dynamic_brd {
 	public:
@@ -162,16 +164,9 @@ namespace bw::othello {
 		std::shared_mutex mtx;
 	};*/
 
-
-	template<int Size, std::integral PosType = char>
-	class arrbrd_t;
-	template<int Size>
-	class bitbrd_t;
-
 	template<int Size>
 	class bitbrd_t {
 		friend class arrbrd_t<Size>;
-		//static_assert(Size <= 8, "Bit board size must be less than 8.");
 	public:
 		bitbrd_t() { brd[0] = brd[1] = ull(0); };
 		bitbrd_t(const ull& brd0, const ull& brd1) { brd[0] = brd0; brd[1] = brd1; };
@@ -179,12 +174,12 @@ namespace bw::othello {
 			brd[0] = brd[1] = ull(0);
 			for (int x = 0; x < Size; ++x) {
 				for (int y = 0; y < Size; ++y) {
-					if (abrd.mat[x][y]) {
+					if (abrd.mat[x * Size + y]) {
 						if constexpr (bw::is_pow2(Size)) {
-							brd[abrd.mat[x][y] >> 1] |= 1ull << ((x << bw::log2(Size)) + y);
+							brd[abrd.mat[x * Size + y] >> 1] |= 1ull << ((x << bw::log2(Size)) + y);
 						}
 						else {
-							brd[abrd.mat[x][y] >> 1] |= 1ull << (x * Size + y);
+							brd[abrd.mat[x * Size + y] >> 1] |= 1ull << (x * Size + y);
 						}
 					}
 				}
@@ -194,12 +189,12 @@ namespace bw::othello {
 			brd[0] = brd[1] = ull(0);
 			for (int x = 0; x < Size; ++x) {
 				for (int y = 0; y < Size; ++y) {
-					if (dbrd.mat[x][y]) {
+					if (dbrd.mat[x * Size + y]) {
 						if constexpr (bw::is_pow2(Size)) {
-							brd[dbrd.mat[x][y] >> 1] |= 1ull << ((x << bw::log2(Size)) + y);
+							brd[dbrd.mat[x * Size + y] >> 1] |= 1ull << ((x << bw::log2(Size)) + y);
 						}
 						else {
-							brd[dbrd.mat[x][y] >> 1] |= 1ull << (x * Size + y);
+							brd[dbrd.mat[x * Size + y] >> 1] |= 1ull << (x * Size + y);
 						}
 					}
 				}
@@ -233,6 +228,46 @@ namespace bw::othello {
 				crd.y = cnt % 6;
 			}
 			return crd;
+		}
+		static uint64_t shift(uint64_t disks, int dir)
+		{
+			static const uint64_t MASKS[] = {
+				0x7F7F7F7F7F7F7F7FULL, /* Right. */
+				0x007F7F7F7F7F7F7FULL, /* Down-right. */
+				0xFFFFFFFFFFFFFFFFULL, /* Down. */
+				0x00FEFEFEFEFEFEFEULL, /* Down-left. */
+				0xFEFEFEFEFEFEFEFEULL, /* Left. */
+				0xFEFEFEFEFEFEFE00ULL, /* Up-left. */
+				0xFFFFFFFFFFFFFFFFULL, /* Up. */
+				0x7F7F7F7F7F7F7F00ULL  /* Up-right. */
+			};
+			static const uint64_t LSHIFTS[] = {
+				0, /* Right. */
+				0, /* Down-right. */
+				0, /* Down. */
+				0, /* Down-left. */
+				1, /* Left. */
+				9, /* Up-left. */
+				8, /* Up. */
+				7  /* Up-right. */
+			};
+			static const uint64_t RSHIFTS[] = {
+				1, /* Right. */
+				9, /* Down-right. */
+				8, /* Down. */
+				7, /* Down-left. */
+				0, /* Left. */
+				0, /* Up-left. */
+				0, /* Up. */
+				0  /* Up-right. */
+			};
+
+			if (dir < 8 / 2) {
+				return (disks >> RSHIFTS[dir]) & MASKS[dir];
+			}
+			else {
+				return (disks << LSHIFTS[dir]) & MASKS[dir];
+			}
 		}
 		bool in_board(const coord& crd) const noexcept {
 			return (crd.x < Size && crd.y < Size && crd.x >= 0 && crd.y >= 0);
@@ -492,7 +527,7 @@ namespace bw::othello {
 				return std::popcount(~(brd[0] | brd[1]));
 			}
 			else {
-				return std::popcount(col);
+				return std::popcount(brd[col]);
 			}
 		}
 		constexpr int brd_size() const {
@@ -501,10 +536,29 @@ namespace bw::othello {
 		void clear() {
 			brd[col0] = brd[col1] = 0ull;
 		}
+		void swap_color() {
+			std::swap(brd[col0], brd[col1]);
+		}
+		inline static uint64_t deduce_move_bit(const bitbrd_t<Size>& brd0, const bitbrd_t<Size>& brd1) {
+			return (brd0.brd[col0] | brd0.brd[col1]) ^ (brd1.brd[col0] | brd1.brd[col1]);
+		}
+		inline static coord deduce_move(const bitbrd_t<Size>& brd0, const bitbrd_t<Size>& brd1) {
+			return bit2crd(deduce_move_bit(brd0, brd1));
+		}
+		inline static uint64_t deduce_moves_bit(const bitbrd_t<Size>& brd0, const bitbrd_t<Size>& brd1) {
+			return (brd0.brd[col0] | brd0.brd[col1]) ^ (brd1.brd[col0] | brd1.brd[col1]);
+		}
+		static std::vector<coord> deduce_moves(const bitbrd_t<Size>& brd0, const bitbrd_t<Size>& brd1) {
+			auto mvs = deduce_moves_bit(brd0, brd1);
+			std::vector<coord> crds;
+			for (; mvs; mvs = mvs & (mvs - 1)) {
+				crds.push_back(bit2crd(mvs & (-ll(mvs))));
+			}
+			return crds;
+		}
 		bool operator==(const bitbrd_t<Size>& rhs) const noexcept {
 			return brd[0] == rhs.brd[0] && brd[1] == rhs.brd[1];
 		}
-
 		template <class Archive>
 		void serialize(Archive& ar) {
 			ar(brd[0], brd[1]);
@@ -529,7 +583,7 @@ namespace bw::othello {
 			ull it = 0;
 			for (int x = 0; x < Size; ++x) {
 				for (int y = 0; y < Size; ++y) {
-					mat[x][y] = 0;
+					mat[x * Size + y] = 0;
 					if constexpr (bw::is_pow2(Size)) {
 						it = 1ull << ((x << bw::log2(Size)) + y);
 					}
@@ -537,7 +591,7 @@ namespace bw::othello {
 						it = 1ull << (x * Size + y);
 					}
 					if (ful & it) {
-						mat[x][y] = bool(bit1 & it) + 1;
+						mat[x * Size + y] = bool(bit1 & it) + 1;
 					}
 				}
 			}
@@ -545,7 +599,7 @@ namespace bw::othello {
 		arrbrd_t(const dynamic_brd& dbrd) {
 			for (int x = 0; x < Size; ++x) {
 				for (int y = 0; y < Size; ++y) {
-					mat[x][y] = dbrd.mat[x][y];
+					mat[x * Size + y] = dbrd.mat[x * Size + y];
 				}
 			}
 		}
@@ -553,10 +607,10 @@ namespace bw::othello {
 			return crd.x < Size && crd.y < Size && crd.x >= 0 && crd.y >= 0;
 		}
 		color getcol(const coord& crd) const noexcept {
-			return mat[crd.x][crd.y] - 1;
+			return mat[crd.x * Size + crd.y] -1;
 		}
 		void setcol(const coord& crd, const color& col) noexcept {
-			mat[crd.x][crd.y] = col + 1;
+			mat[crd.x * Size + crd.y] = col + 1;
 		}
 		void applymove(const coord& crd, const color& col) noexcept {
 			using drc_t = int;
@@ -585,7 +639,7 @@ namespace bw::othello {
 					iter = crd;
 					for (int i = 0; i < times; ++i) {
 						iter.to_next(drc);
-						mat[iter.x][iter.y] ^= 0b11;//翻转棋子
+						mat[iter.x * Size + iter.y] ^= 0b11;//翻转棋子
 					}
 				}
 			}
@@ -612,7 +666,7 @@ namespace bw::othello {
 			int cnt = 0, t = col + 1;
 			for (int x = 0; x < Size; ++x) {
 				for (int y = 0; y < Size; ++y) {
-					if (mat[x][y] == t) ++cnt;
+					if (mat[x * Size + y] == t) ++cnt;
 				}
 			}
 			return cnt;
@@ -621,7 +675,7 @@ namespace bw::othello {
 			int cnt = 0, t = col + 1;
 			for (int x = 0; x < Size; ++x) {
 				for (int y = 0; y < Size; ++y) {
-					if (mat[x][y] == t) ++cnt;
+					if (mat[x * Size + y] == t) ++cnt;
 				}
 			}
 			return cnt;
@@ -632,7 +686,7 @@ namespace bw::othello {
 		bool operator==(const arrbrd_t<Size>& rhs) const noexcept {
 			for (int x = 0; x < Size; x++) {
 				for (int y = 0; y < Size; ++y) {
-					if (mat[x][y] != rhs.mat[x][y]) {
+					if (mat[x * Size + y] != rhs.mat[x * Size + y]) {
 						return false;
 					}
 				}
@@ -642,20 +696,48 @@ namespace bw::othello {
 		void clear() {
 			for (int i = 0; i < Size; ++i) {
 				for (int j = 0; j < Size; ++j) {
-					mat[i][j] = 0;
+					mat[i * Size + j] = 0;
 				}
 			}
+		}
+		void swap_color() {
+			for (int i = 0; i < mat.size(); ++i) {
+				auto& c = mat[i];
+				if (!c) {
+					c ^= 0b11;
+				}
+			}
+		}
+		static coord deduce_move(const arrbrd_t<Size>& brd0, const arrbrd_t<Size>& brd1) {
+			for (int x = 0; x < Size; ++x) {
+				for (int y = 0; y < Size; y++) {
+					if (bool(brd0.mat[x * Size + y]) != bool(brd1.mat[x * Size + y])) {
+						return { x,y };
+					}
+				}
+			}
+		}
+		static std::vector<coord> deduce_moves(const arrbrd_t<Size>& brd0, const arrbrd_t<Size>& brd1) {
+			std::vector<coord> crds;
+			for (int x = 0; x < Size; ++x) {
+				for (int y = 0; y < Size; y++) {
+					if (bool(brd0.mat[x * Size + y]) != bool(brd1.mat[x * Size + y])) {
+						crds.push_back(coord{ x,y });
+					}
+				}
+			}
+			return crds;
 		}
 		template <class Archive>
 		void serialize(Archive& ar) {
 			for (int x = 0; x < Size; ++x) {
 				for (int y = 0; y < Size; ++y) {
-					ar(mat[x][y]);
+					ar(mat[x * Size + y]);
 				}
 			}
 		}
 	private:
-		PosType mat[Size][Size] = { 0 };
+		PosType mat[Size * Size] = { 0 };
 		//color settings:
 		//0:none
 		//1:color0---------0b01>>1
@@ -668,10 +750,11 @@ namespace bw::othello {
 	using static_brd = typename std::conditional<(Size > 8), arrbrd_t<Size>, bitbrd_t<Size>>::type;
 
 	template<typename Brd>
-	concept mat_brd = requires(Brd b, const coord & crd) {
+	concept mat_brd = requires(Brd b, const coord & crd, color c) {
 		{ b.getcol(crd) } -> std::same_as<color>;
-		{ b.in_board(crd) }->std::same_as<bool>;
-		{ b.brd_size() }->std::same_as<int>;
+		b.setcol(crd, c);
+		{ b.in_board(crd) } -> std::same_as<bool>;
+		{ b.brd_size() } -> std::same_as<int>;
 	};
 };
 template<int Size, typename CharT>

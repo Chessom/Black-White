@@ -63,6 +63,7 @@ namespace bw::othello {
 			pmvdq->tim.cancel();
 		}
 		virtual bool good()const override { return true; }
+		virtual void reset() override {}
 		void set_move_queue(timdq_ptr move_queue) {
 			pmvdq = std::move(move_queue);
 		}

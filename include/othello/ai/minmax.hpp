@@ -1,10 +1,73 @@
 ﻿#pragma once
 #include"common.hpp"
 namespace bw::othello::ai {
-	template<int BoardSize, typename MovesType = moves>
+	template<int BoardSize, typename EvalMethod, typename MovesType = moves>
 	struct minmax {
-		minmax(color setter_color) :setter_col(setter_color) {  };
+		minmax(color setter_color, const ai_option& option) :player(setter_color), option(option) {};
 		enum { inf = 1000 };
+		coord best_move(const static_brd<BoardSize> brd, color setter_color) {
+			if (option.threads == 1) {
+				return choose_move_single_thread(brd, setter_color);
+			}
+			else {
+				return choose_move_multi_thread(brd, setter_color);
+			}
+		}
+		ai_option option;
+	private:
+		coord choose_move_single_thread(const static_brd<BoardSize>& brd, color c) {
+			moves mvs;
+			mvs.update(brd, c);
+			move mv;
+			float points = -inf;
+			static_brd<BoardSize> board = brd;
+			int index = 0;
+			if (mvs.size != 0) {
+				for (int i = 0; i < mvs.size; ++i) {
+					board.applymove(mvs.coords[i], c);
+					auto mark = recursive_minmax_evaluate(board, op_col(c), option.search_depth);
+					if (mark > points) {
+						points = mark;
+						index = i;
+					}
+					board = brd;
+				}
+			}
+			return mvs.coords[index];
+		}
+		coord choose_move_multi_thread(const static_brd<BoardSize>& brd, color c) {
+			moves mvs;
+			mvs.update(brd, c);
+			move mv;
+			vector<std::shared_ptr<float>> scores;
+			int index = 0;
+			float points = -inf;
+			if (mvs.size != 0) {
+				boost::threadpool::pool pool(option.threads - 1);
+				static_brd<BoardSize> brd0 = brd;
+				brd0.applymove(mvs.coords[0], c);
+				auto res0 = std::make_shared<float>(0.0f);
+				scores.push_back(res0);
+				for (int i = 1; i < mvs.size; ++i) {
+					static_brd<BoardSize> _brd = brd;
+					_brd.applymove(mvs.coords[i], c);
+					auto res = std::make_shared<float>(0.0f);
+					scores.push_back(res);
+					pool.schedule([new_brd = std::move(_brd), res, c, this] {
+						*res = recursive_minmax_evaluate(new_brd, op_col(c), option.search_depth);
+						});
+				}
+				*res0 = recursive_minmax_evaluate(brd0, op_col(c), option.search_depth);
+				pool.wait();
+			}
+			for (int i = 0; i < mvs.size; ++i) {
+				if (auto score = *scores[i]; score > points) {
+					points = score;
+					index = i;
+				}
+			}
+			return mvs.coords[index];
+		}
 		struct tree_node {
 			game_state<BoardSize> st;
 			int depth;
@@ -12,33 +75,36 @@ namespace bw::othello::ai {
 			int value;
 		};
 		//std::vector<tree_node> tree_node_stack;
-
+		float eval_end_game_board(const static_brd<BoardSize>& brd) {
+			return e_mthd.eval_end_game_board(brd, player);
+		}
+		float eval_board(const static_brd<BoardSize>& brd, color setter_color) {
+			return e_mthd.eval_board(brd, setter_color, player);
+		}
 		int recursive_minmax_evaluate(const bitbrd_t<BoardSize>& brd, color setter_color, int depth) {
 			uint64_t mvs_0 = brd.getmoves(setter_color);
 			if (!mvs_0) {
 				uint64_t mvs_1 = brd.getmoves(op_col(setter_color));
 				if (!mvs_1) {//leaf node
-					return brd.countpiece(setter_col) - brd.countpiece(op_col(setter_col));
+					return eval_end_game_board(brd);
 				}
 			}
 			if (depth == 0) {
-				uint64_t mvs_1 = brd.getmoves(op_col(setter_color));
-				if (setter_color == setter_col) {
-					return std::popcount(mvs_0) - 2 * std::popcount(mvs_1);
-				}
-				else {
-					return std::popcount(mvs_1) - 2 * std::popcount(mvs_0);
-				}
+				return eval_board(brd, setter_color);
 			}
-			if (setter_color != setter_col) {
+			if (setter_color != player) {
 				int a = inf;
 				auto brd_ = brd;
 				uint64_t iter = 0;
+				
 				for (; mvs_0; mvs_0 = mvs_0 & (mvs_0 - 1)) {
 					iter = mvs_0 & (-ll(mvs_0));
 					brd_.applymove(iter, setter_color);
-					a = std::min(a, recursive_minmax_evaluate(brd_, setter_col, depth - 1));
+					a = std::min(a, recursive_minmax_evaluate(brd_, player, depth - 1));
 					brd_ = brd;
+				}
+				if (!mvs_0) {
+					a = std::min(a, recursive_minmax_evaluate(brd_, player, depth - 1));
 				}
 				return a;
 			}
@@ -52,21 +118,11 @@ namespace bw::othello::ai {
 					b = std::max(b, recursive_minmax_evaluate(brd_, op_col(setter_color), depth - 1));
 					brd_ = brd;
 				}
+				if (!mvs_0) {
+					b = std::max(b, recursive_minmax_evaluate(brd_, op_col(setter_color), depth - 1));
+				}
 				return b;
 			}
-			//if node is a terminal node or depth = 0
-			//	return the heuristic value of node
-			//	// 如果轮到对手走棋，是极小节点，选择一个得分最小的走法
-			//if the adversary is to play at node
-			//	let α : = +∞
-			//	foreach child of node
-			//	α : = min(α, minimax(child, depth - 1))
-			//	// 如果轮到我们走棋，是极大节点，选择一个得分最大的走法
-			//else { we are to play at node }
-			//	let α : = -∞
-			//	foreach child of node
-			//	α : = max(α, minimax(child, depth - 1))
-			//	return α;
 			return 0;
 		}
 
@@ -75,25 +131,22 @@ namespace bw::othello::ai {
 			if (!mvs_0.empty()) {
 				moves mvs_1(brd, op_col(setter_color));
 				if (!mvs_1.empty()) {//leaf node
-					return brd.countpiece(setter_col) - brd.countpiece(op_col(setter_col));
+					return eval_end_game_board(brd);
 				}
 			}
 			if (depth == 0) {
-				moves mvs_1(brd, op_col(setter_color));
-				if (setter_color == setter_col) {
-					return mvs_0.coords.size() - 2 * mvs_1.coords.size();
-				}
-				else {
-					return mvs_1.coords.size() - 2 * mvs_0.coords.size();
-				}
+				return eval_board(brd, setter_color);
 			}
-			if (setter_color != setter_col) {
+			if (setter_color != player) {
 				int a = inf;
 				auto brd_ = brd;
 				for (const auto& crd : mvs_0.coords) {
 					brd_.applymove(crd, setter_color);
-					a = std::min(a, recursive_minmax_evaluate(brd_, setter_col, depth - 1));
+					a = std::min(a, recursive_minmax_evaluate(brd_, player, depth - 1));
 					brd_ = brd;
+				}
+				if (!mvs_0.empty()) {
+					a = std::min(a, recursive_minmax_evaluate(brd_, player, depth - 1));
 				}
 				return a;
 			}
@@ -105,64 +158,17 @@ namespace bw::othello::ai {
 					b = std::max(b, recursive_minmax_evaluate(brd_, op_col(setter_color), depth - 1));
 					brd_ = brd;
 				}
+				if (!mvs_0.empty()) {
+					b = std::max(b, recursive_minmax_evaluate(brd_, op_col(setter_color), depth - 1));
+				}
 				return b;
 			}
 		}
 		
-		int alphabeta_evaluate(const bitbrd_t<BoardSize>& brd, color setter_color, int depth, int alpha, int beta) {
-			uint64_t mvs_0 = brd.getmoves(setter_color);
-			if (!mvs_0) {
-				uint64_t mvs_1 = brd.getmoves(op_col(setter_color));
-				if (!mvs_1) { // leaf node
-					return brd.countpiece(setter_col) - brd.countpiece(op_col(setter_col));
-				}
-			}
-			if (depth == 0) {
-				uint64_t mvs_1 = brd.getmoves(op_col(setter_color));
-				if (setter_color == setter_col) {
-					return std::popcount(mvs_0) - 2 * std::popcount(mvs_1);
-				}
-				else {
-					return std::popcount(mvs_1) - 2 * std::popcount(mvs_0);
-				}
-			}
-			if (setter_color != setter_col) {
-				int a = inf;
-				auto brd_ = brd;
-				uint64_t iter = 0;
-				for (; mvs_0; mvs_0 = mvs_0 & (mvs_0 - 1)) {
-					iter = mvs_0 & (-ll(mvs_0));
-					brd_.applymove(iter, setter_color);
-					a = std::min(a, alphabeta_evaluate(brd_, setter_col, depth - 1, alpha, beta));
-					brd_ = brd;
-					beta = std::min(beta, a);
-					if (beta <= alpha) {
-						break; // Beta cut-off
-					}
-				}
-				return a;
-			}
-			else {
-				int b = -inf;
-				auto brd_ = brd;
-				uint64_t iter = 0;
-				for (; mvs_0; mvs_0 = mvs_0 & (mvs_0 - 1)) {
-					iter = mvs_0 & (-ll(mvs_0));
-					brd_.applymove(iter, setter_color);
-					b = std::max(b, alphabeta_evaluate(brd_, op_col(setter_color), depth - 1, alpha, beta));
-					brd_ = brd;
-					alpha = std::max(alpha, b);
-					if (beta <= alpha) {
-						break; // Alpha cut-off
-					}
-				}
-				return b;
-			}
-		}
-
 		int end_game_evaluate() {
 
 		}
-		color setter_col;
+		EvalMethod e_mthd;
+		color player;
 	};
 };

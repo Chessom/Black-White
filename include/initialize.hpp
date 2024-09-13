@@ -38,10 +38,8 @@ namespace bw {
 			auto c = std::getchar();
 			return;
 		}
-		
-		bw::global_config = std::make_shared<bw::config>();
-
 		try {
+			bw::global_config = std::make_shared<bw::config>();
 			if (exists(json_config_path)) {
 				struct_json::from_json_file(*global_config, json_config_path);
 			}

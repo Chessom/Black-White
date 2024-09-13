@@ -156,7 +156,7 @@ namespace bw::othello::components {
 				ret = std::make_shared<othello::human_gamer>(info);
 				break;
 			case gamer::computer:
-				ret = computer_gamer_from_id(info.id, info.col);
+				ret = std::make_shared<othello::computer_gamer_random>(info.col);
 				break;
 			case gamer::online:
 				ret = std::make_shared<othello::online_gamer>(info);
@@ -173,7 +173,7 @@ namespace bw::othello::components {
 			auto gm = std::make_shared<game>(gptr[col0], gptr[col1], board_size, std::make_shared<bw::components::ftxui_screen>(&screen));
 			return gm;
 		}
-		bool GamePreparing();
+		bool GameSetting();
 		void GamePageLocal();
 		void reset() {
 			gptr[0] = nullptr;
@@ -283,6 +283,7 @@ namespace bw::othello::components {
 			});
 		gm->flush_sig.connect([this, &brd = brd_ptr->brd, &screen] {
 			screen.Post([this, &brd] { brd = gm->current_board(); });
+			screen.PostEvent(Event::Custom);
 			});
 		gm->save_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
 		gm->suspend_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
@@ -325,6 +326,7 @@ namespace bw::othello::components {
 		std::shared_ptr<int> s3 = std::make_shared<int>(2);
 		auto start_func = [this, &screen, &ret, &advanced, Tabs, &selector, s, s3] {
 			board_size = stoi(size_list[*s3]);
+			bool adv[col1 - col0 + 1] = {};
 			for (color col = col0; col <= col1; ++col) {
 				switch (*s[col])
 				{
@@ -337,30 +339,35 @@ namespace bw::othello::components {
 					Tabs->Add(bw::components::GamerSetting<computer_gamer_random>(gptr[col]));
 					break;
 				case std::to_underlying(detailed_type::computer_ai):
-					gptr[col] = std::make_shared<computer_gamer_ai>(col);
+					gptr[col] = std::make_shared<computer_gamer_ai>(col, board_size);
 					Tabs->Add(bw::components::GamerSetting<computer_gamer_ai>(gptr[col]));
+					adv[col] = true;
 					break;
 				case std::to_underlying(detailed_type::remote_tcp_gamer):
 					gptr[col] = std::make_shared<remote_tcp_gamer>(pctx, col);
 					Tabs->Add(bw::components::GamerSetting<remote_tcp_gamer>(gptr[col]));
-					advanced = true;
+					adv[col] = true;
 					break;
 				case std::to_underlying(detailed_type::lua_script_gamer):
 					gptr[col] = std::make_shared<lua_gamer>(col);
 					Tabs->Add(bw::components::GamerSetting<lua_gamer>(gptr[col]));
-					advanced = true;
+					adv[col] = true;
 					break;
 				case std::to_underlying(detailed_type::python_script_gamer):
 					gptr[col] = std::make_shared<python_gamer>(col);
 					Tabs->Add(bw::components::GamerSetting<python_gamer>(gptr[col]));
-					advanced = true;
+					adv[col] = true;
 					break;
 				default:
 					break;
 				}
-				if (!advanced) {
-					selector = col + 1;
-				}
+			}
+			advanced = adv[col0] || adv[col1];
+			if (!adv[col0] && adv[col1]) {
+				selector = col1;
+			}
+			else {
+				selector = col0;
 			}
 			screen.Exit();
 			};
@@ -454,6 +461,7 @@ namespace bw::othello::components {
 			});
 		gm->flush_sig.connect([this, &brd=brd_ptr->brd, &screen] {
 			screen.Post([this, &brd] { brd = gm->current_board(); });
+			screen.PostEvent(Event::Custom);
 			});
 		gm->save_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
 		gm->suspend_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
@@ -498,7 +506,7 @@ namespace bw::othello::components {
 		return layout;
 	}
 
-	bool Game::GamePreparing() {
+	bool Game::GameSetting() {
 		using namespace ftxui;
 		bool ret = true, advanced = false;
 		ScreenInteractive screen = ftxui::ScreenInteractive::Fullscreen();
@@ -549,5 +557,9 @@ will be overwritten by the other.)"));
 		screen.Loop(GamePageComponent);
 		pctx->stop();
 		pctx->restart();
+		if (another_round) {
+			gptr[col0]->reset();
+			gptr[col1]->reset();
+		}
 	}
 }

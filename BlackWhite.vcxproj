@@ -194,7 +194,7 @@
       <MinimalRebuild>false</MinimalRebuild>
       <AdditionalOptions>/utf-8 /bigobj %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <Optimization>Disabled</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <ControlFlowGuard>false</ControlFlowGuard>
@@ -234,6 +234,7 @@
     <ClInclude Include="include\gamer\basic_ws_gamer.hpp" />
     <ClInclude Include="include\games.hpp" />
     <ClInclude Include="include\globals.hpp" />
+    <ClInclude Include="include\gobang\board.hpp" />
     <ClInclude Include="include\grid-container.hpp" />
     <ClInclude Include="include\initialize.hpp" />
     <ClInclude Include="include\ipv4.hpp" />
@@ -283,6 +284,7 @@
     <ClInclude Include="include\tictactoe\move.hpp" />
     <ClInclude Include="include\tictactoe\moves.hpp" />
     <ClInclude Include="include\tools.hpp" />
+    <ClInclude Include="include\tree.hpp" />
     <ClInclude Include="include\tui\bwlocale.hpp" />
     <ClInclude Include="include\tui\components.hpp" />
     <ClInclude Include="include\tui\ftxui_screen.hpp" />

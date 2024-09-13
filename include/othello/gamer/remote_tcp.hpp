@@ -210,6 +210,7 @@ namespace bw::othello {
 		void clear_handler() { handle_move_ = nullptr; }
 		void post(std::function<void()> task) const { context_ptr->post(task); }
 		virtual bool good()const override { return context_ptr != nullptr && connected(); }
+		virtual void reset() override {}
 		timdq_ptr rdq, wtq;
 		std::shared_ptr<acceptor> acceptor_ptr = nullptr;
 		std::shared_ptr<socket> socket_ptr = nullptr;

@@ -112,6 +112,7 @@ namespace bw::othello {
 
 		};
 		virtual bool good()const override { return is_good; }
+		virtual void reset() override {}
 		virtual ~lua_gamer() = default;
 		bool is_good = false;
 		std::string getmove_func_signature = "getmove";

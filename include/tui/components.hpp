@@ -85,6 +85,18 @@ namespace bw::ui {
 			return Container::Stacked({ MessageBoxComp = StackedMsgBoxComp(),std::move(comp) });
 		};
 	}
+	inline ftxui::ComponentDecorator NumberOnly() {
+		using namespace ftxui;
+		return CatchEvent([](Event event) {
+			return event.is_character() && !std::isdigit(event.character()[0]);
+		});
+	}
+	inline ftxui::ComponentDecorator ShortThan(ftxui::StringRef ref, int len) {
+		using namespace ftxui;
+		return CatchEvent([ref, len](Event event) {
+			return event.is_character() && ref().size() > len;
+		});
+	}
 	inline ftxui::Component Focusable() {
 		struct Impl : public ftxui::ComponentBase {
 			bool Focusable() const override { return true; }

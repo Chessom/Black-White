@@ -88,6 +88,7 @@ namespace bw::othello {
 		virtual bool good()const override { 
 			return !u_ptr.expired() && rd_dq != nullptr;
 		}
+		virtual void reset() override {}
 		virtual ~online_gamer() {
 			spdlog::trace("Online gamer Destructor");
 		}

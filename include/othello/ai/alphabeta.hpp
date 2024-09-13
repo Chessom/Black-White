@@ -3,13 +3,88 @@
 namespace bw::othello::ai {
 	template<int BoardSize, class EvalMethod>
 	struct alphabeta {
-		alphabeta(color setter_color) :setter_col(setter_color) {};
+		alphabeta(color setter_color, const ai_option& option) :player(setter_color), option(option) {};
 		enum { inf = 1000 };
-		float eval_end_game_board(const static_brd<BoardSize>& brd) {
-			return EvalMethod::eval_end_game_board(brd, setter_col);
+		coord best_move(const static_brd<BoardSize> brd, color setter_color) {
+			if (option.threads == 1) {
+				return choose_move_single_thread(brd, setter_color);
+			}
+			else {
+				return choose_move_multi_thread(brd, setter_color);
+			}
+		}
+		ai_option option;
+	private:
+		coord choose_move_single_thread(const static_brd<BoardSize>& brd, color c) {
+			moves mvs;
+			mvs.update(brd, c);
+			move mv;
+			float points = -inf;
+			static_brd<BoardSize> board = brd;
+			int index = 0;
+			if (mvs.size != 0) {
+				for (int i = 0; i < mvs.size; ++i) {
+					board.applymove(mvs.coords[i], c);
+					auto mark = -nega_alphabeta_evaluate(board, op_col(c), option.search_depth, -inf, inf);
+					if (mark > points) {
+						points = mark;
+						index = i;
+					}
+					board = brd;
+				}
+			}
+			return mvs.coords[index];
+		}
+		coord choose_move_multi_thread(const static_brd<BoardSize>& brd, color c) {
+			moves mvs;
+			mvs.update(brd, c);
+			move mv;
+			vector<std::shared_ptr<float>> scores;
+			int index = 0;
+			float points = -inf;
+			if (mvs.size != 0) {
+				boost::threadpool::pool pool(option.threads - 1);
+				static_brd<BoardSize> brd0 = brd;
+				brd0.applymove(mvs.coords[0], c);
+				auto res0 = std::make_shared<float>(0.0f);
+				scores.push_back(res0);
+				for (int i = 1; i < mvs.size; ++i) {
+					static_brd<BoardSize> _brd = brd;
+					_brd.applymove(mvs.coords[i], c);
+					auto res = std::make_shared<float>(0.0f);
+					scores.push_back(res);
+					pool.schedule([new_brd = std::move(_brd), res, c, this] {
+						*res = -nega_alphabeta_evaluate(new_brd, op_col(c), option.search_depth, -inf, inf);
+						});
+				}
+				*res0 = -nega_alphabeta_evaluate(brd0, op_col(c), option.search_depth, -inf, inf);
+				pool.wait();
+			}
+			for (int i = 0; i < mvs.size; ++i) {
+				if (auto score = *scores[i]; score > points) {
+					points = score;
+					index = i;
+				}
+			}
+			return mvs.coords[index];
+		}
+		float eval_end_game_board(const static_brd<BoardSize>& brd, color setter_color) {
+			auto value = e_mthd.eval_end_game_board(brd, player);
+			if (setter_color == player) {
+				return value;
+			}
+			else {
+				return -value;
+			}
 		}
 		float eval_board(const static_brd<BoardSize>& brd, color setter_color) {
-			return EvalMethod::eval_board(brd, setter_color, setter_col);
+			auto value = e_mthd.eval_board(brd, setter_color, player);
+			if (setter_color == player) {
+				return value;
+			}
+			else {
+				return -value;
+			}
 		}
 		template<int Size>
 		struct search_tree_node {
@@ -17,22 +92,12 @@ namespace bw::othello::ai {
 			int depth;
 			float alpha, beta, value;
 		};
-#ifdef BW_AI_TEST
-		std::map<color, std::string> col2str = { {col0, std::string(gettext("black"))},{col1, std::string(gettext("white"))} };
-		std::string level_str(int level, std::string tab = "    ") {
-			std::string ret;
-			for (int i = 0; i < level; ++i) {
-				ret += tab;
-			}
-			return ret;
-		}
-#endif // BW_AI_TEST
 		float nega_alphabeta_evaluate(const bitbrd_t<BoardSize>& brd, color setter_color, int depth, float alpha, float beta) {
 			uint64_t mvs_0 = brd.getmoves(setter_color);
 			if (!mvs_0) {
 				uint64_t mvs_1 = brd.getmoves(op_col(setter_color));
 				if (!mvs_1) { // leaf node
-					return eval_end_game_board(brd);
+					return eval_end_game_board(brd, setter_color);
 				}
 			}
 			if (depth == 0) {
@@ -53,9 +118,6 @@ namespace bw::othello::ai {
 					}
 					brd_ = brd;
 				}
-#ifdef BW_AI_TEST
-				std::println("{}color:{} depth:{} alpha:{} beta:{}", level_str(3 - depth), col2str[setter_color], depth, alpha, beta);
-#endif // BW_AI_TEST
 			}
 			return alpha;
 		}
@@ -64,7 +126,7 @@ namespace bw::othello::ai {
 			if (mvs_0.empty()) {
 				moves mvs_1(brd, op_col(setter_color));
 				if (mvs_1.empty()) { // leaf node
-					return eval_end_game_board(brd);
+					return eval_end_game_board(brd, setter_color);
 				}
 			}
 			if (depth == 0) {
@@ -86,114 +148,7 @@ namespace bw::othello::ai {
 			}
 			return alpha;
 		}
-		float alphabeta_evaluate(const bitbrd_t<BoardSize>& brd, color setter_color, int depth, float alpha, float beta) {
-			uint64_t mvs_0 = brd.getmoves(setter_color);
-			if (!mvs_0) {
-				uint64_t mvs_1 = brd.getmoves(op_col(setter_color));
-				if (!mvs_1) { // leaf node
-					return brd.countpiece(setter_col) - brd.countpiece(op_col(setter_col));
-				}
-			}
-			if (depth == 0) {
-				uint64_t mvs_1 = brd.getmoves(op_col(setter_color));
-				if (setter_color == setter_col) {
-					return std::popcount(mvs_0);
-				}
-				else {
-					return -std::popcount(mvs_0);
-				}
-			}
-			if (setter_color != setter_col) {//min node
-				if (!mvs_0) {
-					beta = std::min(beta, alphabeta_evaluate(brd, op_col(setter_color), depth - 1, alpha, beta));
-				}
-				else {
-					auto brd_ = brd;
-					uint64_t iter = 0;
-					for (; mvs_0; mvs_0 = mvs_0 & (mvs_0 - 1)) {
-						iter = mvs_0 & (-ll(mvs_0));
-						brd_.applymove(iter, setter_color);
-						beta = std::min(beta, alphabeta_evaluate(brd_, op_col(setter_color), depth - 1, alpha, beta));
-						if (beta <= alpha) {
-							break; // Beta cut-off
-						}
-						brd_ = brd;
-					}
-				}
-				return beta;
-			}
-			else {//max node
-				if (!mvs_0) {
-					alpha = std::max(alpha, alphabeta_evaluate(brd, op_col(setter_color), depth - 1, alpha, beta));
-				}
-				else {
-					auto brd_ = brd;
-					uint64_t iter = 0;
-					for (; mvs_0; mvs_0 = mvs_0 & (mvs_0 - 1)) {
-						iter = mvs_0 & (-ll(mvs_0));
-						brd_.applymove(iter, setter_color);
-						alpha = std::max(alpha, alphabeta_evaluate(brd_, op_col(setter_color), depth - 1, alpha, beta));
-						if (beta <= alpha) {
-							break; // Alpha cut-off
-						}
-						brd_ = brd;
-					}
-				}
-				return alpha;
-			}
-		}
-		float alphabeta_evaluate(const arrbrd_t<BoardSize>& brd, color setter_color, int depth, float alpha, float beta) {
-			moves mvs_0(brd, setter_color);
-			if (mvs_0.empty()) {
-				moves mvs_1(brd, op_col(setter_color));
-				if (mvs_1.empty()) { // leaf node
-					return brd.countpiece(setter_col) - brd.countpiece(op_col(setter_col));
-				}
-			}
-			if (depth == 0) {
-				moves mvs_1(brd, op_col(setter_color));
-				if (setter_color == setter_col) {
-					return mvs_0.coords.size();
-				}
-				else {
-					return -ll(mvs_0.coords.size());
-				}
-			}
-			if (setter_color != setter_col) {//min node
-				if (mvs_0.empty()) {
-					beta = std::min(beta, alphabeta_evaluate(brd, op_col(setter_color), depth - 1, alpha, beta));
-				}
-				else {
-					auto brd_ = brd;
-					for (const auto& crd : mvs_0.coords) {
-						brd_.applymove(crd, setter_color);
-						beta = std::min(beta, alphabeta_evaluate(brd_, op_col(setter_color), depth - 1, alpha, beta));
-						if (beta <= alpha) {
-							break; // Beta cut-off
-						}
-						brd_ = brd;
-					}
-				}
-				return beta;
-			}
-			else {//max node
-				if (mvs_0.empty()) {
-					alpha = std::max(alpha, alphabeta_evaluate(brd, op_col(setter_color), depth - 1, alpha, beta));
-				}
-				else {
-					auto brd_ = brd;
-					for (const auto& crd : mvs_0.coords) {
-						brd_.applymove(crd, setter_color);
-						alpha = std::max(alpha, alphabeta_evaluate(brd_, op_col(setter_color), depth - 1, alpha, beta));
-						if (beta <= alpha) {
-							break; // Alpha cut-off
-						}
-						brd_ = brd;
-					}
-				}
-				return alpha;
-			}
-		}
-		color setter_col;
+		color player;
+		EvalMethod e_mthd;
 	};
 };

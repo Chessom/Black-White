@@ -77,6 +77,7 @@ namespace bw::othello {
 		};
 		virtual void cancel() {};
 		virtual bool good()const override { return is_good; }
+		virtual void reset() override {}
 		virtual ~python_gamer() {
 			spdlog::trace("Python Gamer Destructor");
 		};
@@ -106,10 +107,32 @@ namespace bw::othello {
 				.def("__repr__", [](const dynamic_brd& brd) {return std::vformat("{:n<}", std::make_format_args(brd)); })
 				.def("__format__", [](const dynamic_brd& brd, const std::string& fmt_s) {return std::vformat("{0:{1}}", std::make_format_args(brd, fmt_s)); });
 
+			py::class_<bitbrd>(othello_m, "bitbrd")
+				.def(py::init<>())
+				.def(py::init<const ull&, const ull&>())
+				.def(py::init<const dynamic_brd&>())
+				.def("in_board", &bitbrd::in_board)
+				.def("initialize", &bitbrd::initialize)
+				.def("getcol", &bitbrd::getcol)
+				.def("setcol", &bitbrd::setcol)
+				.def("applymove", py::overload_cast<const coord&, const color&>(&bitbrd::applymove))
+				.def("applymove", py::overload_cast<const ull&, const color&>(&bitbrd::applymove))
+				.def("getmoves", &bitbrd::getmoves)
+				.def("to_dynamic", &bitbrd::to_dynamic)
+				.def("count", &bitbrd::count)
+				.def("countpiece", &bitbrd::countpiece)
+				.def("brd_size", &bitbrd::brd_size)
+				.def("clear", &bitbrd::clear)
+				.def("__str__", [](const bitbrd& brd) {return std::vformat("{:sm<}", std::make_format_args(brd)); })
+				.def("__repr__", [](const bitbrd& brd) {return std::vformat("{:n<}", std::make_format_args(brd)); })
+				.def("__format__", [](const bitbrd& brd, const std::string& fmt_s) {return std::vformat("{0:{1}}", std::make_format_args(brd, fmt_s)); });
+
 			py::class_<moves>(othello_m, "moves")
 				.def(py::init<>())
 				.def(py::init<const dynamic_brd&, const color&>())
+				.def(py::init<const bitbrd&, const color&>())
 				.def("update", &moves::update<dynamic_brd>)
+				.def("update", &moves::update<bitbrd>)
 				.def("push_back", &moves::push_back)
 				.def("empty", &moves::empty)
 				.def("find", &moves::find)

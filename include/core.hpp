@@ -1,15 +1,15 @@
 ﻿#pragma once
 #include"stdafx.h"
 namespace bw::core {
-	using ll = long long;
-	using ull = unsigned long long;
+	using ll = int_fast64_t;
+	using ull = uint_fast64_t;
 	using bititer = ull;
-	using color = int;
+	using color = int_fast16_t;
 	using mtx_ptr = std::shared_ptr<std::mutex>;
 	class metadata {
 	public:
 		const std::string
-			version = "3.0",
+			version = "0.3",
 			author = "Vemy",
 			email = "chessom@foxmail.com",
 			license = "MIT";
@@ -24,7 +24,7 @@ namespace bw::core {
 		//					U
 		//					^
 		//					|
-		//			  L<----o---->R
+		//			  L<————o————>R
 		//					|
 		//					v
 		//					D
@@ -130,9 +130,7 @@ namespace bw::core {
 			x = y = 0;
 		}
 		constexpr _coord& operator=(const _coord&) = default;
-		constexpr bool operator==(const _coord& other) const {
-			return x == other.x && y == other.y;
-		}
+		constexpr auto operator<=>(const _coord& other) const = default;
 		constexpr _coord& operator+=(const _coord& rhs) {
 			x += rhs.x;
 			y += rhs.y;

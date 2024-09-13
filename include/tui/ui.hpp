@@ -90,8 +90,9 @@ namespace bw {
 		auto document = canvas(std::move(c)) | borderDouble | size(HEIGHT, EQUAL, 25);
 		auto GameIcon = Renderer([document] {return document; });
 		return Container::Vertical({
-			Renderer([] {return text(gettext("Black White")) | bold | borderHeavy | hcenter; }),
-			GameIcon | hcenter
+			Renderer([] {return text(gettext("Black White")) | bold | borderRounded | hcenter; }),
+			GameIcon | hcenter,
+			Button(gettext("Quit"),[] {ftxui::ScreenInteractive::Active()->Exit(); },ButtonOption::Animated()) | hcenter
 			}) | center;
 	}
 	ftxui::Component tui::LocalGamePage() {
@@ -99,7 +100,7 @@ namespace bw {
 		Components buttons = { 
 			Button(gettext("Othello"),[&,this] {
 				bw::othello::components::othello_Game_ptr Game = std::make_shared<bw::othello::components::Game>();
-				if (Game->GamePreparing()) {
+				if (Game->GameSetting()) {
 					do {
 						Game->GamePageLocal();
 					} while (Game->another_round);
@@ -107,7 +108,7 @@ namespace bw {
 				},ButtonOption::Animated()) | center,
 			Button(gettext("TicTacToe"),[&,this] {
 				bw::tictactoe::components::Game Game;
-				if (Game.GamePreparing()) {
+				if (Game.GameSetting()) {
 					do {
 						Game.GamePageLocal();
 					} while (Game.another_round);
@@ -142,7 +143,6 @@ namespace bw {
 	}
 	void tui::SimpleOnlinePage() {
 		using namespace ftxui;
-		ui::msgbox(gettext("Developing."));
 	}
 	void tui::OnlineGameHallPage() {
 		using namespace ftxui;

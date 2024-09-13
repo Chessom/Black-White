@@ -49,9 +49,6 @@
     <Filter Include="头文件\othello\othello.ai">
       <UniqueIdentifier>{673f5d45-a379-4376-a580-aaee5a67a56e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="头文件\bw\practical">
-      <UniqueIdentifier>{5a47d2e7-d985-4db5-9e0f-95d67b865d2f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="头文件\tictactoe">
       <UniqueIdentifier>{12ae308a-823c-493b-9d23-9f95bf659c65}</UniqueIdentifier>
     </Filter>
@@ -316,6 +313,12 @@
     </ClInclude>
     <ClInclude Include="include\othello\ai\eval_methods.hpp">
       <Filter>头文件\othello\othello.ai</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gobang\board.hpp">
+      <Filter>头文件\gobang</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tree.hpp">
+      <Filter>头文件\external</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

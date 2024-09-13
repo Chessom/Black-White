@@ -378,6 +378,8 @@ namespace bw::components {
 				device_select = std::to_underlying(option.device);
 				threads_str = std::to_string(option.threads);
 				srch_dp_str = std::to_string(option.search_depth);
+				mcts_simulation_str = std::to_string(option.mcts_opt.simulations);
+				time_limit_str = std::to_string(option.time_limit);
 
 				auto default_comp = GamerSetting<void>(ptr);
 				auto m_option = MenuOption();
@@ -413,19 +415,48 @@ namespace bw::components {
 						}) | border;
 					}
 				);
-				auto input0 = Input(&threads_str, gettext("Enter threads number"), InputOption::Spacious());
-				auto threads_input = Renderer(input0, [input0] {
-					return hbox(text(gettext("Thread number:")) | vcenter, input0->Render() | vcenter);
+				auto thd_input = Input(&threads_str, gettext("Enter threads number")) | ui::NumberOnly();
+				auto threads_input = Renderer(thd_input, [thd_input] {
+					return hbox(text(gettext("Thread number:")) | vcenter, thd_input->Render() | vcenter);
 				});
-				auto input1 = Input(&srch_dp_str, gettext("Enter search depth"), InputOption::Spacious());
-				auto search_depth_input = Renderer(input1, [input1] {
-					return hbox(text(gettext("Search depth:")) | vcenter, input1->Render() | vcenter);
+
+				auto srch_dq_input = Input(&srch_dp_str, gettext("Enter search depth")) | ui::NumberOnly();
+				auto search_depth_input = Renderer(srch_dq_input, [srch_dq_input] {
+					return hbox(text(gettext("Search depth:")) | vcenter, srch_dq_input->Render() | vcenter);
 				});
+				auto alphabeta_opt = Container::Vertical({
+					threads_input,
+					search_depth_input,
+					});
+
+				auto simu_input = Input(&mcts_simulation_str, gettext("Enter simulate times")) | ui::NumberOnly();
+				auto simulations_input = Renderer(simu_input, [simu_input] {
+					return hbox(text(gettext("Simulation times:")) | vcenter, simu_input->Render() | vcenter);
+					});
+				auto tim_lim_input = Input(&time_limit_str, gettext("Enter microseconds")) | ui::NumberOnly();
+				auto time_limit_input = Renderer(tim_lim_input, [tim_lim_input] {
+					return hbox(text(gettext("Time limit(microseconds):")) | vcenter, tim_lim_input->Render() | vcenter);
+					});
+				auto mcts_opt = Container::Vertical({
+					simulations_input,
+					time_limit_input
+					});
+
+				auto menu_tabs = Container::Tab({
+					alphabeta_opt,
+					mcts_opt,
+					},&s_mtd_select);
+				auto algo_detailed_opt = Renderer(menu_tabs, [menu_tabs]{
+					return vbox(
+						text(gettext("Algorithm Advanced Option")),
+						separator(),
+						menu_tabs->Render()
+					) | borderRounded;
+					});
 				auto layout = Container::Vertical({
 					default_comp | hcenter,
 					menu_renderer | hcenter,
-					threads_input | hcenter,
-					search_depth_input | hcenter,
+					algo_detailed_opt| hcenter,
 					});
 				Add(layout);
 			}
@@ -434,13 +465,18 @@ namespace bw::components {
 				option.s_mtd = othello::ai::ai_option::search_method(s_mtd_select);
 				option.e_mtd = othello::ai::ai_option::eval_method(e_mtd_select);
 				option.device = othello::ai::ai_option::device_type(device_select);
-				option.threads = std::stoi(threads_str);
-				option.search_depth = std::stoi(srch_dp_str);
+				option.threads = threads_str.empty() ? 1 : std::stoi(threads_str);
+				option.search_depth = srch_dp_str.empty() ? 5 : std::stoi(srch_dp_str);
+				option.mcts_opt.simulations = mcts_simulation_str.empty() ? 0 : std::stoi(mcts_simulation_str);
+				option.time_limit = time_limit_str.empty() ? 0 : std::stoi(time_limit_str);
+				gptr->e.set_algo();
 			}
 		private:
 			std::shared_ptr<othello::computer_gamer_ai> gptr = nullptr;
 			std::string threads_str;
 			std::string srch_dp_str;
+			std::string mcts_simulation_str;
+			std::string time_limit_str;
 			int s_mtd_select;
 			std::vector<string> search_method_list = {
 				"alphabeta",

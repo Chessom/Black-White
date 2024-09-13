@@ -32,21 +32,25 @@ namespace bw::othello {
 			co_return move{ .mvtype = move::mv, .pos = mvs.coords[distrib(gen)],.c = col };
 		}
 		virtual bool good()const override { return true; }
+		virtual void reset() override {}
 		virtual ~computer_gamer_random() = default;
 	};
 	class computer_gamer_ai :public bw::othello::computer_gamer {
 	public:
-		computer_gamer_ai(core::color Color, int ID = 1, const std::string& Name = gettext("computer_gamer_ai"), int GamerType = basic_gamer::computer)
-			:computer_gamer(Color, ID, Name, GamerType),e(Color) {
+		computer_gamer_ai(core::color Color, int board_size = 8, int ID = 1, const std::string& Name = gettext("computer_gamer_ai"), int GamerType = basic_gamer::computer)
+			:computer_gamer(Color, ID, Name, GamerType), e(Color, board_size) {
 			detailed_gamer_type = detailed_type::computer_ai;
-			//e.option.threads = 4;
 		};
 		virtual boost::cobalt::task<move> getmove(dynamic_brd& brd, std::chrono::seconds limit = 0s) override {
 			co_return{ move::mv, e.best_move(brd,col), col };
 		}
-		virtual bool good()const override { return true; }
+		virtual bool good()const override { return is_good; }
+		virtual void reset() override {
+			e.set_algo();
+		}
 		virtual ~computer_gamer_ai() = default;
 		ai::evaluator e;
+		bool is_good = true;
 	};
 	inline basic_gamer_ptr computer_gamer_from_id(int ID, color c) {
 		switch (ID) {
