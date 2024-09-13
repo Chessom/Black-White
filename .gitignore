@@ -377,3 +377,4 @@ FodyWeavers.xsd
 *.exe
 *.lua
 *.py
+/build
