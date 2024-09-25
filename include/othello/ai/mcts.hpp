@@ -345,8 +345,8 @@ namespace bw::othello::ai {
                     auto new_head = head;
                     int iter_times = 0;
                     while (new_head.node && new_head.begin() != new_head.end() && iter_times < mvs.size()) {
-                        if (new_head->setter == player) {
-                            new_head++;
+                        if (new_head->setter != player) {
+                            new_head = new_head.begin();
                         }
                         else {
                             bool found = false;
