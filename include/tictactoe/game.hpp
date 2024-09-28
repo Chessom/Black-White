@@ -71,14 +71,14 @@ boost::cobalt::task<void> bw::tictactoe::game::start() {
 			end_game();
 			co_return;
 		}
-		mv = co_await g[col]->getmove(brd);
+		mv = co_await g[col]->get_move(brd);
 
 		co_await g[col]->pass_move(mv);
 		co_await g[op_col(col)]->pass_move(mv);
 
 		switch (mv.mvtype) {
 		case move::mv:
-			brd.applymove(mv.crd, col);
+			brd.apply_move(mv.crd, col);
 			flush_sig();
 			break;
 		case move::regret:

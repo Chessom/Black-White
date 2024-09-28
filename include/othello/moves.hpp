@@ -38,14 +38,14 @@ namespace v1{
 			for (int x = 0; x < Size; ++x) {
 				for (int y = 0; y < Size; ++y) {
 					coord crd{ x,y };
-					if (brd.getcol(crd) == none) {
+					if (brd.get_col(crd) == none) {
 						bool done = false;
 						for (drc_t drc = R; drc <= UR && !done; ++drc) {
 							coord iter(crd);
-							if (brd.in_board(iter.to_next(drc)) && brd.getcol(iter) == opcol) {
+							if (brd.in_board(iter.to_next(drc)) && brd.get_col(iter) == opcol) {
 								color c = 0;
 								while (brd.in_board(iter.to_next(drc))) {
-									c = brd.getcol(iter);
+									c = brd.get_col(iter);
 									if (c == col) {
 										push_back(crd);
 										done = true;
@@ -119,10 +119,10 @@ inline namespace v2{
 		template<int Size>
 		void update(const bitbrd_t<Size>& brd, const color& col) {
 			clear();
-			ull moves = brd.getmoves(col);
-			bititer iter = 0ull;
+			ll moves = brd.getmoves(col);
+			bititer iter = 0ll;
 			for (; moves; moves = moves & (moves - 1)) {
-				iter = moves & (-ll(moves));
+				iter = moves & -moves;
 				push_back(std::move(bitbrd_t<Size>::bit2crd(iter)));
 			}
 		}
@@ -136,14 +136,14 @@ inline namespace v2{
 			for (int x = 0; x < Size; ++x) {
 				for (int y = 0; y < Size; ++y) {
 					coord crd{ x,y };
-					if (brd.getcol(crd) == none) {
+					if (brd.get_col(crd) == none) {
 						bool done = false;
 						for (drc_t drc = R; drc <= UR && !done; ++drc) {
 							coord iter(crd);
-							if (brd.in_board(iter.to_next(drc)) && brd.getcol(iter) == opcol) {
+							if (brd.in_board(iter.to_next(drc)) && brd.get_col(iter) == opcol) {
 								color c = 0;
 								while (brd.in_board(iter.to_next(drc))) {
-									c = brd.getcol(iter);
+									c = brd.get_col(iter);
 									if (c == col) {
 										push_back(crd);
 										done = true;
@@ -173,14 +173,14 @@ inline namespace v2{
 			for (int x = 0; x < Size; ++x) {
 				for (int y = 0; y < Size; ++y) {
 					coord crd{ x,y };
-					if (brd.getcol(crd) == none) {
+					if (brd.get_col(crd) == none) {
 						bool done = false;
 						for (drc_t drc = R; drc <= UR && !done; ++drc) {
 							coord iter(crd);
-							if (brd.in_board(iter.to_next(drc)) && brd.getcol(iter) == opcol) {
+							if (brd.in_board(iter.to_next(drc)) && brd.get_col(iter) == opcol) {
 								color c = 0;
 								while (brd.in_board(iter.to_next(drc))) {
-									c = brd.getcol(iter);
+									c = brd.get_col(iter);
 									if (c == col) {
 										++cnt;
 										done = true;

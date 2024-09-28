@@ -2,25 +2,26 @@
 #include"stdafx.h"
 #include"core.hpp"
 #include"game.hpp"
-#include"othello/moves.hpp"
-#include"othello/gamer.hpp"
-#include"othello/board.hpp"
+#include"gobang/moves.hpp"
+#include"gobang/gamer.hpp"
+#include"gobang/board.hpp"
 #include"tui/components.hpp"
 #include"tui/ftxui_screen.hpp"
 #include"online/signals.hpp"
-namespace bw::othello {
+namespace bw::gobang {
+	using namespace core;
 	namespace components {
 		class BoardBase;
 	};
 	struct aspect {
-		dynamic_brd brd;
-		color col = col0;//setter color
+		board brd;
+		core::color col = core::col0;//setter color
 	};
 	using aspects = std::vector<aspect>;
 	class game :public basic_game, public std::enable_shared_from_this<game> {
 		friend class components::BoardBase;
 	public:
-		game(basic_gamer_ptr g0, basic_gamer_ptr g1, int brd_size = default_size, bw::components::ftxui_screen_ptr Screen = nullptr) :basic_game(ready), brd(brd_size) {
+		game(basic_gamer_ptr g0, basic_gamer_ptr g1, bw::components::ftxui_screen_ptr Screen = nullptr) :basic_game(ready) {
 			g[col0] = std::move(std::dynamic_pointer_cast<gamer>(g0));
 			g[col1] = std::move(std::dynamic_pointer_cast<gamer>(g1));
 			if (g[col0] == nullptr || g[col1] == nullptr) {
@@ -154,9 +155,9 @@ namespace bw::othello {
 			st = ended;
 		}
 		bool cannot_regret() {
-			return 
-				g[col]->gamertype==gamer::online||
-				g[op_col(col)]->gamertype==gamer::online||
+			return
+				g[col]->gamertype == gamer::online ||
+				g[op_col(col)]->gamertype == gamer::online ||
 				g[col]->gamertype == gamer::remote ||
 				g[op_col(col)]->gamertype == gamer::remote;
 		}
@@ -200,7 +201,7 @@ namespace bw::othello {
 			brd.initialize();
 			color op = 0;
 			while (true) {
-				
+
 				op = op_col(col);
 				std::println("{:sm<}", brd);
 				mvs[col].update(brd, col);

@@ -171,7 +171,7 @@ namespace bw::components {
 				Input(&gptr->script_filename,gettext("enter path")) | hcenter
 				}) | border,
 			Container::Vertical({
-				ui::TextComp(gettext("getmove function name:"),hcenter) | hcenter,
+				ui::TextComp(gettext("get_move function name:"),hcenter) | hcenter,
 				Input(&gptr->getmove_func_signature,gettext("enter function signature")) | hcenter
 				}) | border
 			});

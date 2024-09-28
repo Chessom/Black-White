@@ -37,7 +37,7 @@ namespace bw::othello::ai {
 		std::any algo;
 		template<int BoardSize>
 		inline int count_corner(const static_brd<BoardSize>& brd, color c) {
-			return (brd.getcol({ 0,0 }) == c) + (brd.getcol({ 0,BoardSize - 1 }) == c) + (brd.getcol({ BoardSize - 1,0 }) == c) + (brd.getcol({ BoardSize - 1,BoardSize - 1 }) == c);
+			return (brd.get_col({ 0,0 }) == c) + (brd.get_col({ 0,BoardSize - 1 }) == c) + (brd.get_col({ BoardSize - 1,0 }) == c) + (brd.get_col({ BoardSize - 1,BoardSize - 1 }) == c);
 		}
 		template<int BoardSize = 8>
 		coord best_move_static(const static_brd<BoardSize>& brd, color c) {

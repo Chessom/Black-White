@@ -23,10 +23,10 @@ namespace bw::tictactoe {
 				"board",
 				sol::constructors<board(), board(int)>(),
 				"initialize", &board::initialize,
-				"getcol", &board::getcol,
-				"setcol", &board::setcol,
-				"applymove", &board::applymove,
-				"checkmove", &board::checkmove,
+				"get_col", &board::get_col,
+				"set_col", &board::set_col,
+				"apply_move", &board::apply_move,
+				"check_move", &board::check_move,
 				"check_winner", &board::check_winner,
 				"count", sol::as_function(&board::cnt)
 			);
@@ -45,8 +45,8 @@ namespace bw::tictactoe {
 		void test() {
 
 		}
-		virtual boost::cobalt::task<move> getmove(board & brd, std::chrono::seconds limit = std::chrono::seconds(0)) {
-			sol::protected_function getmv = lua["getmove"];
+		virtual boost::cobalt::task<move> get_move(board & brd, std::chrono::seconds limit = std::chrono::seconds(0)) {
+			sol::protected_function getmv = lua["get_move"];
 			auto res = getmv(brd, col);
 			core::coord crd;
 			if (res.valid()) {

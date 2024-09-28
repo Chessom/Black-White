@@ -10,7 +10,7 @@ namespace bw::tictactoe {
 		gamer(core::color Color, int ID = 0, const std::string& Name = "", int GamerType = invalid)
 			:basic_gamer(Color, ID, Name, GamerType, core::gameid::tictactoe) {
 		};
-		virtual boost::cobalt::task<move> getmove(board& brd, std::chrono::seconds limit = std::chrono::seconds(0)) = 0;
+		virtual boost::cobalt::task<move> get_move(board& brd, std::chrono::seconds limit = std::chrono::seconds(0)) = 0;
 		virtual boost::cobalt::task<void> pass_msg(std::string message) = 0;
 		virtual boost::cobalt::task<void> pass_move(move mv) = 0;
 		virtual void cancel() {};

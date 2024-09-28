@@ -1,15 +1,15 @@
 ﻿#pragma once
 #include"stdafx.h"
-#include"othello/game.hpp"
-#include"othello/gamer/human.hpp"
-#include"othello/gamer/online.hpp"
+#include"gobang/game.hpp"
+#include"gobang/gamer/human.hpp"
+#include"gobang/gamer/online.hpp"
 #include"basic_Game.hpp"
 #include"tui/components.hpp"
 #include"tui/ftxui_screen.hpp"
 #include"tui/game/gamer_prepare.hpp"
-#include"othello/gamer_prepare.hpp"
+#include"gobang/gamer_prepare.hpp"
 #include"online/signals.hpp"
-namespace bw::othello::components {
+namespace bw::gobang::components {
 	class BoardBase : public ftxui::ComponentBase {
 	public:
 		using context_ptr = std::shared_ptr<boost::asio::io_context>;
@@ -67,7 +67,7 @@ namespace bw::othello::components {
 								| ftxui::color(Color::Red) | bgcolor(Color::Green));
 						}
 						else {
-							row.emplace_back(text("   ")| ftxui::color(Color::Red) | bgcolor(Color::Green));
+							row.emplace_back(text("   ") | ftxui::color(Color::Red) | bgcolor(Color::Green));
 						}
 					}
 					else if (col == core::col0) {
@@ -135,9 +135,9 @@ namespace bw::othello::components {
 			return Button(gettext("Another round"), [gm, this] {
 				another_round = true;
 				gm->end_game();
-				if (!pctx->stopped()) { pctx->stop(); } 
+				if (!pctx->stopped()) { pctx->stop(); }
 				ftxui::ScreenInteractive::Active()->Exit();
-			}, ButtonOption::Animated());
+				}, ButtonOption::Animated());
 		}
 		ftxui::Component GameSettingPage(ftxui::ScreenInteractive& screen, bool& ret, bool& advanced, ftxui::Component Tabs, int&);
 		ftxui::Component GameAdvancedSettingPage(ftxui::Component, int&, bool&);
@@ -153,16 +153,16 @@ namespace bw::othello::components {
 			switch (info.gamertype)
 			{
 			case gamer::human:
-				ret = std::make_shared<othello::human_gamer>(info);
+				ret = std::make_shared<gobang::human_gamer>(info);
 				break;
 			case gamer::computer:
-				ret = std::make_shared<othello::computer_gamer_random>(info.col);
+				ret = std::make_shared<gobang::computer_gamer_random>(info.col);
 				break;
 			case gamer::online:
-				ret = std::make_shared<othello::online_gamer>(info);
+				ret = std::make_shared<gobang::online_gamer>(info);
 				break;
 			case gamer::remote:
-				ret = std::make_shared<othello::remote_tcp_gamer>(pctx, info.col);
+				ret = std::make_shared<gobang::remote_tcp_gamer>(pctx, info.col);
 				break;
 			default:
 				break;
@@ -196,8 +196,8 @@ namespace bw::othello::components {
 		std::string s_size = "8";
 	};
 	using othello_Game_ptr = std::shared_ptr<Game>;
-	
-	ftxui::Component Game::OnlinePrepareCom(bw::online::basic_user_ptr uptr)  {
+
+	ftxui::Component Game::OnlinePrepareCom(bw::online::basic_user_ptr uptr) {
 		using namespace ftxui;
 		auto layout = Container::Vertical({
 			ui::TextComp(gettext("Othello")) | center,
@@ -217,13 +217,13 @@ namespace bw::othello::components {
 				auto othello_Game = shared_from_this();
 				board_size = std::stoi(s_size);
 				if (board_size % 2 == 1) {
-					ui::msgbox(gettext("The size of the othello board must be even."));
+					ui::msgbox(gettext("The size of the gobang board must be even."));
 					return;
 				}
 				if (!flag.test()) {
 					if (uptr->state != online::user_st::gaming) {
 						uptr->Game_ptr = othello_Game;
-						basic_gamer_info info(core::none, uptr->id, uptr->name, basic_gamer::online, core::gameid::othello);
+						basic_gamer_info info(core::none, uptr->id, uptr->name, basic_gamer::online, core::gameid::gobang);
 						std::string infostr;
 						struct_json::to_json(info, infostr);
 						uptr->deliver(wrap(
@@ -231,7 +231,7 @@ namespace bw::othello::components {
 								.type = game_msg::prepare,
 								.id = uptr->id,
 								.movestr = infostr,
-								.board = std::format("{} {}", "othello", othello_Game->board_size),
+								.board = std::format("{} {}", "gobang", othello_Game->board_size),
 							},
 							msg_t::game
 							));
@@ -253,7 +253,7 @@ namespace bw::othello::components {
 			});
 		return layout;
 	}
-	
+
 	ftxui::Component Game::OnlineGamePage(ftxui::ScreenInteractive& screen, basic_game_ptr gm_ptr) {
 		assert(gptr[col0] != nullptr && gptr[col1] != nullptr);
 		using namespace ftxui;
@@ -291,7 +291,7 @@ namespace bw::othello::components {
 			if (!std::filesystem::exists(global_config->saved_games_path)) {
 				std::filesystem::create_directories(global_config->saved_games_path);
 			}
-			fout.open(std::format("{}{}-{}.bin", global_config->saved_games_path, "othello", std::chrono::system_clock::now()), std::ios::binary | std::ios::out);
+			fout.open(std::format("{}{}-{}.bin", global_config->saved_games_path, "gobang", std::chrono::system_clock::now()), std::ios::binary | std::ios::out);
 			if (fout) {
 				fout << str;
 			}
@@ -299,7 +299,7 @@ namespace bw::othello::components {
 				ui::msgbox(gettext("Save game failed! Failed to create archive file."));
 			}
 			fout.close();
-		});
+			});
 		gm->suspend_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
 
 		Component buttons = Container::Vertical({
@@ -319,24 +319,14 @@ namespace bw::othello::components {
 			}),
 			Container::Vertical({
 				Renderer([=,this] { return text(std::format("{}:{}",gettext("Current player"),gptr[gm->current_color()]->get_name())) | center; }),
-				Renderer([=,this] { return text(std::format("{}-{}:{}",gettext("Black"),gptr[col0]->get_name(),brd_ptr->brd.countpiece(col0))) | center; }),
-				Renderer([=,this] { return text(std::format("{}-{}:{}",gettext("White"),gptr[col1]->get_name(),brd_ptr->brd.countpiece(col1))) | center; }),
-				Renderer([this] {
-					return text(std::format("{}-{} {}:{}",
-						gettext("Black"),
-						gptr[col0]->get_name(),
-						gettext("state"),
-						gptr[col0]->good() ? gettext("Good") : gettext("Bad")
-						)) | center;
-					}),
-				Renderer([this] {
-					return text(std::format("{}-{} {}:{}",
-						gettext("White"),
-						gptr[col1]->get_name(),
-						gettext("state"),
-						gptr[col1]->good() ? gettext("Good") : gettext("Bad")
-						)) | center;
-					}),
+				Renderer([=,this] { return text(std::format("{}-{} {}:{}",gettext("Black"),gptr[col0]->get_name(),gettext("state"),
+				gptr[col0]->is_remote() ?
+					(std::dynamic_pointer_cast<remote_tcp_gamer>(gptr[col0])->connected() ? gettext("Good") : gettext("Disconnetced"))
+					: gettext("Good"))) | center; }),
+				Renderer([&] {return text(std::format("{}-{} {}:{}",gettext("White"),gptr[col1]->get_name(),gettext("state"),
+				gptr[col1]->is_remote() ?
+					(std::dynamic_pointer_cast<remote_tcp_gamer>(gptr[col1])->connected() ? gettext("Good") : gettext("Disconnetced"))
+					: gettext("Good"))) | center; }),
 			}) | center | border
 			});
 		return layout;
@@ -360,27 +350,8 @@ namespace bw::othello::components {
 					gptr[col] = std::make_shared<computer_gamer_random>(col);
 					Tabs->Add(bw::components::GamerSetting<computer_gamer_random>(gptr[col]));
 					break;
-				case std::to_underlying(detailed_type::computer_ai):
-					gptr[col] = std::make_shared<computer_gamer_ai>(col, board_size);
-					Tabs->Add(bw::components::GamerSetting<computer_gamer_ai>(gptr[col]));
-					adv[col] = true;
-					break;
-				case std::to_underlying(detailed_type::remote_tcp_gamer):
-					gptr[col] = std::make_shared<remote_tcp_gamer>(pctx, col);
-					Tabs->Add(bw::components::GamerSetting<remote_tcp_gamer>(gptr[col]));
-					adv[col] = true;
-					break;
-				case std::to_underlying(detailed_type::lua_script_gamer):
-					gptr[col] = std::make_shared<lua_gamer>(col);
-					Tabs->Add(bw::components::GamerSetting<lua_gamer>(gptr[col]));
-					adv[col] = true;
-					break;
-				case std::to_underlying(detailed_type::python_script_gamer):
-					gptr[col] = std::make_shared<python_gamer>(col);
-					Tabs->Add(bw::components::GamerSetting<python_gamer>(gptr[col]));
-					adv[col] = true;
-					break;
 				default:
+					gptr[col] = nullptr;
 					break;
 				}
 			}
@@ -454,7 +425,7 @@ namespace bw::othello::components {
 			}
 		);
 	}
-	
+
 	ftxui::Component Game::GamePage(ftxui::ScreenInteractive& screen) {
 		assert(gptr[col0] != nullptr && gptr[col1] != nullptr);
 		using namespace ftxui;
@@ -467,7 +438,7 @@ namespace bw::othello::components {
 				brd->pmvdq->q.push_back({ .mvtype = move::regret });
 				brd->pmvdq->tim.cancel_one();
 			}
-		});
+			});
 		gm->end_sig.connect([this] {
 			auto crt_brd = gm->current_board();
 			int points0 = crt_brd.countpiece(col0), points1 = crt_brd.countpiece(col1);
@@ -481,17 +452,17 @@ namespace bw::othello::components {
 				ui::msgbox(gettext("Draw!"), { ui::MakeOKButton(),ui::TextComp(" "), AnotherRoundButton(gm) });
 			}
 			});
-		gm->flush_sig.connect([this, &brd=brd_ptr->brd, &screen] {
+		gm->flush_sig.connect([this, &brd = brd_ptr->brd, &screen] {
 			screen.Post([this, &brd] { brd = gm->current_board(); });
 			screen.PostEvent(Event::Custom);
 			});
 		gm->save_sig.connect([this] {
 			auto str = gm->to_string();
 			std::ofstream fout;
-			if (!std::filesystem::exists(global_config->saved_games_path + "othello\\")) {
-				std::filesystem::create_directories(global_config->saved_games_path + "othello\\");
+			if (!std::filesystem::exists(global_config->saved_games_path + "gobang\\")) {
+				std::filesystem::create_directories(global_config->saved_games_path + "gobang\\");
 			}
-			auto file_name = std::format(R"(.\{}{}\{:%F--%H-%M-%S}.bin)", global_config->saved_games_path, "othello", gm->begin_time);
+			auto file_name = std::format(R"(.\{}{}\{:%F--%H-%M-%S}.bin)", global_config->saved_games_path, "gobang", gm->begin_time);
 			fout.open(file_name, std::ios::binary | std::ios::out);
 			if (fout.is_open()) {
 				fout << str;
@@ -500,7 +471,7 @@ namespace bw::othello::components {
 			else {
 				ui::msgbox(gettext("Save game failed! Failed to create archive file."));
 			}
-			fout.close(); 
+			fout.close();
 			});
 		gm->suspend_sig.connect([] {ui::msgbox(gettext("Function in Developing")); });
 
@@ -521,15 +492,13 @@ namespace bw::othello::components {
 			}),
 			Container::Vertical({
 				Renderer([this] { return text(std::format("{}:{}",gettext("Current player"),gptr[gm->current_color()]->get_name())) | center; }),
-				Renderer([brd_ptr,this] {return text(std::format("{}-{}:{}",gettext("Black"),gptr[col0]->get_name(),brd_ptr->brd.countpiece(col0))) | center; }),
-				Renderer([brd_ptr,this] {return text(std::format("{}-{}:{}",gettext("White"),gptr[col1]->get_name(),brd_ptr->brd.countpiece(col1))) | center; }),
 				Renderer([this] {
 					return text(std::format("{}-{} {}:{}",
 					gettext("Black"),
 					gptr[col0]->get_name(),
 					gettext("state"),
 					gptr[col0]->good() ? gettext("Good") : gettext("Bad")
-					)) | center; 
+					)) | center;
 					}),
 				Renderer([this] {
 					return text(std::format("{}-{} {}:{}",
@@ -537,7 +506,7 @@ namespace bw::othello::components {
 					gptr[col1]->get_name(),
 					gettext("state"),
 					gptr[col1]->good() ? gettext("Good") : gettext("Bad")
-					)) | center; 
+					)) | center;
 					}),
 			}) | center | border
 			});
@@ -569,7 +538,7 @@ will be overwritten by the other.)"));
 		}
 		return ret;
 	}
-	
+
 	void Game::GamePageLocal() {
 		using namespace ftxui;
 

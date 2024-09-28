@@ -56,15 +56,15 @@ namespace bw::othello::ai {
             for (int x = 0; x < BoardSize; ++x) {
                 for (int y = 0; y < BoardSize; ++y) {
                     coord crd{ x,y };
-                    if (brd.getcol(crd) == none) {
+                    if (brd.get_col(crd) == none) {
                         for (drc_t drc = R; drc <= UR; ++drc) {
                             coord iter(crd);
-                            if (brd.in_board(iter.to_next(drc)) && brd.getcol(iter) != none) {
-                                opcol = brd.getcol(iter);
+                            if (brd.in_board(iter.to_next(drc)) && brd.get_col(iter) != none) {
+                                opcol = brd.get_col(iter);
                                 col = op_col(opcol);
                                 color c = 0;
                                 while (brd.in_board(iter.to_next(drc))) {
-                                    c = brd.getcol(iter);
+                                    c = brd.get_col(iter);
                                     if (c == col) {
                                         return false;
                                     }
@@ -149,7 +149,7 @@ namespace bw::othello::ai {
         }
         void move(const fast_move<BoardSize>& mv) {
             state_type st = crt_state();
-            st.brd.applymove(mv, st.setter_color);
+            st.brd.apply_move(mv, st.setter_color);
             st.setter_color = op_col(st.setter_color);
             states.push_back(st);
             ++rounds;
@@ -173,7 +173,11 @@ namespace bw::othello::ai {
     template<int BoardSize>
     struct fast_game {
         using state_type = game_state<BoardSize>;
-        fast_game() = default;
+        fast_game() {
+            static_brd<BoardSize> brd{};
+            brd.initialize();
+            crt = state_type{ brd,col0 };
+        };
         fast_game(const static_brd<BoardSize>& brd, color setter) {
             crt = state_type{ brd,setter,{} };
         }
@@ -193,7 +197,7 @@ namespace bw::othello::ai {
         }
         void move(const fast_move<BoardSize>& mv) {
             state_type st = crt_state();
-            crt.brd.applymove(mv, crt.setter_color);
+            crt.brd.apply_move(mv, crt.setter_color);
             crt.setter_color = op_col(crt.setter_color);
             ++rounds;
         }
@@ -212,13 +216,22 @@ namespace bw::othello::ai {
         int rounds = 0;
     };
 #endif
+    template<int BoardSize>
+    struct selfplay_data {
+        std::array<float, BoardSize* BoardSize> brd;
+        std::array<float, BoardSize* BoardSize> probs;
+        float value;
+        color col;
+    };
+    template<int BoardSize>
+    using sfplay_dataset = std::vector<selfplay_data<BoardSize>>;
 	template<int BoardSize, class EvalMethod>
 	struct mcts {
         using node_type = mcts_tree_node<BoardSize>;
         using search_tree_type = tree<node_type>;
         using moves_type = fast_moves<BoardSize>;
         using iter_type = search_tree_type::iterator;
-        mcts(color setter_color, const ai_option& option) :player(setter_color), option(option) {
+        mcts(color setter_color, const ai_option& option) :player(setter_color), option(option){
             explore_factor = option.mcts_opt.explore_factor;
             std::random_device rnd;
             srand(rnd());
@@ -234,8 +247,27 @@ namespace bw::othello::ai {
         void print_search_tree(std::ostream& os= std::cout) {
             os << to_string(search_tree);
         }
+        void set_evaluator(const EvalMethod& mthd) {
+            e_mthd = mthd;
+        }
+        void set_evaluator(EvalMethod&& mthd) {
+            e_mthd = mthd;
+        }
         ai_option option;
         std::vector<std::pair<coord, float>> last_mvs;
+        sfplay_dataset<BoardSize> self_play() {
+            sfplay_dataset<BoardSize> dataset{};
+            fast_gm = fast_game<BoardSize>();
+            while (!fast_gm.end()) {
+                search(search_tree.begin());
+
+            }
+            return dataset;
+        }
+        std::vector<float> get_actual_probs() {
+            auto root = search_tree.begin();
+            last_mvs.clear();
+        }
         ~mcts() {
             spdlog::trace("mcts destructed");
         }
@@ -244,16 +276,10 @@ namespace bw::othello::ai {
             return rand();
         }
         coord choose_move_single_thread(const static_brd<BoardSize>& brd, color c) {
-            using namespace std::chrono;
-            int simulate_times = 0;
-            auto start = high_resolution_clock::now();
-            long duration = 0;
-            auto origin_game = fast_game<BoardSize>(brd, c);
             bool found_subtree = false;
             if (!search_tree.empty()) {
-                found_subtree = reuse_search_tree(brd);
+                found_subtree = reuse_search_tree(brd, c);
             }
-            fast_gm = origin_game;
             if (!found_subtree) {
                 search_tree.clear();
 				search_tree.set_head(
@@ -265,10 +291,21 @@ namespace bw::othello::ai {
 						0.0f,
 						0.0f
 					});
-                expand(search_tree.begin());
             }
-            while(true){
-                auto node_iter = select();
+            fast_gm = fast_game<BoardSize>(brd, c);
+            search(search_tree.begin());
+            auto mv = get_best_move();
+            fast_gm.move(mv);
+            return fast_move_to_coord<BoardSize>(mv);
+        }
+        void search(iter_type head) {
+            using namespace std::chrono;
+            int simulate_times = 0;
+            auto origin_game = fast_gm;
+            auto start = high_resolution_clock::now();
+            long duration = 0;
+            while (true) {
+                auto node_iter = select(head);
                 if (!node_iter->is_terminal) {
                     expand(node_iter);
                     auto rnd_node_iter = node_iter.begin();
@@ -290,7 +327,7 @@ namespace bw::othello::ai {
                         break;
                     }
                 }
-                else if(option.time_limit){
+                else if (option.time_limit) {
                     if (simulate_times % 1000 == 0) {
                         duration = duration_cast<microseconds>(high_resolution_clock::now() - start).count();
                         if (duration >= option.time_limit * 1000) {
@@ -298,38 +335,39 @@ namespace bw::othello::ai {
                         }
                     }
                 }
-                else {
+                else [[unlikely]] {
                     if (simulate_times >= ai_option::mcts_option::default_simulations) {
                         break;
                     }
                 }
             }
-            auto mv = get_best_move();
-            fast_gm.move(mv);
-            return fast_move_to_coord<BoardSize>(mv);
         }
         coord choose_move_multi_thread(const static_brd<BoardSize>& brd, color c) {
             return {};
         }
-        bool reuse_search_tree(const static_brd<BoardSize>& brd) {
+        bool reuse_search_tree(const static_brd<BoardSize>& brd, color setter) {
             bool found_subtree = false;
             auto head = search_tree.child(search_tree.begin(), last_move_index);
             auto sim_brd = fast_gm.crt_state().brd;
             auto mvs = static_brd<BoardSize>::deduce_moves(fast_gm.crt_state().brd, brd);
-            auto op_color = op_col(player);
+            auto op_color = op_col(setter);
             bool found_move_history = false;
             if (mvs.empty()) {
-                auto&& sub_tr = search_tree.move_out(head.begin());
-                search_tree.clear();
-                search_tree = std::move(sub_tr);
-                found_subtree = true;
+                if (head.begin() != head.end()) {
+					auto&& sub_tr = search_tree.move_out(head.begin());
+					search_tree = std::move(sub_tr);
+					found_subtree = true;
+                }
+                else {
+                    found_subtree = false;
+                }
             }
             else {
                 do {
                     for (auto& crd : mvs) {
                         moves m(sim_brd, op_color);
                         if (m.find(crd) != moves::npos) {
-                            sim_brd.applymove(crd, op_color);
+                            sim_brd.apply_move(crd, op_color);
                         }
                         else {
                             break;
@@ -345,7 +383,7 @@ namespace bw::othello::ai {
                     auto new_head = head;
                     int iter_times = 0;
                     while (new_head.node && new_head.begin() != new_head.end() && iter_times < mvs.size()) {
-                        if (new_head->setter != player) {
+                        if (new_head->setter != setter) {
                             new_head = new_head.begin();
                         }
                         else {
@@ -378,8 +416,7 @@ namespace bw::othello::ai {
             }
             return found_subtree;
         }
-        iter_type select() {
-            iter_type node_iter = search_tree.begin();
+        iter_type select(iter_type node_iter) {
             while (node_iter.number_of_children()) {
                 float max_ucb = -node_type::inf;
                 int total_visit = node_iter->game_times;
@@ -419,7 +456,7 @@ namespace bw::othello::ai {
                     auto sim_brd = st.brd;
                     for (; legal_moves; legal_moves = legal_moves & (legal_moves - 1)) {
                         fast_move<BoardSize> iter = legal_moves & (-ll(legal_moves));
-                        sim_brd.applymove(iter, st.setter_color);
+                        sim_brd.apply_move(iter, st.setter_color);
                         search_tree.append_child(node_iter, node_type{ st.setter_color, iter, is_over<BoardSize>(sim_brd), 0, 0.0f, 0.0f });
                         children_size++;
                         sim_brd = st.brd;
@@ -428,7 +465,7 @@ namespace bw::othello::ai {
                 else {
                     auto sim_brd = st.brd;
                     for (const auto& mv : legal_moves) {
-                        sim_brd.applymove(mv, st.setter_color);
+                        sim_brd.apply_move(mv, st.setter_color);
                         search_tree.append_child(node_iter, node_type{ st.setter_color, mv, is_over<BoardSize>(sim_brd), 0, 0.0f, 0.0f });
                         children_size++;
                         sim_brd = st.brd;
@@ -486,6 +523,15 @@ namespace bw::othello::ai {
             auto root = search_tree.begin();
             auto best_child = root.begin();
             last_mvs.clear();
+            /*std::vector<int> visits;
+            for (auto it = root.begin(); it != root.end(); ++it) {
+                visits.push_back(it->game_times);
+                last_mvs.push_back({ fast_move_to_coord<BoardSize>(it->mv),float(it->game_times) });
+            }
+            auto dis = std::discrete_distribution<>(visits.begin(), visits.end());
+            static std::random_device d;
+            static std::default_random_engine rnd(d());
+            std::advance(best_child, dis(rnd));*/
             for (auto it = root.begin(); it != root.end(); ++it) {
                 if (it->game_times > best_child->game_times) {
                     best_child = it;
@@ -566,6 +612,30 @@ namespace bw::othello::ai {
                 ret.push_back(1.0f / children_size);
             }
             return;*/
+        }
+        std::vector<float> generate_dirichlet_noise(int size, float alpha) {
+            static std::random_device rd;
+            static std::mt19937 gen(rd());
+            std::gamma_distribution<float> gamma(alpha, 1.0);
+
+            std::vector<float> noise(size);
+            for (int i = 0; i < size; ++i) {
+                noise[i] = gamma(gen);
+            }
+
+            float sum = std::accumulate(noise.begin(), noise.end(), 0.0f);
+            for (auto& n : noise) {
+                n /= sum;
+            }
+
+            return noise;
+        }
+
+        void add_dirichlet_noise(std::vector<float>& probs, float alpha, float epsilon) {
+            auto noise = generate_dirichlet_noise(probs.size(), alpha);
+            for (size_t i = 0; i < probs.size(); ++i) {
+                probs[i] = (1 - epsilon) * probs[i] + epsilon * noise[i];
+            }
         }
 
         EvalMethod e_mthd;

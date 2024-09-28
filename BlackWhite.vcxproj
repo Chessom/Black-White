@@ -236,6 +236,15 @@
     <ClInclude Include="include\games.hpp" />
     <ClInclude Include="include\globals.hpp" />
     <ClInclude Include="include\gobang\board.hpp" />
+    <ClInclude Include="include\gobang\components.hpp" />
+    <ClInclude Include="include\gobang\game.hpp" />
+    <ClInclude Include="include\gobang\gamer.hpp" />
+    <ClInclude Include="include\gobang\gamer\computer.hpp" />
+    <ClInclude Include="include\gobang\gamer\human.hpp" />
+    <ClInclude Include="include\gobang\gamer\online.hpp" />
+    <ClInclude Include="include\gobang\gamer_prepare.hpp" />
+    <ClInclude Include="include\gobang\move.hpp" />
+    <ClInclude Include="include\gobang\moves.hpp" />
     <ClInclude Include="include\grid-container.hpp" />
     <ClInclude Include="include\initialize.hpp" />
     <ClInclude Include="include\ipv4.hpp" />

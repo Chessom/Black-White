@@ -29,7 +29,9 @@ namespace bw::core {
 		//					v
 		//					D
 	}
-
+	inline constexpr int op_direction(int direction) {
+		return (direction + 4) % 8;
+	}
 
 	template<typename T>
 	concept Coordinate = requires(T && coordinate) {

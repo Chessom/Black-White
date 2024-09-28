@@ -35,6 +35,7 @@ namespace bw::othello::ai {
 			enum { default_simulations = 1000 };
 			int simulations = default_simulations;
 			float explore_factor = 4.0;
+			float temp = 1.0f;
 		};
 		mcts_option mcts_opt;
 	};

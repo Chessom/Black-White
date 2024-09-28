@@ -13,7 +13,7 @@ namespace bw::tictactoe {
 		human_gamer(basic_gamer_info info) :gamer(info) {};
 		human_gamer(core::color Color, int ID = 0, const std::string& Name = global_config->default_name)
 			:gamer(Color, ID, Name, human) {};
-		boost::cobalt::task<move> getmove(board& brd, std::chrono::seconds limit = 0s) override {
+		boost::cobalt::task<move> get_move(board& brd, std::chrono::seconds limit = 0s) override {
 			move mv;
 			if (limit == 0s) {
 				pmvdq->tim.expires_at(std::chrono::steady_clock::time_point::max());
@@ -29,7 +29,7 @@ namespace bw::tictactoe {
 					mv = pmvdq->q.front();
 					pmvdq->q.pop_front();
 					if (mv.mvtype == move::mv) {
-						if (brd.checkmove(mv.crd, mv.col)) {
+						if (brd.check_move(mv.crd, mv.col)) {
 							co_return mv;
 						}
 					}

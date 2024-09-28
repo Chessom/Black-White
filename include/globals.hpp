@@ -49,6 +49,39 @@ namespace bw::othello {
 		gamer_list[std::to_underlying(detailed_type::remote_tcp_gamer)] = gettext("RemoteTCPGamer");
 	}
 }
+namespace bw::gobang {
+	namespace symbols {
+		inline std::string col0 = "○ ", col1 = "● ", none = "■ ";
+	}
+	namespace numbers {
+		inline std::string col0 = "1 ", col1 = "2 ", none = "0 ";
+	}
+	enum { symb, numb };
+	class charmap {
+	public:
+		charmap() = default;
+		charmap(int st) :stl(st) {};
+		std::string operator[](const int& col);
+		int& current() {
+			return stl;
+		}
+	private:
+		int stl = symb;
+	};
+	enum class detailed_type :int { human = 0, computer_random, computer_ai, lua_script_gamer, python_script_gamer, remote_tcp_gamer, online, invalid };
+	inline charmap CharMap{};
+	inline std::vector<std::string> gamer_list;
+	inline std::vector<std::string> size_list = { "4","6","8","10","12","14","16" };
+	inline void initialize_global_variable() {
+		gamer_list.resize(6);
+		gamer_list[std::to_underlying(detailed_type::human)] = gettext("Human");
+		gamer_list[std::to_underlying(detailed_type::computer_random)] = gettext("ComputerRandom");
+		gamer_list[std::to_underlying(detailed_type::computer_ai)] = gettext("ComputerAI");
+		gamer_list[std::to_underlying(detailed_type::lua_script_gamer)] = gettext("Lua Script Gamer");
+		gamer_list[std::to_underlying(detailed_type::python_script_gamer)] = gettext("Python Script Gamer");
+		gamer_list[std::to_underlying(detailed_type::remote_tcp_gamer)] = gettext("RemoteTCPGamer");
+	}
+}
 namespace bw::ataxx {
 
 };

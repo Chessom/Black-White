@@ -70,6 +70,9 @@
     <Filter Include="头文件\othello\othello.ai\eval_methods">
       <UniqueIdentifier>{6ab02961-619f-4358-af71-55c726463411}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\gobang\gobang.gamers">
+      <UniqueIdentifier>{488fd8c3-3331-402e-8e04-3c3e8e382a98}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -328,6 +331,33 @@
     </ClInclude>
     <ClInclude Include="include\tree.hpp">
       <Filter>头文件\external</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gobang\components.hpp">
+      <Filter>头文件\gobang</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gobang\game.hpp">
+      <Filter>头文件\gobang</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gobang\gamer.hpp">
+      <Filter>头文件\gobang</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gobang\move.hpp">
+      <Filter>头文件\gobang</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gobang\moves.hpp">
+      <Filter>头文件\gobang</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gobang\gamer\human.hpp">
+      <Filter>头文件\gobang\gobang.gamers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gobang\gamer\computer.hpp">
+      <Filter>头文件\gobang\gobang.gamers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gobang\gamer\online.hpp">
+      <Filter>头文件\gobang\gobang.gamers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gobang\gamer_prepare.hpp">
+      <Filter>头文件\gobang</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

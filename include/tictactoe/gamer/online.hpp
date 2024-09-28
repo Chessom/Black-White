@@ -12,7 +12,7 @@ namespace bw::tictactoe {
 		online_gamer(basic_gamer_info info) :gamer(info) {}
 		online_gamer(core::color Color, int ID = 0, const std::string& Name = "Anonymous")
 			:gamer(Color, ID, Name, online) {};
-		boost::cobalt::task<move> getmove(board& brd, std::chrono::seconds limit = 0s) {
+		boost::cobalt::task<move> get_move(board& brd, std::chrono::seconds limit = 0s) {
 			if (limit == 0s) {
 				rd_dq->tim.expires_at(std::chrono::steady_clock::time_point::max());
 			}
@@ -27,7 +27,7 @@ namespace bw::tictactoe {
 				struct_json::from_json(mv, rd_dq->q.front());
 				rd_dq->q.pop_front();
 				if (mv.mvtype == move::mv) {
-					if (brd.checkmove(mv.crd, mv.col)) {
+					if (brd.check_move(mv.crd, mv.col)) {
 						co_return mv;
 					}
 				}

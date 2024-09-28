@@ -12,7 +12,7 @@ namespace bw::tictactoe {
 		computer_gamer(core::color Color, int ID = 0, const std::string& Name = "basic_computer_gamer", int GamerType = basic_gamer::computer)
 			:gamer(Color, ID, Name, computer) {
 		};
-		virtual boost::cobalt::task<move> getmove(board& brd, std::chrono::seconds limit = 0s) { co_return{ .mvtype = invalid }; };
+		virtual boost::cobalt::task<move> get_move(board& brd, std::chrono::seconds limit = 0s) { co_return{ .mvtype = invalid }; };
 		string get_name() { return name; };
 		boost::cobalt::task<void> pass_msg(std::string message)override { co_return; };
 		boost::cobalt::task<void> pass_move(move mv) { co_return; };
@@ -27,7 +27,7 @@ namespace bw::tictactoe {
 			:computer_gamer(Color, ID, Name, basic_gamer::computer) {
 			name = gettext("computer_gamer_random");
 		};
-		virtual boost::cobalt::task<move> getmove(board& brd, std::chrono::seconds limit = 0s) override {
+		virtual boost::cobalt::task<move> get_move(board& brd, std::chrono::seconds limit = 0s) override {
 			mvs.update(brd, col);
 			std::random_device rd;
 			std::mt19937 gen(rd());

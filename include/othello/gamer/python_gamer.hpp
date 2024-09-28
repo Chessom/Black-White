@@ -51,7 +51,7 @@ namespace bw::othello {
 			}
 			is_good = true;
 		}
-		virtual boost::cobalt::task<move> getmove(dynamic_brd& brd, std::chrono::seconds limit = std::chrono::seconds(0)) {
+		virtual boost::cobalt::task<move> get_move(dynamic_brd& brd, std::chrono::seconds limit = std::chrono::seconds(0)) {
 			namespace py = pybind11;
 			try {
 				coord crd;
@@ -82,7 +82,7 @@ namespace bw::othello {
 			spdlog::trace("Python Gamer Destructor");
 		};
 		bool is_good = false;
-		std::string getmove_func_signature = "getmove";
+		std::string getmove_func_signature = "get_move";
 		std::string script_filename = "othello.py";
 	private:
 		void do_bind_class() {
@@ -96,9 +96,9 @@ namespace bw::othello {
 				.def(py::init<int>())
 				.def("in_board", &dynamic_brd::in_board)
 				.def("initialize", &dynamic_brd::initialize)
-				.def("getcol", &dynamic_brd::getcol)
-				.def("setcol", &dynamic_brd::setcol)
-				.def("applymove", &dynamic_brd::applymove)
+				.def("get_col", &dynamic_brd::get_col)
+				.def("set_col", &dynamic_brd::set_col)
+				.def("apply_move", &dynamic_brd::apply_move)
 				.def("count", &dynamic_brd::count)
 				.def("resize", &dynamic_brd::resize)
 				.def("brd_size", &dynamic_brd::brd_size)
@@ -113,10 +113,10 @@ namespace bw::othello {
 				.def(py::init<const dynamic_brd&>())
 				.def("in_board", &bitbrd::in_board)
 				.def("initialize", &bitbrd::initialize)
-				.def("getcol", &bitbrd::getcol)
-				.def("setcol", &bitbrd::setcol)
-				.def("applymove", py::overload_cast<const coord&, const color&>(&bitbrd::applymove))
-				.def("applymove", py::overload_cast<const ull&, const color&>(&bitbrd::applymove))
+				.def("get_col", &bitbrd::get_col)
+				.def("set_col", &bitbrd::set_col)
+				.def("apply_move", py::overload_cast<const coord&, const color&>(&bitbrd::apply_move))
+				.def("apply_move", py::overload_cast<const ull&, const color&>(&bitbrd::apply_move))
 				.def("getmoves", &bitbrd::getmoves)
 				.def("to_dynamic", &bitbrd::to_dynamic)
 				.def("count", &bitbrd::count)

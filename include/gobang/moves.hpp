@@ -1,56 +1,74 @@
 ﻿#pragma once
 #include"stdafx.h"
 #include"core.hpp"
-#include"tictactoe/board.hpp"
-#include"tictactoe/move.hpp"
-namespace bw::tictactoe {
+#include"gobang/board.hpp"
+#include"gobang/move.hpp"
+namespace bw::gobang {
 	using namespace bw::core;
-
 	class moves {
 	public:
-		enum { max_move_num = 9 };
 		moves() = default;
 		moves(const board& brd, const color& col) {
 			update(brd, col);
 		}
 		void update(const board& brd, const color& col) {
 			clear();
-			for (int x = 0; x < brd.size; ++x) {
-				for (int y = 0; y < brd.size; y++)
-				{
-					if (brd.check_move({ x,y }, col)) {
-						push_back({ x,y });
-					}
-				}
-			}
+			
+		}
+		template<int Size>
+		static int calculate_size(const board& brd, const color& col) {
+			return 1;
 		}
 		void push_back(const coord& crd) {
-			if (size == max_move_num)throw std::range_error("Go beyond the max_move_num!");
-			coords[size++] = crd;
+			coords.push_back(crd);
+			++size;
 		}
 		bool empty() const noexcept {
-			return size == 0;
+			return coords.empty();
 		}
 		void clear() noexcept {
+			coords.clear();
 			size = 0;
 		}
-		int find(const coord& crd) {
-			for (int i = 0; i < size; ++i) {
+		int find(const coord& crd) const {
+			for (int i = 0; i < coords.size(); ++i) {
 				if (coords[i] == crd) {
 					return i;
 				}
 			}
 			return npos;
 		}
+		coord get_crd(int index) const {
+			return coords[index];
+		}
 
+		template<typename Archive>
+		void serialize(Archive& ar) {
+			ar(size);
+			for (int i = 0; i < size; ++i) {
+				ar(coords[i]);
+			}
+		}
+		enum { npos = -1 };
 		int size = 0;
-		static const int npos = -1;
-		coord coords[max_move_num] = {};
+		std::vector<coord> coords;
+	};
+	template<int BoardSize>
+	using fast_moves = typename std::conditional<(BoardSize > 8), std::vector<coord>, uint64_t>::type;
+
+	template<int BoardSize>
+	bool empty_moves(const fast_moves<BoardSize>& mvs) {
+		if constexpr (BoardSize > 8) {
+			return mvs.empty();
+		}
+		else {
+			return !mvs;
+		}
 	};
 }
 namespace std {
 	template<typename CharT>
-	struct formatter<bw::tictactoe::moves, CharT> {
+	struct formatter<bw::gobang::moves, CharT> {
 		bool number = true;
 		constexpr auto parse(auto& context) {
 			auto it = context.begin(), end = context.end();
@@ -75,7 +93,7 @@ namespace std {
 			return it;
 		}
 		template<typename FormatContext>
-		auto format(const bw::tictactoe::moves& mvs, FormatContext& fc) {
+		auto format(const bw::gobang::moves& mvs, FormatContext& fc) const {
 			if (mvs.empty())return fc.out();
 			if (number) {
 				std::format_to(fc.out(), "{}", mvs.coords[0]);

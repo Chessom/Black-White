@@ -30,7 +30,7 @@ namespace bw::othello::ai {
 			for (int i = 0; i < t; ++i) {
 				mvs = mvs & (mvs - 1);
 			}
-			brd.applymove(mvs & (-ll(mvs)), col);
+			brd.apply_move(mvs & (-ll(mvs)), col);
 			col = op;
 		}
 		return brd;
@@ -69,7 +69,7 @@ namespace bw::othello::ai {
 					for (int i = 0; i < t; ++i) {
 						mvs = mvs & (mvs - 1);
 					}
-					brd.applymove(bitbrd::bit2crd(mvs & (-ll(mvs))), col);
+					brd.apply_move(bitbrd::bit2crd(mvs & (-ll(mvs))), col);
 					col = op;
 				}
 			}

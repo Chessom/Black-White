@@ -31,9 +31,9 @@ namespace bw::othello {
 				sol::constructors<dynamic_brd(), dynamic_brd(int)>(),
 				"in_board",&dynamic_brd::in_board,
 				"initialize",&dynamic_brd::initialize,
-				"getcol", &dynamic_brd::getcol,
-				"setcol", &dynamic_brd::setcol,
-				"applymove", &dynamic_brd::applymove,
+				"get_col", &dynamic_brd::get_col,
+				"set_col", &dynamic_brd::set_col,
+				"apply_move", &dynamic_brd::apply_move,
 				"count", &dynamic_brd::count,
 				"resize", &dynamic_brd::resize,
 				"brd_size", &dynamic_brd::brd_size,
@@ -74,7 +74,7 @@ namespace bw::othello {
 			}
 			is_good = true;
 		}
-		virtual boost::cobalt::task<move> getmove(dynamic_brd& brd, std::chrono::seconds limit = std::chrono::seconds(0)) {
+		virtual boost::cobalt::task<move> get_move(dynamic_brd& brd, std::chrono::seconds limit = std::chrono::seconds(0)) {
 			auto resfunc = lua[getmove_func_signature];
 			sol::protected_function getmv;
 			if (resfunc.valid()) {
@@ -115,7 +115,7 @@ namespace bw::othello {
 		virtual void reset() override {}
 		virtual ~lua_gamer() = default;
 		bool is_good = false;
-		std::string getmove_func_signature = "getmove";
+		std::string getmove_func_signature = "get_move";
 		std::string script_filename = "othello.lua";
 	};
 	using lua_gamer_ptr = std::shared_ptr<lua_gamer>;

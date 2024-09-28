@@ -31,7 +31,7 @@ namespace bw::othello::ai {
 			// 位置优势
 			for (int i = 0; i < 8; ++i) {
 				for (int j = 0; j < 8; ++j) {
-					color col = brd.getcol({ i, j });
+					color col = brd.get_col({ i, j });
 					if (col == player) {
 						value += position_weights[i][j];
 					}
@@ -57,7 +57,7 @@ namespace bw::othello::ai {
 			value_type value = 0;
 			for (int i = 0; i < BoardSize; ++i) {
 				for (int j = 0; j < BoardSize; ++j) {
-					color col = brd.getcol({ i, j });
+					color col = brd.get_col({ i, j });
 					if (col == player) {
 						value += position_weights[i][j];
 					}
@@ -109,7 +109,7 @@ namespace bw::othello::ai {
 
 			for (int i = 0; i < 8; ++i) {
 				for (int j = 0; j < 8; ++j) {
-					color col = brd.getcol({ i, j });
+					color col = brd.get_col({ i, j });
 					if (col == player) {
 						value += position_weights[i][j];
 					}

@@ -1,4 +1,4 @@
-msgid ""
+﻿msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2024-08-26 12:24+0800\n"
@@ -471,13 +471,13 @@ msgid ""
 "Due to the implementation of Python, \n"
 "there will only be one interpreter instance \n"
 "during program execution, so please change \n"
-"the signatures of the \"getmove\" function for \n"
+"the signatures of the \"get_move\" function for \n"
 "both players, otherwise one of them \n"
 "will be overwritten by the other."
 msgstr ""
 "由于Python的实现，程序执行期间\n"
 "只能存在一个解释器实例，\n"
-"所以请更改两个脚本的“getmove”函数名\n"
+"所以请更改两个脚本的“get_move”函数名\n"
 "否则其中一个将会被另外一个覆盖。"
 
 #: include/othello/game.hpp:27 include/tictactoe/game.hpp:22
@@ -570,7 +570,7 @@ msgstr "输入路径"
 
 #: include/othello/gamer_prepare.hpp:83
 msgid "get move function name:"
-msgstr "getmove函数名："
+msgstr "get_move函数名："
 
 #: include/othello/gamer_prepare.hpp:84 include/othello/gamer_prepare.hpp:175
 msgid "enter function signature"
@@ -581,8 +581,8 @@ msgid "Code Python here"
 msgstr "在这里用Python编码"
 
 #: include/othello/gamer_prepare.hpp:174
-msgid "getmove function name:"
-msgstr "getmove函数名："
+msgid "get_move function name:"
+msgstr "get_move函数名："
 
 #: include/othello/gamer_prepare.hpp:213
 msgid "Accepting Now"

@@ -53,7 +53,7 @@ namespace bw::tictactoe::components {
 				row.emplace_back(text("║"));
 
 				for (int y = 0; y < brd.size; ++y) {
-					col = brd.getcol({ x,y });
+					col = brd.get_col({ x,y });
 					if (col == core::none) {
 						row.emplace_back(text("   "));
 					}

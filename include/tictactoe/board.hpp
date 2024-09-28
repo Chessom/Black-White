@@ -16,17 +16,17 @@ namespace bw::tictactoe {
 				}
 			}
 		}
-		void setcol(const core::coord& crd, core::color col) {
+		void set_col(const core::coord& crd, core::color col) {
 			mat[crd.x][crd.y] = col;
 		}
-		core::color getcol(const core::coord& crd) {
+		core::color get_col(const core::coord& crd) {
 			return mat[crd.x][crd.y];
 		}
-		void applymove(const core::coord& crd, core::color col) {
-			setcol(crd, col);
+		void apply_move(const core::coord& crd, core::color col) {
+			set_col(crd, col);
 			++cnt;
 		}
-		bool checkmove(const core::coord& crd, core::color col) const {
+		bool check_move(const core::coord& crd, core::color col) const {
 			return cnt != 3 * 3 && mat[crd.x][crd.y] == core::none;
 		}
 		core::color check_winner() const {

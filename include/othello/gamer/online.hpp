@@ -16,7 +16,7 @@ namespace bw::othello {
 			:gamer(Color, ID, Name, online) {
 			detailed_gamer_type = detailed_type::online;
 		};
-		boost::cobalt::task<move> getmove(dynamic_brd& brd, std::chrono::seconds limit = 0s) {
+		boost::cobalt::task<move> get_move(dynamic_brd& brd, std::chrono::seconds limit = 0s) {
 			if (limit == 0s) {
 				rd_dq->tim.expires_at(std::chrono::steady_clock::time_point::max());
 			}

@@ -16,7 +16,7 @@ namespace bw::othello {
 			spdlog::trace("Othello human_gamer Constructor");
 			detailed_gamer_type = detailed_type::human;
 		};
-		boost::cobalt::task<move> getmove(dynamic_brd& brd, std::chrono::seconds limit = 0s) {
+		boost::cobalt::task<move> get_move(dynamic_brd& brd, std::chrono::seconds limit = 0s) {
 			move mv;
 			if (limit == 0s) {
 				pmvdq->tim.expires_at(std::chrono::steady_clock::time_point::max());

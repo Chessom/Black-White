@@ -26,7 +26,7 @@ namespace bw::othello::ai {
 			if (mvs.size != 0) {
 				last_mvs.clear();
 				for (int i = 0; i < mvs.size; ++i) {
-					board.applymove(mvs.coords[i], c);
+					board.apply_move(mvs.coords[i], c);
 					auto mark = -nega_alphabeta_evaluate(board, op_col(c), option.search_depth, -inf, inf);
 					last_mvs.push_back({ mvs.coords[i], mark });
 					if (mark > points) {
@@ -48,12 +48,12 @@ namespace bw::othello::ai {
 			if (mvs.size != 0) {
 				boost::threadpool::pool pool(option.threads - 1);
 				static_brd<BoardSize> brd0 = brd;
-				brd0.applymove(mvs.coords[0], c);
+				brd0.apply_move(mvs.coords[0], c);
 				auto res0 = std::make_shared<float>(0.0f);
 				scores.push_back(res0);
 				for (int i = 1; i < mvs.size; ++i) {
 					static_brd<BoardSize> _brd = brd;
-					_brd.applymove(mvs.coords[i], c);
+					_brd.apply_move(mvs.coords[i], c);
 					auto res = std::make_shared<float>(0.0f);
 					scores.push_back(res);
 					pool.schedule([new_brd = std::move(_brd), res, c, this] {
@@ -114,7 +114,7 @@ namespace bw::othello::ai {
 				uint64_t iter = 0;
 				for (; mvs_0; mvs_0 = mvs_0 & (mvs_0 - 1)) {
 					iter = mvs_0 & (-ll(mvs_0));
-					brd_.applymove(iter, setter_color);
+					brd_.apply_move(iter, setter_color);
 					alpha = std::max(alpha, -nega_alphabeta_evaluate(brd_, op_col(setter_color), depth - 1, -beta, -alpha));
 					if (beta <= alpha) {
 						break;
@@ -141,7 +141,7 @@ namespace bw::othello::ai {
 			else {
 				auto brd_ = brd;
 				for (const auto& crd : mvs_0.coords) {
-					brd_.applymove(crd, setter_color);
+					brd_.apply_move(crd, setter_color);
 					alpha = std::max(alpha, -nega_alphabeta_evaluate(brd_, op_col(setter_color), depth - 1, -beta, -alpha));
 					if (beta <= alpha) {
 						break; // Alpha cut-off

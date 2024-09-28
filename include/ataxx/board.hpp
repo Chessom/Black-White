@@ -31,19 +31,19 @@ namespace bw::ataxx {
 		bool in_board(const coord& crd) const {
 			return (crd.x < size && crd.y < size && crd.x >= 0 && crd.y >= 0);
 		}
-		color getcol(const coord& crd)const {
+		color get_col(const coord& crd)const {
 			return mat[crd.x * size + crd.y] - 1;
 		}
-		void setcol(const coord& crd, color col) {
+		void set_col(const coord& crd, color col) {
 			mat[crd.x * size + crd.y] = col + 1;
 		}
 		void initialize() {
-			setcol({ size / 2 - 1,size / 2 - 1 }, col1);
-			setcol({ size / 2 ,size / 2 }, col1);
-			setcol({ size / 2 - 1,size / 2 }, col0);
-			setcol({ size / 2 ,size / 2 - 1 }, col0);
+			set_col({ size / 2 - 1,size / 2 - 1 }, col1);
+			set_col({ size / 2 ,size / 2 }, col1);
+			set_col({ size / 2 - 1,size / 2 }, col0);
+			set_col({ size / 2 ,size / 2 - 1 }, col0);
 		}
-		void applymove(const coord& crd, const color& col) {
+		void apply_move(const coord& crd, const color& col) {
 			using drc_t = int;
 			using namespace directions;
 			color opcol = col ^ 1;
@@ -51,11 +51,11 @@ namespace bw::ataxx {
 				coord iter = crd;
 				bool flag = false;
 				int times = 0;
-				if (in_board(iter.to_next(drc)) && getcol(iter) == opcol) {
+				if (in_board(iter.to_next(drc)) && get_col(iter) == opcol) {
 					color c = 0;
 					while (in_board(iter.to_next(drc))) {
 						++times;
-						c = getcol(iter);
+						c = get_col(iter);
 						if (c == col) {
 							flag = true;
 							break;
@@ -73,7 +73,7 @@ namespace bw::ataxx {
 					}
 				}
 			}
-			setcol(crd, col);
+			set_col(crd, col);
 		}
 		int countpiece(color col) {
 			int cnt = 0, t = col + 1;
@@ -228,7 +228,7 @@ namespace bw::ataxx {
 		bool in_board(const coord& crd) const noexcept {
 			return (crd.x < Size && crd.y < Size && crd.x >= 0 && crd.y >= 0);
 		}
-		color getcol(const coord& crd) const noexcept {
+		color get_col(const coord& crd) const noexcept {
 			auto ful = brd[0] | brd[1];
 			ull index = 1ull;
 			if constexpr (bw::is_pow2(Size)) {
@@ -244,7 +244,7 @@ namespace bw::ataxx {
 				return none;
 			}
 		}
-		void setcol(const coord& crd, color col) noexcept {
+		void set_col(const coord& crd, color col) noexcept {
 			if constexpr (bw::is_pow2(Size)) {
 				auto index = 1ull << ((crd.x << bw::log2(Size)) + crd.y);
 				brd[col] |= index;
@@ -257,15 +257,15 @@ namespace bw::ataxx {
 		void initialize() noexcept {
 			//⚪︎⚫︎
 			//⚫︎⚪︎
-			setcol({ Size / 2 - 1,Size / 2 - 1 }, col1);
-			setcol({ Size / 2 ,Size / 2 }, col1);
-			setcol({ Size / 2 - 1,Size / 2 }, col0);
-			setcol({ Size / 2 ,Size / 2 - 1 }, col0);
+			set_col({ Size / 2 - 1,Size / 2 - 1 }, col1);
+			set_col({ Size / 2 ,Size / 2 }, col1);
+			set_col({ Size / 2 - 1,Size / 2 }, col0);
+			set_col({ Size / 2 ,Size / 2 - 1 }, col0);
 		}
-		void applymove(const coord& crd, const color& col) noexcept {
-			applymove(crd2bit(crd), col);
+		void apply_move(const coord& crd, const color& col) noexcept {
+			apply_move(crd2bit(crd), col);
 		}
-		void applymove(const uint64_t& bit_crd, const color& col) noexcept {
+		void apply_move(const uint64_t& bit_crd, const color& col) noexcept {
 			
 		}
 		ull getmoves(color col) const noexcept {
@@ -275,7 +275,7 @@ namespace bw::ataxx {
 			dynamic_brd brd(Size);
 			for (int x = 0; x < Size; ++x) {
 				for (int y = 0; y < Size; ++y) {
-					brd.setcol({ x,y }, getcol({ x,y }));
+					brd.set_col({ x,y }, get_col({ x,y }));
 				}
 			}
 			return brd;
@@ -347,13 +347,13 @@ namespace bw::ataxx {
 		bool in_board(const coord& crd) const noexcept {
 			return crd.x < Size && crd.y < Size && crd.x >= 0 && crd.y >= 0;
 		}
-		color getcol(const coord& crd) const noexcept {
+		color get_col(const coord& crd) const noexcept {
 			return mat[crd.x * Size + crd.y] - 1;
 		}
-		void setcol(const coord& crd, const color& col) noexcept {
+		void set_col(const coord& crd, const color& col) noexcept {
 			mat[crd.x * Size + crd.y] = col + 1;
 		}
-		void applymove(const coord& crd, const color& col) noexcept {
+		void apply_move(const coord& crd, const color& col) noexcept {
 			using drc_t = int;
 			using namespace directions;
 			color opcol = col ^ 1;
@@ -361,11 +361,11 @@ namespace bw::ataxx {
 				coord iter = crd;
 				bool flag = false;//是否为有效的方向
 				int times = 0;
-				if (in_board(iter.to_next(drc)) && getcol(iter) == opcol) {//存在相邻反色子
+				if (in_board(iter.to_next(drc)) && get_col(iter) == opcol) {//存在相邻反色子
 					color c = 0;
 					while (in_board(iter.to_next(drc))) {
 						++times;
-						c = getcol(iter);
+						c = get_col(iter);
 						if (c == col) {//反色子后是同色子，则条件达成
 							flag = true;
 							break;
@@ -384,21 +384,21 @@ namespace bw::ataxx {
 					}
 				}
 			}
-			setcol(crd, col);
+			set_col(crd, col);
 		}
 		void initialize() noexcept {
 			//⚪︎⚫︎
 			//⚫︎⚪︎
-			setcol({ Size / 2 - 1,Size / 2 - 1 }, col1);
-			setcol({ Size / 2 ,Size / 2 }, col1);
-			setcol({ Size / 2 - 1,Size / 2 }, col0);
-			setcol({ Size / 2 ,Size / 2 - 1 }, col0);
+			set_col({ Size / 2 - 1,Size / 2 - 1 }, col1);
+			set_col({ Size / 2 ,Size / 2 }, col1);
+			set_col({ Size / 2 - 1,Size / 2 }, col0);
+			set_col({ Size / 2 ,Size / 2 - 1 }, col0);
 		}
 		dynamic_brd to_dynamic() const {
 			dynamic_brd brd(Size);
 			for (int x = 0; x < Size; ++x) {
 				for (int y = 0; y < Size; ++y) {
-					brd.setcol({ x,y }, getcol({ x,y }));
+					brd.set_col({ x,y }, get_col({ x,y }));
 				}
 			}
 			return brd;
@@ -464,8 +464,8 @@ namespace bw::ataxx {
 
 	template<typename Brd>
 	concept mat_brd = requires(Brd b, const coord & crd, color c) {
-		{ b.getcol(crd) } -> std::same_as<color>;
-		b.setcol(crd, c);
+		{ b.get_col(crd) } -> std::same_as<color>;
+		b.set_col(crd, c);
 		{ b.in_board(crd) } -> std::same_as<bool>;
 		{ b.brd_size() } -> std::same_as<int>;
 	};
@@ -512,7 +512,7 @@ struct std::formatter<bw::ataxx::bitbrd_t<Size>, CharT> {
 		auto it = fc.out();
 		for (int x = 0; x < Size; ++x) {
 			for (int y = 0; y < Size; ++y) {
-				auto str = CharMap[brd.getcol({ x,y })];
+				auto str = CharMap[brd.get_col({ x,y })];
 				for (auto& c : str) {
 					it = c;
 				}
@@ -580,7 +580,7 @@ struct std::formatter<bw::ataxx::arrbrd_t<Size>, CharT> {
 		auto it = fc.out();
 		for (int x = 0; x < Size; ++x) {
 			for (int y = 0; y < Size; ++y) {
-				auto str = CharMap[brd.getcol({ x,y })];
+				auto str = CharMap[brd.get_col({ x,y })];
 				for (auto& c : str) {
 					it = c;
 				}
@@ -648,7 +648,7 @@ struct std::formatter<bw::ataxx::dynamic_brd, CharT> {
 		auto it = fc.out();
 		for (int x = 0; x < brd.size; ++x) {
 			for (int y = 0; y < brd.size; ++y) {
-				auto str = CharMap[brd.getcol({ x,y })];
+				auto str = CharMap[brd.get_col({ x,y })];
 				for (auto& c : str) {
 					it = c;
 				}
