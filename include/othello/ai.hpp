@@ -28,8 +28,22 @@ namespace bw::othello::ai {
 			case 12:set_algo_from_option<12>(); break;
 			case 14:set_algo_from_option<14>(); break;
 			case 16:set_algo_from_option<16>(); break;
+			default: std::unreachable();
 			}
 		}
+		void reset() {
+			switch (board_size) {
+			case 4:reset_static<4>(); break;
+			case 6:reset_static<6>(); break;
+			case 8:reset_static<8>(); break;
+			case 10:reset_static<10>(); break;
+			case 12:reset_static<12>(); break;
+			case 14:reset_static<14>(); break;
+			case 16:reset_static<16>(); break;
+			default: std::unreachable();
+			}
+		}
+		
 		color setter;
 		int board_size = 8;
 		ai_option option;
@@ -102,6 +116,39 @@ namespace bw::othello::ai {
 				}
 				else if (option.e_mtd == ai_option::eval_method::nn) {
 					//TO DO
+				}
+			}
+		}
+		template<int BoardSize>
+		void reset_static() {
+			if (option.s_mtd == ai_option::search_method::alphabeta) {
+				if (option.e_mtd == ai_option::eval_method::traits) {
+					std::any_cast<alphabeta<BoardSize, traits_eval<int>>&>(algo).reset();
+				}
+				else if (option.e_mtd == ai_option::eval_method::pattern) {
+					
+				}
+				else if (option.e_mtd == ai_option::eval_method::nn) {
+					
+				}
+			}
+			else if (option.s_mtd == ai_option::search_method::mcts) {
+				if (option.e_mtd == ai_option::eval_method::traits) {
+					std::any_cast<mcts<BoardSize, traits_eval<int>>&>(algo).reset();
+				}
+				else {
+
+				}
+			}
+			else if (option.s_mtd == ai_option::search_method::minmax) {
+				if (option.e_mtd == ai_option::eval_method::traits) {
+					std::any_cast<minmax<BoardSize, traits_eval<int>>&>(algo).reset();
+				}
+				else if (option.e_mtd == ai_option::eval_method::pattern) {
+					
+				}
+				else if (option.e_mtd == ai_option::eval_method::nn) {
+					
 				}
 			}
 		}

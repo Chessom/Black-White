@@ -13,6 +13,9 @@ namespace bw::othello::ai {
 				return choose_move_multi_thread(brd, setter_color);
 			}
 		}
+		void reset() {
+			last_mvs.clear();
+		}
 		ai_option option;
 		std::vector<std::pair<coord, float>> last_mvs;
 	private:

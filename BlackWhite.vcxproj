@@ -76,8 +76,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ExternalIncludePath>$(PythonPath)\include;C:\Program Files %28x86%29\yaLanTingLibs\include;$(ExternalIncludePath)</ExternalIncludePath>
-    <IncludePath>D:\Projects\CppProjects\BlackWhite\include;$(IncludePath)</IncludePath>
-    <SourcePath>D:\Projects\CppProjects\BlackWhite\src;$(SourcePath)</SourcePath>
+    <IncludePath>D:\Projects\CppProjects\BlackWhiteBindPython\include;D:\Projects\CppProjects\BlackWhite\include;$(IncludePath)</IncludePath>
+    <SourcePath>D:\Projects\CppProjects\BlackWhiteBindPython\src;D:\Projects\CppProjects\BlackWhite\src;$(SourcePath)</SourcePath>
     <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
     <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
     <LibraryPath>$(PythonPath)\libs;$(LibraryPath)</LibraryPath>
@@ -85,8 +85,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ExternalIncludePath>$(PythonPath)\include;C:\Program Files %28x86%29\yaLanTingLibs\include;$(ExternalIncludePath)</ExternalIncludePath>
-    <IncludePath>D:\Projects\CppProjects\BlackWhite\include;$(IncludePath)</IncludePath>
-    <SourcePath>D:\Projects\CppProjects\BlackWhite\src;$(SourcePath)</SourcePath>
+    <IncludePath>D:\Projects\CppProjects\BlackWhiteBindPython\include;D:\Projects\CppProjects\BlackWhite\include;$(IncludePath)</IncludePath>
+    <SourcePath>D:\Projects\CppProjects\BlackWhiteBindPython\src;D:\Projects\CppProjects\BlackWhite\src;$(SourcePath)</SourcePath>
     <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
     <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
     <LibraryPath>$(PythonPath)\libs;$(LibraryPath)</LibraryPath>
@@ -151,7 +151,7 @@
     <ClCompile>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_WIN32_WINNT=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_WIN32_WINNT=0x0601;BOOST_BIND_GLOBAL_PLACEHOLDERS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
@@ -182,7 +182,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;_WIN32_WINNT=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;_WIN32_WINNT=0x0601;BOOST_BIND_GLOBAL_PLACEHOLDERS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
@@ -212,6 +212,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\BlackWhiteBindPython\src\core_bind.cpp" />
+    <ClCompile Include="..\BlackWhiteBindPython\src\othello_bind.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\tui\grid-container.cpp" />
     <ClCompile Include="src\tui\ipv4.cpp" />
@@ -219,6 +221,8 @@
     <ClCompile Include="src\tui\text_editor.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\BlackWhiteBindPython\include\core_bind.hpp" />
+    <ClInclude Include="..\BlackWhiteBindPython\include\othello_bind.hpp" />
     <ClInclude Include="include\ataxx\board.hpp" />
     <ClInclude Include="include\ataxx\components.hpp" />
     <ClInclude Include="include\ataxx\move.hpp" />

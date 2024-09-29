@@ -13,6 +13,7 @@ namespace bw::othello::ai {
 				return choose_move_multi_thread(brd, setter_color);
 			}
 		}
+		void reset() {}
 		ai_option option;
 	private:
 		coord choose_move_single_thread(const static_brd<BoardSize>& brd, color c) {

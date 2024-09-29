@@ -253,6 +253,14 @@ namespace bw::othello::ai {
         void set_evaluator(EvalMethod&& mthd) {
             e_mthd = mthd;
         }
+        void reset() {
+            search_tree.clear();
+            last_mvs.clear();
+            last_move_iter = nullptr;
+            last_move = {};
+            ucb_max_nodes = {};
+            _pre_probs.clear();
+        }
         ai_option option;
         std::vector<std::pair<coord, float>> last_mvs;
         sfplay_dataset<BoardSize> self_play() {
@@ -328,7 +336,7 @@ namespace bw::othello::ai {
                     }
                 }
                 else if (option.time_limit) {
-                    if (simulate_times % 1000 == 0) {
+                    if (simulate_times % 1000 <= 5) {
                         duration = duration_cast<microseconds>(high_resolution_clock::now() - start).count();
                         if (duration >= option.time_limit * 1000) {
                             break;
@@ -347,7 +355,7 @@ namespace bw::othello::ai {
         }
         bool reuse_search_tree(const static_brd<BoardSize>& brd, color setter) {
             bool found_subtree = false;
-            auto head = search_tree.child(search_tree.begin(), last_move_index);
+            auto head = last_move_iter;
             auto sim_brd = fast_gm.crt_state().brd;
             auto mvs = static_brd<BoardSize>::deduce_moves(fast_gm.crt_state().brd, brd);
             auto op_color = op_col(setter);
@@ -538,7 +546,7 @@ namespace bw::othello::ai {
                 }
                 last_mvs.push_back({ fast_move_to_coord<BoardSize>(it->mv),float(it->game_times) });
             }
-            last_move_index = search_tree.index(best_child);
+            last_move_iter = best_child;
             last_move = best_child->mv;
             return best_child->mv;
         }
@@ -642,10 +650,10 @@ namespace bw::othello::ai {
 		color player;
         search_tree_type search_tree;
         fast_game<BoardSize> fast_gm;
-        int last_move_index = 0;
+        iter_type last_move_iter = nullptr;
         fast_move<BoardSize> last_move = {};
         std::vector<iter_type> ucb_max_nodes = {};
         std::vector<float> _pre_probs;
-        float explore_factor = 2.0f;
+        float explore_factor = 4.0f;
 	};  
 }

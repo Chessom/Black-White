@@ -73,6 +73,12 @@
     <Filter Include="头文件\gobang\gobang.gamers">
       <UniqueIdentifier>{488fd8c3-3331-402e-8e04-3c3e8e382a98}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\python">
+      <UniqueIdentifier>{8a79ef30-4a4b-4c21-b3cb-b20c9c1adf21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\python">
+      <UniqueIdentifier>{1916a760-228f-4c21-ae37-cff0f23122e0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -89,6 +95,12 @@
     </ClCompile>
     <ClCompile Include="src\tui\scroller.cpp">
       <Filter>源文件\tui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BlackWhiteBindPython\src\core_bind.cpp">
+      <Filter>源文件\python</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BlackWhiteBindPython\src\othello_bind.cpp">
+      <Filter>源文件\python</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -358,6 +370,12 @@
     </ClInclude>
     <ClInclude Include="include\gobang\gamer_prepare.hpp">
       <Filter>头文件\gobang</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BlackWhiteBindPython\include\core_bind.hpp">
+      <Filter>头文件\python</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BlackWhiteBindPython\include\othello_bind.hpp">
+      <Filter>头文件\python</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

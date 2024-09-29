@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include"othello/gamer.hpp"
+#include"othello_bind.hpp"
 #include"gamer/basic_python_gamer.hpp"
 namespace bw::othello {
 	inline bool py_othello_class_binded = false;
@@ -91,54 +92,7 @@ namespace bw::othello {
 			py::module bw_m = py::module::import("bw_embed");
 			using namespace bw::othello;
 			auto othello_m = bw_m.def_submodule("othello", "submodule for othello game");
-			py::class_<dynamic_brd>(othello_m, "board")
-				.def(py::init<>())
-				.def(py::init<int>())
-				.def("in_board", &dynamic_brd::in_board)
-				.def("initialize", &dynamic_brd::initialize)
-				.def("get_col", &dynamic_brd::get_col)
-				.def("set_col", &dynamic_brd::set_col)
-				.def("apply_move", &dynamic_brd::apply_move)
-				.def("count", &dynamic_brd::count)
-				.def("resize", &dynamic_brd::resize)
-				.def("brd_size", &dynamic_brd::brd_size)
-				.def("clear", &dynamic_brd::resize)
-				.def("__str__", [](const dynamic_brd& brd) {return std::vformat("{:sm<}", std::make_format_args(brd)); })
-				.def("__repr__", [](const dynamic_brd& brd) {return std::vformat("{:n<}", std::make_format_args(brd)); })
-				.def("__format__", [](const dynamic_brd& brd, const std::string& fmt_s) {return std::vformat("{0:{1}}", std::make_format_args(brd, fmt_s)); });
-
-			py::class_<bitbrd>(othello_m, "bitbrd")
-				.def(py::init<>())
-				.def(py::init<const ull&, const ull&>())
-				.def(py::init<const dynamic_brd&>())
-				.def("in_board", &bitbrd::in_board)
-				.def("initialize", &bitbrd::initialize)
-				.def("get_col", &bitbrd::get_col)
-				.def("set_col", &bitbrd::set_col)
-				.def("apply_move", py::overload_cast<const coord&, const color&>(&bitbrd::apply_move))
-				.def("apply_move", py::overload_cast<const ull&, const color&>(&bitbrd::apply_move))
-				.def("getmoves", &bitbrd::getmoves)
-				.def("to_dynamic", &bitbrd::to_dynamic)
-				.def("count", &bitbrd::count)
-				.def("countpiece", &bitbrd::countpiece)
-				.def("brd_size", &bitbrd::brd_size)
-				.def("clear", &bitbrd::clear)
-				.def("__str__", [](const bitbrd& brd) {return std::vformat("{:sm<}", std::make_format_args(brd)); })
-				.def("__repr__", [](const bitbrd& brd) {return std::vformat("{:n<}", std::make_format_args(brd)); })
-				.def("__format__", [](const bitbrd& brd, const std::string& fmt_s) {return std::vformat("{0:{1}}", std::make_format_args(brd, fmt_s)); });
-
-			py::class_<moves>(othello_m, "moves")
-				.def(py::init<>())
-				.def(py::init<const dynamic_brd&, const color&>())
-				.def(py::init<const bitbrd&, const color&>())
-				.def("update", &moves::update<dynamic_brd>)
-				.def("update", &moves::update<bitbrd>)
-				.def("push_back", &moves::push_back)
-				.def("empty", &moves::empty)
-				.def("find", &moves::find)
-				.def_readwrite("coords", &moves::coords)
-				.def_property_readonly("npos", [] {return moves::npos; })
-				.def("__repr__", [](const moves& mvs) {return std::format("{}", mvs); });
+			bw::othello::python_bind::bind_othello_all(othello_m);
 			py::gil_scoped_release release;
 		}
 	};
