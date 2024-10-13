@@ -139,7 +139,7 @@ namespace bw::gobang {
 
 			return;
 		}
-		dynamic_brd current_board() {
+		board current_board() {
 			return brd;
 		}
 		color current_color() const {
@@ -182,79 +182,10 @@ namespace bw::gobang {
 
 		}
 		gamer_ptr g[2] = { nullptr,nullptr };
-		dynamic_brd brd;
+		board brd;
 		color col = col0;//current color
 		moves mvs[2];
 		aspects game_aspects;
 	};
 	using game_ptr = std::shared_ptr<game>;
-	template<typename Board>
-	class light_human_game {
-	public:
-		light_human_game() = default;
-		light_human_game(int size) {
-			if constexpr (std::is_same<Board, dynamic_brd>::value) {
-				brd.resize(size);
-			}
-		}
-		void start() {
-			brd.initialize();
-			color op = 0;
-			while (true) {
-
-				op = op_col(col);
-				std::println("{:sm<}", brd);
-				mvs[col].update(brd, col);
-				if (mvs[col].size == 0) {
-					mvs[op].update(brd, op);
-					if (mvs[op].size == 0) {
-						std::println("Game end.");
-						std::print("Black:{}\nWhite:{}\n", brd.countpiece(col0), brd.countpiece(col1));
-						break;
-					}
-					std::println("{} pass.", col2str[col]);
-					col = op;
-					op = op_col(col);
-					continue;
-				}
-				coord mv;
-				std::string str;
-				while (true) {
-					std::println("Moves:{:c}", mvs[col]);
-					std::print("Input {} move:", col2str[col]);
-					std::cin >> str;
-					for (auto& c : str) {
-						c = std::toupper(c);
-					}
-					if (!is_valid_movestr(str) || mvs[col].find(fromstr(str)) == moves::npos) {
-						std::println("Invalid move.");
-						continue;
-					}
-					else {
-						mv = fromstr(str);
-						break;
-					}
-				}
-				brd.apply_move(mv, col);
-				col = op;
-			}
-		}
-
-	private:
-		Board brd;
-		moves mvs[2];
-		color col = col0;
-		std::map<color, std::string> col2str = { {col0, std::string(gettext("black"))},{col1, std::string(gettext("white"))} };
-		coord fromstr(const std::string& s) {
-			return coord(s[1] - '1', s[0] - 'A');
-		}
-		bool is_valid_movestr(const std::string& s) {
-			return s[0] >= 'A' && s[0] <= 'Z' && s[1] >= '0' && s[1] <= '9';
-		}
-	};
-
-	template<typename Board>
-	int quick_self_play(int times) {
-		return 0;
-	}
 }

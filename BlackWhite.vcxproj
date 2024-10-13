@@ -234,6 +234,7 @@
     <ClInclude Include="include\game.hpp" />
     <ClInclude Include="include\basic_Game.hpp" />
     <ClInclude Include="include\basic_gamer.hpp" />
+    <ClInclude Include="include\gamer\basic_gtp_gamer.hpp" />
     <ClInclude Include="include\gamer\basic_lua_gamer.hpp" />
     <ClInclude Include="include\gamer\basic_python_gamer.hpp" />
     <ClInclude Include="include\gamer\basic_http_gamer.hpp" />
@@ -269,6 +270,7 @@
     <ClInclude Include="include\othello\ai\eval_methods.hpp" />
     <ClInclude Include="include\othello\ai\mcts.hpp" />
     <ClInclude Include="include\othello\ai\minmax.hpp" />
+    <ClInclude Include="include\othello\ai\nerual_net.hpp" />
     <ClInclude Include="include\othello\ai\practise.hpp" />
     <ClInclude Include="include\othello\board.hpp" />
     <ClInclude Include="include\othello\components.hpp" />

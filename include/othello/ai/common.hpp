@@ -17,7 +17,7 @@ namespace bw::othello::ai {
 			minmax,
 		};
 		enum class eval_method {
-			traits = 0,//traditional traits
+			traits = 0,//traditional hand written traits
 			pattern,//traditional pattern
 			nn//nerual network
 		};
@@ -36,7 +36,7 @@ namespace bw::othello::ai {
 			int simulations = default_simulations;
 			float explore_factor = 4.0;
 			float temp = 1.0f;
-		};
-		mcts_option mcts_opt;
+			float fpu = 0.0f;
+		} mcts_opt;
 	};
 }

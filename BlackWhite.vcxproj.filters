@@ -377,6 +377,12 @@
     <ClInclude Include="..\BlackWhiteBindPython\include\othello_bind.hpp">
       <Filter>头文件\python</Filter>
     </ClInclude>
+    <ClInclude Include="include\othello\ai\nerual_net.hpp">
+      <Filter>头文件\othello\othello.ai\eval_methods</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gamer\basic_gtp_gamer.hpp">
+      <Filter>头文件\bw\shared\gamer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md">

@@ -1,4 +1,4 @@
-﻿#define SPDLOG_ACTIVE_LEVEL 0
+﻿#define SPDLOG_ACTIVE_LEVEL 1
 #include"stdafx.h"
 #include"tui/ui.hpp"
 #include"initialize.hpp"

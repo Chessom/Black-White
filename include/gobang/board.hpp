@@ -66,6 +66,6 @@ namespace bw::gobang {
 	private:
 		int cnt = 0;
 		core::color winner = core::none;
-		core::color mat[size * size];
+		core::color mat[size * size] = {};
 	};
 }

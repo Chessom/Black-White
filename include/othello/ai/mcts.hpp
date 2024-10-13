@@ -232,7 +232,6 @@ namespace bw::othello::ai {
         using moves_type = fast_moves<BoardSize>;
         using iter_type = search_tree_type::iterator;
         mcts(color setter_color, const ai_option& option) :player(setter_color), option(option){
-            explore_factor = option.mcts_opt.explore_factor;
             std::random_device rnd;
             srand(rnd());
         };
@@ -259,7 +258,6 @@ namespace bw::othello::ai {
             last_move_iter = nullptr;
             last_move = {};
             ucb_max_nodes = {};
-            _pre_probs.clear();
         }
         ai_option option;
         std::vector<std::pair<coord, float>> last_mvs;
@@ -272,9 +270,17 @@ namespace bw::othello::ai {
             }
             return dataset;
         }
-        std::vector<float> get_actual_probs() {
-            auto root = search_tree.begin();
-            last_mvs.clear();
+        std::vector<float> get_actual_probs(iter_type root) {
+            std::vector<float> ret;
+            float sum = .0f;
+            for (auto it = root.begin(); it != root.end(); ++it) {
+                ret.push_back(it->game_times);
+                sum += it->game_times;
+            }
+            for (auto& p : ret) {
+                p /= sum;
+            }
+            return ret;
         }
         ~mcts() {
             spdlog::trace("mcts destructed");
@@ -316,16 +322,10 @@ namespace bw::othello::ai {
                 auto node_iter = select(head);
                 if (!node_iter->is_terminal) {
                     expand(node_iter);
-                    auto rnd_node_iter = node_iter.begin();
-                    std::advance(rnd_node_iter, rand_int() % node_iter.number_of_children());
-                    fast_gm.pass_or_move(rnd_node_iter->mv);
-                    float result = simulate(rnd_node_iter);
-                    back_propagate(rnd_node_iter, result);
-                }
-                else {
-                    float result = simulate(node_iter);
-                    back_propagate(node_iter, result);
-                }
+				}
+				float result = get_value_and_update_policy(node_iter);
+				back_propagate(node_iter, result);
+
                 fast_gm = origin_game;
 
                 simulate_times++;
@@ -350,6 +350,14 @@ namespace bw::othello::ai {
                 }
             }
         }
+        void do_one_search(iter_type head) {
+            auto node_iter = select(head);
+            if (!node_iter->is_terminal) {
+                expand(node_iter);
+            }
+            float result = get_value_and_update_policy(node_iter);
+            back_propagate(node_iter, result);
+        }
         coord choose_move_multi_thread(const static_brd<BoardSize>& brd, color c) {
             return {};
         }
@@ -362,8 +370,7 @@ namespace bw::othello::ai {
             bool found_move_history = false;
             if (mvs.empty()) {
                 if (head.begin() != head.end()) {
-					auto&& sub_tr = search_tree.move_out(head.begin());
-					search_tree = std::move(sub_tr);
+                    search_tree = search_tree.move_out(head.begin());
 					found_subtree = true;
                 }
                 else {
@@ -441,12 +448,7 @@ namespace bw::othello::ai {
                     }
                 }
                 node_iter = ucb_max_nodes[rand_int() % ucb_max_nodes.size()];
-				if (is_pass_move<BoardSize>(node_iter->mv)) {
-					fast_gm.pass();
-				}
-				else {
-					fast_gm.move(node_iter->mv);
-				}
+                fast_gm.pass_or_move(node_iter->mv);
             }
             return node_iter;
         }
@@ -479,31 +481,6 @@ namespace bw::othello::ai {
                         sim_brd = st.brd;
                     }
                 }
-                _pre_probs.clear();
-                _pre_probs.reserve(children_size);
-                calculate_prior_probs(node_iter, _pre_probs);
-                auto prob_it = _pre_probs.begin();
-                for (auto it = node_iter.begin(); it != node_iter.end(); ++it, ++prob_it) {
-                    it->policy = *prob_it;
-                }
-            }
-        }
-        float simulate(iter_type node_iter) {
-            auto& node = *node_iter;
-            if (node.is_terminal) {
-                auto winner = fast_gm.winner();
-                if (winner == node.setter) {
-                    return 1;
-                }
-                else if(winner == op_col(node.setter)) {
-                    return -1;
-                }
-                else{
-                    return 0;
-                }
-            }
-            else {
-                return evaluate(fast_gm.crt_state().brd, fast_gm.crt_state().setter_color, node.setter);
             }
         }
         void back_propagate(iter_type node_iter, float result) {
@@ -511,7 +488,6 @@ namespace bw::othello::ai {
             while (node_iter != nullptr) {
                 auto& node = *node_iter;
                 node.game_times++;
-                //node.value += node.setter == node_player ? result : -result;
                 node.value += result;
                 result = -result;
                 if (!search_tree.is_head(node_iter)) {
@@ -523,9 +499,77 @@ namespace bw::othello::ai {
             }
         }
         float ucb(const iter_type& node, int parent_num) {
-            float Q = node->game_times ? node->value / node->game_times : 0;
-            float U = explore_factor * node->policy * std::sqrt(parent_num) / (1 + node->game_times);
+            float Q = node->game_times ? node->value / node->game_times : option.mcts_opt.fpu;
+            float U = option.mcts_opt.explore_factor * node->policy * std::sqrt(parent_num) / (1 + node->game_times);
             return Q + U;
+        }
+        float get_value_and_update_policy(iter_type node_iter) {
+            auto& node = *node_iter;
+            if (node.is_terminal) {
+                if (node.game_times) {
+                    return float(node.value) / node.game_times;
+                }
+                else {
+                    auto winner = fast_gm.winner();
+                    if (winner == node.setter) {
+                        return 1;
+                    }
+                    else if (winner == op_col(node.setter)) {
+                        return -1;
+                    }
+                    else {
+                        return 0;
+                    }
+                }
+            }
+            else {
+                auto&& [value, policy] = 
+                    e_mthd.eval_value_and_policy<BoardSize>(
+                        fast_gm.crt_state().brd, 
+                        fast_gm.crt_state().setter_color, 
+                        node.setter
+                    );
+                if (policy.empty()) {
+                    policy.push_back(1.0f);
+                }
+                auto prob_it = policy.begin();
+                for (auto& node : node_iter) {
+                    node.policy = *prob_it;
+                    ++prob_it;
+                }
+                return value;
+            }
+        }
+        float get_value_and_update_policy(iter_type node_iter, float value, const std::vector<float>& policy) {
+            auto& node = *node_iter;
+            if (node.is_terminal) {
+                if (node.game_times) {
+                    return float(node.value) / node.game_times;
+                }
+                else {
+                    auto winner = fast_gm.winner();
+                    if (winner == node.setter) {
+                        return 1;
+                    }
+                    else if (winner == op_col(node.setter)) {
+                        return -1;
+                    }
+                    else {
+                        return 0;
+                    }
+                }
+            }
+            else {
+                if (policy.empty()) {
+                    policy.push_back(1.0f);
+                }
+                auto prob_it = policy.begin();
+                for (auto& node : node_iter) {
+                    node.policy = *prob_it;
+                    ++prob_it;
+                }
+                return value;
+            }
         }
         fast_move<BoardSize> get_best_move() {
             auto root = search_tree.begin();
@@ -544,7 +588,11 @@ namespace bw::othello::ai {
                 if (it->game_times > best_child->game_times) {
                     best_child = it;
                 }
-                last_mvs.push_back({ fast_move_to_coord<BoardSize>(it->mv),float(it->game_times) });
+                auto crd = fast_move_to_coord<BoardSize>(it->mv);
+                last_mvs.push_back({ crd,float(it->game_times) });
+                if (crd == coord{-1, 7}) {
+                    auto cnt = search_tree.number_of_children(root);
+                }
             }
             last_move_iter = best_child;
             last_move = best_child->mv;
@@ -558,68 +606,6 @@ namespace bw::othello::ai {
                 moves mvs(brd, col);
                 return mvs.coords;
             }
-        }
-        void softmax(std::vector<float>& vec) {
-            float sum = 0;
-            for (auto& p : vec) {
-                p = std::exp(p);
-                sum += p;
-            }
-            for (auto& p : vec) {
-                p = p / sum;
-            }
-        }
-        float evaluate(const static_brd<BoardSize>& brd, color setter, color player) {
-            float value = e_mthd.eval_board(brd, setter, player);
-            return std::tanh(value / 10.0f);
-            /*auto sim_gm = fast_game<BoardSize>(brd, setter);
-            moves mvs[2];
-            while (true) {
-                auto& st = sim_gm.crt_state();
-                mvs[st.setter_color].update(st.brd, st.setter_color);
-                if (mvs[st.setter_color].empty()) {
-                    mvs[op_col(st.setter_color)].update(st.brd, op_col(st.setter_color));
-                    if (mvs[op_col(st.setter_color)].empty()) {
-                        auto winner = sim_gm.winner();
-                        if (winner == none) {
-                            return 0;
-                        }
-                        else if (winner==player) {
-                            return 1;
-                        }
-                        else {
-                            return -1;
-                        }
-                    }
-                    else {
-                        sim_gm.pass();
-                        continue;
-                    }
-                }
-                else {
-                    sim_gm.move(coord_to_fast_move<BoardSize>(mvs[st.setter_color].coords[rand_int() % mvs[st.setter_color].coords.size()]));
-                }
-            }*/
-        }
-        float evaluate_end_game(const static_brd<BoardSize>& brd, color setter, color player) {
-            float value = e_mthd.eval_end_game_board(brd, setter, player);
-            return std::tanh(value / 30);
-        }
-        void calculate_prior_probs(iter_type node, std::vector<float>& ret) {//node下面的
-            auto setter_col = fast_gm.crt_state().setter_color;
-            auto sim_gm = fast_gm;
-			for (auto& mv_iter : node) {
-				sim_gm.move(mv_iter.mv);
-                float val = e_mthd.eval_board(sim_gm.crt_state().brd, sim_gm.crt_state().setter_color, setter_col);
-                ret.push_back(val / 20);
-                sim_gm = fast_gm;
-			}
-            softmax(ret);
-            /*int children_size = search_tree.number_of_children(node);
-            for (int i = 0; i < children_size; ++i) {
-                ret.push_back(1.0f / children_size);
-            }
-            return;*/
         }
         std::vector<float> generate_dirichlet_noise(int size, float alpha) {
             static std::random_device rd;
@@ -638,7 +624,6 @@ namespace bw::othello::ai {
 
             return noise;
         }
-
         void add_dirichlet_noise(std::vector<float>& probs, float alpha, float epsilon) {
             auto noise = generate_dirichlet_noise(probs.size(), alpha);
             for (size_t i = 0; i < probs.size(); ++i) {
@@ -653,7 +638,5 @@ namespace bw::othello::ai {
         iter_type last_move_iter = nullptr;
         fast_move<BoardSize> last_move = {};
         std::vector<iter_type> ucb_max_nodes = {};
-        std::vector<float> _pre_probs;
-        float explore_factor = 4.0f;
 	};  
 }

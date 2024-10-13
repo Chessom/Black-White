@@ -34,7 +34,7 @@ namespace bw::othello {
 	template<int Size>
 	class bitbrd_t;
 	struct dynamic_brd {
-		using pos_type = uint_fast8_t;
+		using pos_type = char;
 		template<int Size, std::integral PosType>
 		friend class arrbrd_t;
 		template<int Size>
@@ -122,7 +122,7 @@ namespace bw::othello {
 		void clear() {
 			for (int i = 0; i < mat.size(); ++i) {
 				for (int j = 0; j < mat.size(); ++j) {
-					mat[i * size + j] = none;
+					mat[i * size + j] = 0;
 				}
 			}
 		}
@@ -491,12 +491,7 @@ namespace bw::othello {
 			moves |= brd_flip << (Size + 1);
 
 			moves &= ~(brd_blue | brd_green);
-			if constexpr (Size < 8) {
-				return moves & ((1ull << (Size * Size)) - 1);
-			}
-			else {
-				return moves;
-			}
+			return moves;
 		}
 		dynamic_brd to_dynamic() const {
 			dynamic_brd brd(Size);

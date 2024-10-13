@@ -35,6 +35,7 @@ namespace bw::othello {
 				mvs.update(brd, col);
 				if (mv.mvtype == move::mv) {
 					if (mvs.find(mv.pos) != moves::npos) {
+						mv.c = col;
 						co_return mv;
 					}
 				}

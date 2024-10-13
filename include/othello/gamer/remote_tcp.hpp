@@ -85,65 +85,8 @@ namespace bw::othello {
 		void deliver(const move& mv) {
 			insert_move(mv, wtq);
 		}
-		boost::cobalt::task<void> co_read() {
-			using namespace boost::asio;
-			move mv;
-			std::string jsonstr, sizestr;
-			boost::system::error_code ec;
-			while (socket_ptr->is_open())
-			{
-				try
-				{
-					jsonstr = "";
-					sizestr = "";
-					co_await async_read(*socket_ptr, dynamic_buffer(sizestr, 5), boost::cobalt::use_op);
-					co_await async_read(*socket_ptr, dynamic_buffer(jsonstr, stoi(sizestr)), boost::cobalt::use_op);
-					struct_json::from_json(mv, jsonstr);
-					if (handle_move_ != nullptr) {
-						(*handle_move_)(mv);
-					}
-					else {
-						insert_move(mv, rdq);
-					}
-				}
-				catch (const std::exception& ec)
-				{
-					printf("\a");
-					ui::msgbox(gbk2utf8(ec.what()));
-					insert_move(move{ .mvtype = move::str,.msg = format("FILE:{}\n LINE:{}\n msg:{}",__FILE__,__LINE__,gbk2utf8(ec.what())) }, rdq);
-					co_return;
-				}
-			}
-		}
-		boost::cobalt::task<void> co_write() {
-			using namespace boost::asio;
-			boost::system::error_code ec;
-			std::string jsonstr;
-			socket_ptr->wait(socket::wait_write);
-			while (true) {
-				if (wtq->q.empty()) {
-					boost::system::error_code ec;
-					co_await wtq->tim.async_wait(redirect_error(boost::cobalt::use_op, ec));
-				}
-				while (socket_ptr->is_open() && wtq->q.size()) {
-					try
-					{
-						jsonstr = "";
-						move mv = wtq->q.front();
-						struct_json::to_json(mv, jsonstr);
-						jsonstr = std::format("{:<5}{}", jsonstr.size(), jsonstr);
-						co_await async_write(*socket_ptr, dynamic_buffer(jsonstr, jsonstr.size()), boost::cobalt::use_op);
-						wtq->q.pop_front();
-					}
-					catch (const std::exception& ec)
-					{
-						ui::msgbox(std::format("Send Error:{}", gbk2utf8(ec.what())));
-						insert_move({ .mvtype = move::str,.msg = format("FILE:{}\n LINE:{}\n msg:{}",__FILE__,__LINE__,gbk2utf8(ec.what())) }, rdq);
-						co_return;
-					}
-				}
-			}
-		}
+		boost::cobalt::task<void> co_read();
+		boost::cobalt::task<void> co_write();
 		std::tuple<endpoint, boost::system::error_code> 
 		make_endpoint(std::string address, int port) {
 			using namespace boost::asio::ip;
@@ -229,4 +172,65 @@ namespace bw::othello {
 	private:
 		move_handler_ptr handle_move_ = nullptr;
 	};
+#pragma optimize("", off)
+	boost::cobalt::task<void> bw::othello::remote_tcp_gamer::co_read() {
+		using namespace boost::asio;
+		move mv;
+		std::string jsonstr, sizestr;
+		boost::system::error_code ec;
+		while (socket_ptr->is_open())
+		{
+			try
+			{
+				jsonstr = "";
+				sizestr = "";
+				co_await async_read(*socket_ptr, dynamic_buffer(sizestr, 5), boost::cobalt::use_op);
+				co_await async_read(*socket_ptr, dynamic_buffer(jsonstr, stoi(sizestr)), boost::cobalt::use_op);
+				struct_json::from_json(mv, jsonstr);
+				if (handle_move_ != nullptr) {
+					(*handle_move_)(mv);
+				}
+				else {
+					insert_move(mv, rdq);
+				}
+			}
+			catch (const std::exception& ec)
+			{
+				ui::msgbox(gbk2utf8(ec.what()));
+				insert_move(move{ .mvtype = move::str,.msg = format("FILE:{}\n LINE:{}\n msg:{}",__FILE__,__LINE__,gbk2utf8(ec.what())) }, rdq);
+				spdlog::info(ec.what());
+				co_return;
+			}
+		}
+	}
+	boost::cobalt::task<void> bw::othello::remote_tcp_gamer::co_write(){
+		using namespace boost::asio;
+		boost::system::error_code ec;
+		std::string jsonstr;
+		socket_ptr->wait(socket::wait_write);
+		while (true) {
+			if (wtq->q.empty()) {
+				boost::system::error_code ec;
+				co_await wtq->tim.async_wait(redirect_error(boost::cobalt::use_op, ec));
+			}
+			while (socket_ptr->is_open() && wtq->q.size()) {
+				try
+				{
+					jsonstr = "";
+					move mv = wtq->q.front();
+					struct_json::to_json(mv, jsonstr);
+					jsonstr = std::format("{:<5}{}", jsonstr.size(), jsonstr);
+					co_await async_write(*socket_ptr, dynamic_buffer(jsonstr, jsonstr.size()), boost::cobalt::use_op);
+					wtq->q.pop_front();
+				}
+				catch (const std::exception& ec)
+				{
+					ui::msgbox(std::format("Send Error:{}", gbk2utf8(ec.what())));
+					insert_move({ .mvtype = move::str,.msg = format("FILE:{}\n LINE:{}\n msg:{}",__FILE__,__LINE__,gbk2utf8(ec.what())) }, rdq);
+					co_return;
+				}
+			}
+		}
+	}
+#pragma optimize("", on)
 }

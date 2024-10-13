@@ -1,6 +1,19 @@
 ﻿#pragma once
 #include"common.hpp"
 namespace bw::othello::ai {
+	template<typename Val>
+	inline void softmax(std::vector<Val>& vec) {
+		if (!vec.empty()) {
+			Val rowmax = *std::max_element(vec.begin(), vec.end());
+			Val sum = 0;
+			for (auto& p : vec) {
+				sum += p = std::exp(p - rowmax);
+			}
+			for (auto& p : vec) {
+				p = p / sum;
+			}
+		}
+	}
 	template<typename value_type = float>
 	struct traits_eval {
 		using val_t = value_type;
@@ -72,10 +85,32 @@ namespace bw::othello::ai {
 		value_type eval_end_game_board(const arrbrd_t<BoardSize>& brd, color player) {
 			return brd.countpiece(player) - brd.countpiece(op_col(player)) * 15;
 		}
+		template<int BoardSize>//move顺序约定：按照(x,y)坐标顺序
+		std::pair<float, std::vector<float>> eval_value_and_policy(const static_brd<BoardSize>& brd, color setter, color player) {
+			float value = eval_board(brd, setter, player);
+			value = std::tanh(value / 10.0f);
+			mvs.update(brd, setter);
+			std::vector<float> policy;
+			policy.reserve(mvs.coords.size());
+			auto sim_brd = brd;
+			for (auto& crd : mvs.coords) {
+				sim_brd.apply_move(crd, setter);
+				float val = eval_board(sim_brd, op_col(setter), setter);
+				policy.push_back(val / 20.0f);
+				sim_brd = brd;
+			}
+			softmax(policy);
+			return { value,std::move(policy) };
+		}
+	private:
+		moves mvs;
 	};
 	template<typename value_type = float>
 	struct nn_eval {
 		using val_t = value_type;
+		nn_eval() {
+
+		}
 		template<int BoardSize>
 		value_type eval_board(const bitbrd_t<BoardSize>& brd, color setter, color player) {
 			value_type value = 0;
@@ -149,11 +184,34 @@ namespace bw::othello::ai {
 		value_type eval_end_game_board(const arrbrd_t<BoardSize>& brd, color player) {
 			return brd.countpiece(player) - brd.countpiece(op_col(player)) * 15;
 		}
+		template<int BoardSize>//move顺序约定：按照(x,y)坐标顺序
+		std::pair<float, std::vector<float>> eval_value_and_policy(const static_brd<BoardSize>& brd, color setter, color player) {
+			float value = eval_board(brd, setter, player);
+			value = std::tanh(value / 10.0f);
+			mvs.update(brd, setter);
+			std::vector<float> policy;
+			policy.reserve(mvs.coords.size());
+			auto sim_brd = brd;
+			for (auto& crd : mvs.coords) {
+				sim_brd.apply_move(crd, setter);
+				float val = eval_board(sim_brd, op_col(setter), setter);
+				policy.push_back(val / 20.0f);
+				sim_brd = brd;
+			}
+			softmax(policy);
+			return { value,std::move(policy) };
+		}
+		moves mvs;
 	};
 	template<typename value_type = float>
 	struct random_eval {
 		using val_t = value_type;
-		std::random_device rnd;
+		random_eval() { 
+			std::random_device dv;
+			rnd.seed(dv());
+		}
+		std::default_random_engine rnd;
+		std::uniform_real_distribution<float> dist;
 		template<int BoardSize>
 		value_type eval_board(const static_brd<BoardSize>& brd, color setter, color player) {
 			return static_cast<value_type>(rnd());
@@ -162,6 +220,19 @@ namespace bw::othello::ai {
 		value_type eval_end_game_board(const static_brd<BoardSize>& brd, color player) {
 			return static_cast<value_type>(rnd());
 		}
+		template<int BoardSize>//move顺序约定：按照(x,y)坐标顺序
+		std::pair<float, std::vector<float>> eval_value_and_policy(const static_brd<BoardSize>& brd, color setter, color player) {
+			float value = dist(rnd);
+			mvs.update(brd, setter);
+			std::vector<float> policy;
+			policy.reserve(mvs.coords.size());
+			for (auto& crd : mvs.coords) {
+				policy.push_back(dist(rnd));
+			}
+			softmax(policy);
+			return { value,std::move(policy) };
+		}
+		moves mvs;
 	};
 	template<typename value_type = float>
 	struct zero_eval {
@@ -174,5 +245,17 @@ namespace bw::othello::ai {
 		value_type eval_end_game_board(const static_brd<BoardSize>& brd, color player) {
 			return 0;
 		}
+		template<int BoardSize>//move顺序约定：按照(x,y)坐标顺序
+		std::pair<float, std::vector<float>> eval_value_and_policy(const static_brd<BoardSize>& brd, color setter, color player) {
+			float value = 0;
+			mvs.update(brd, setter);
+			std::vector<float> policy;
+			policy.reserve(mvs.coords.size());
+			for (auto& crd : mvs.coords) {
+				policy.push_back(1.0f / mvs.coords.size());
+			}
+			return { value,std::move(policy) };
+		}
+		moves mvs;
 	};
 }

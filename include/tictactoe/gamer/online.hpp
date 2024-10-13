@@ -8,7 +8,7 @@ namespace bw::tictactoe {
 	public:
 		using timer = boost::asio::steady_timer;
 		using timer_ptr = std::shared_ptr<timer>;
-		online_gamer() :gamer() { name = "Anonymous"; gamertype = online; }
+		online_gamer() :gamer() { name = gettext("Anonymous"); gamertype = online; }
 		online_gamer(basic_gamer_info info) :gamer(info) {}
 		online_gamer(core::color Color, int ID = 0, const std::string& Name = "Anonymous")
 			:gamer(Color, ID, Name, online) {};

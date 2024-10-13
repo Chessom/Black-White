@@ -2,7 +2,7 @@
 #include"core.hpp"
 namespace bw::tictactoe {
 	struct move {
-		enum { mv, pass, lose, win, draw, suspend, regret, quit, invalid, str, start, prepared };
+		enum { mv, lose, win, draw, suspend, regret, quit, invalid, str, start, prepared };
 		int mvtype = invalid;
 		core::coord crd = {};
 		core::color col = core::none;

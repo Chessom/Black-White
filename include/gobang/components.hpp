@@ -10,6 +10,7 @@
 #include"gobang/gamer_prepare.hpp"
 #include"online/signals.hpp"
 namespace bw::gobang::components {
+	using ftxui::operator""_rgb;
 	class BoardBase : public ftxui::ComponentBase {
 	public:
 		using context_ptr = std::shared_ptr<boost::asio::io_context>;
@@ -35,16 +36,16 @@ namespace bw::gobang::components {
 			Elements rows;
 			color col;
 			std::string firstr;
-			firstr = "╔";
+			firstr = "┌";
 			for (int i = 1; i < brd.size; i++)
-				firstr += "═══╦";
-			firstr += "═══╗ ";
+				firstr += "───┬";
+			firstr += "───┐ ";
 			auto style = ftxui::color(Color::Black) | bgcolor(Color::Green);
 			rows.push_back(text(firstr) | style);
 			std::string rowstr1, rowstr2;
 			Elements row;
 
-			rowstr1 = "╠";
+			rowstr1 = "├";
 			for (int j = 0; j < brd.size - 1; j++)
 				rowstr1 += "═══╬";
 			rowstr1 += "═══╣ ";
@@ -119,9 +120,10 @@ namespace bw::gobang::components {
 		}
 		timdq_ptr pmvdq;
 		std::shared_ptr<game> game_ptr = nullptr;
-		dynamic_brd brd;
+		board brd;
 		moves mvs;
 	protected:
+		ftxui::Color brd_bg_color = 0xEFB045_rgb;
 		bool mouse_hover = false;
 		ftxui::Box box;
 	};
@@ -155,14 +157,8 @@ namespace bw::gobang::components {
 			case gamer::human:
 				ret = std::make_shared<gobang::human_gamer>(info);
 				break;
-			case gamer::computer:
-				ret = std::make_shared<gobang::computer_gamer_random>(info.col);
-				break;
 			case gamer::online:
 				ret = std::make_shared<gobang::online_gamer>(info);
-				break;
-			case gamer::remote:
-				ret = std::make_shared<gobang::remote_tcp_gamer>(pctx, info.col);
 				break;
 			default:
 				break;
@@ -170,7 +166,7 @@ namespace bw::gobang::components {
 			return ret;
 		}
 		virtual basic_game_ptr generate_game(ftxui::ScreenInteractive& screen) override {
-			auto gm = std::make_shared<game>(gptr[col0], gptr[col1], board_size, std::make_shared<bw::components::ftxui_screen>(&screen));
+			auto gm = std::make_shared<game>(gptr[col0], gptr[col1], std::make_shared<bw::components::ftxui_screen>(&screen));
 			return gm;
 		}
 		bool GameSetting();
@@ -178,48 +174,27 @@ namespace bw::gobang::components {
 		void reset() {
 			gptr[0] = nullptr;
 			gptr[1] = nullptr;
-			board_size = 8;
-			s_size = "8";
 			pctx->restart();
 		}
-		void set_board_size(int size) override {
-			board_size = size;
-		}
+		void set_board_size(int size) override {}
 		gamer_ptr gptr[2] = { nullptr,nullptr };
 		game_ptr gm = nullptr;
-		int board_size = 8;
 		~Game() {
-			spdlog::trace("Othello Game Destructor");
+			spdlog::trace("Gobang Game Destructor");
 			spdlog::trace("pctx use_count:{} game object use_count:{}", pctx.use_count(), gm.use_count());
 		}
-	protected:
-		std::string s_size = "8";
 	};
 	using othello_Game_ptr = std::shared_ptr<Game>;
 
 	ftxui::Component Game::OnlinePrepareCom(bw::online::basic_user_ptr uptr) {
 		using namespace ftxui;
 		auto layout = Container::Vertical({
-			ui::TextComp(gettext("Othello")) | center,
-			Container::Horizontal({
-				ui::TextComp(gettext("Board Size: ")) | center,
-				Input(&s_size,"  ") | underlined
-				| CatchEvent([this](Event event) {
-					return event.is_character() && !std::isdigit(event.character()[0]);
-				}) | CatchEvent([&](Event event) {
-				return event.is_character() && s_size.size() > 2;
-			}),
-			}) | center,
+			ui::TextComp(gettext("Gobang")) | center,
 			Button(gettext("Match"),[this, uptr]
 			{
 				static boost::asio::steady_timer tim(*pctx);
 				static std::atomic_flag flag;
 				auto othello_Game = shared_from_this();
-				board_size = std::stoi(s_size);
-				if (board_size % 2 == 1) {
-					ui::msgbox(gettext("The size of the gobang board must be even."));
-					return;
-				}
 				if (!flag.test()) {
 					if (uptr->state != online::user_st::gaming) {
 						uptr->Game_ptr = othello_Game;
@@ -231,7 +206,7 @@ namespace bw::gobang::components {
 								.type = game_msg::prepare,
 								.id = uptr->id,
 								.movestr = infostr,
-								.board = std::format("{} {}", "gobang", othello_Game->board_size),
+								.board = "gobang",
 							},
 							msg_t::game
 							));
@@ -270,15 +245,15 @@ namespace bw::gobang::components {
 			});
 		gm->end_sig.connect([this] {
 			auto crt_brd = gm->current_board();
-			int points0 = crt_brd.countpiece(col0), points1 = crt_brd.countpiece(col1);
-			if (points0 > points1) {
-				ui::msgbox(gettext("Black win!"), { ui::MakeOKButton(),ui::TextComp(" "),AnotherRoundButton(gm) });
+			auto winner = crt_brd.get_winner();
+			if (winner == core::col0) {
+				ui::msgbox(gettext("Black win!"));
 			}
-			else if (points0 < points1) {
-				ui::msgbox(gettext("White win!"), { ui::MakeOKButton(),ui::TextComp(" "), AnotherRoundButton(gm) });
+			else if (winner == core::col1) {
+				ui::msgbox(gettext("White win!"));
 			}
 			else {
-				ui::msgbox(gettext("Draw!"), { ui::MakeOKButton(),ui::TextComp(" "), AnotherRoundButton(gm) });
+				ui::msgbox(gettext("Draw!"));
 			}
 			});
 		gm->flush_sig.connect([this, &brd = brd_ptr->brd, &screen] {
@@ -318,15 +293,7 @@ namespace bw::gobang::components {
 				brd | center,
 			}),
 			Container::Vertical({
-				Renderer([=,this] { return text(std::format("{}:{}",gettext("Current player"),gptr[gm->current_color()]->get_name())) | center; }),
-				Renderer([=,this] { return text(std::format("{}-{} {}:{}",gettext("Black"),gptr[col0]->get_name(),gettext("state"),
-				gptr[col0]->is_remote() ?
-					(std::dynamic_pointer_cast<remote_tcp_gamer>(gptr[col0])->connected() ? gettext("Good") : gettext("Disconnetced"))
-					: gettext("Good"))) | center; }),
-				Renderer([&] {return text(std::format("{}-{} {}:{}",gettext("White"),gptr[col1]->get_name(),gettext("state"),
-				gptr[col1]->is_remote() ?
-					(std::dynamic_pointer_cast<remote_tcp_gamer>(gptr[col1])->connected() ? gettext("Good") : gettext("Disconnetced"))
-					: gettext("Good"))) | center; }),
+				Renderer([=,this] { return text(std::format("{}:{}",gettext("Current player"),gptr[gm->current_color()]->get_name())) | center; })
 			}) | center | border
 			});
 		return layout;
@@ -337,7 +304,6 @@ namespace bw::gobang::components {
 		std::vector<std::shared_ptr<int>> s = { std::make_shared<int>(0), std::make_shared<int>(0) };
 		std::shared_ptr<int> s3 = std::make_shared<int>(2);
 		auto start_func = [this, &screen, &ret, &advanced, Tabs, &selector, s, s3] {
-			board_size = stoi(size_list[*s3]);
 			bool adv[col1 - col0 + 1] = {};
 			for (color col = col0; col <= col1; ++col) {
 				switch (*s[col])
@@ -345,10 +311,6 @@ namespace bw::gobang::components {
 				case std::to_underlying(detailed_type::human):
 					gptr[col] = std::make_shared<human_gamer>(col);
 					Tabs->Add(bw::components::HumanGamerSetting(gptr[col]));
-					break;
-				case std::to_underlying(detailed_type::computer_random):
-					gptr[col] = std::make_shared<computer_gamer_random>(col);
-					Tabs->Add(bw::components::GamerSetting<computer_gamer_random>(gptr[col]));
 					break;
 				default:
 					gptr[col] = nullptr;
@@ -441,11 +403,11 @@ namespace bw::gobang::components {
 			});
 		gm->end_sig.connect([this] {
 			auto crt_brd = gm->current_board();
-			int points0 = crt_brd.countpiece(col0), points1 = crt_brd.countpiece(col1);
-			if (points0 > points1) {
+			auto winner = crt_brd.get_winner();
+			if (winner == core::col0) {
 				ui::msgbox(gettext("Black win!"), { ui::MakeOKButton(),ui::TextComp(" "),AnotherRoundButton(gm) });
 			}
-			else if (points0 < points1) {
+			else if (winner == core::col1) {
 				ui::msgbox(gettext("White win!"), { ui::MakeOKButton(),ui::TextComp(" "), AnotherRoundButton(gm) });
 			}
 			else {
@@ -546,7 +508,7 @@ will be overwritten by the other.)"));
 		ui::auto_close_modal _f;
 		ScreenInteractive screen = ScreenInteractive::Fullscreen();
 
-		gm = std::make_shared<game>(gptr[col0], gptr[col1], board_size, std::make_shared<bw::components::ftxui_screen>(&screen));
+		gm = std::make_shared<game>(gptr[col0], gptr[col1], std::make_shared<bw::components::ftxui_screen>(&screen));
 		Component GamePageComponent = GamePage(screen) | center | ui::EnableMessageBox();
 		std::jthread j([this, &screen] {
 			try

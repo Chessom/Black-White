@@ -272,13 +272,13 @@ namespace bw::othello::components {
 			auto crt_brd = gm->current_board();
 			int points0 = crt_brd.countpiece(col0), points1 = crt_brd.countpiece(col1);
 			if (points0 > points1) {
-				ui::msgbox(gettext("Black win!"), { ui::MakeOKButton(),ui::TextComp(" "),AnotherRoundButton(gm) });
+				ui::msgbox(gettext("Black win!"));
 			}
 			else if (points0 < points1) {
-				ui::msgbox(gettext("White win!"), { ui::MakeOKButton(),ui::TextComp(" "), AnotherRoundButton(gm) });
+				ui::msgbox(gettext("White win!"));
 			}
 			else {
-				ui::msgbox(gettext("Draw!"), { ui::MakeOKButton(),ui::TextComp(" "), AnotherRoundButton(gm) });
+				ui::msgbox(gettext("Draw!"));
 			}
 			});
 		gm->flush_sig.connect([this, &brd = brd_ptr->brd, &screen] {
