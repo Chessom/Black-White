@@ -11,7 +11,7 @@ namespace bw::gobang {
 		color c = core::none;
 		std::string msg;
 	};
-	REFLECTION(move, mvtype, pos, c, msg);
+	YLT_REFL(move, mvtype, pos, c, msg);
 };
 
 template<class Archive>

@@ -74,7 +74,7 @@ namespace bw::othello {
 			}
 			is_good = true;
 		}
-		virtual boost::cobalt::task<move> get_move(dynamic_brd& brd, std::chrono::seconds limit = std::chrono::seconds(0)) {
+		virtual boost::cobalt::task<move> get_move(const dynamic_brd& brd, std::chrono::seconds limit = std::chrono::seconds(0)) {
 			auto resfunc = lua[getmove_func_signature];
 			sol::protected_function getmv;
 			if (resfunc.valid()) {

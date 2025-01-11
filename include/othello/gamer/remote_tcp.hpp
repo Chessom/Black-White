@@ -9,7 +9,7 @@ namespace bw::othello {
 		int board_size;
 		basic_gamer first, second;
 	};
-	REFLECTION(online_game_settings, board_size, first, second);*/
+	YLT_REFL(online_game_settings, board_size, first, second);*/
 	
 	using namespace std::chrono_literals;
 	class remote_tcp_gamer :public gamer{
@@ -38,7 +38,7 @@ namespace bw::othello {
 		inline string gbk2utf8(std::string_view s) {
 			return boost::locale::conv::to_utf<char>(s.data(), "gbk");
 		}
-		boost::cobalt::task<move> get_move(dynamic_brd& brd, std::chrono::seconds limit = 0s) override {
+		boost::cobalt::task<move> get_move(const dynamic_brd& brd, std::chrono::seconds limit = 0s) override {
 			mvs.update(brd, col);
 			move mv{ .mvtype = move::invalid };
 			

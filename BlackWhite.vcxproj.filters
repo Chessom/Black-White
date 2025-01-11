@@ -79,6 +79,9 @@
     <Filter Include="头文件\python">
       <UniqueIdentifier>{1916a760-228f-4c21-ae37-cff0f23122e0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\bw\move_server">
+      <UniqueIdentifier>{dc46fb0c-4f5c-43ed-9284-52d78aef1190}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -382,6 +385,12 @@
     </ClInclude>
     <ClInclude Include="include\gamer\basic_gtp_gamer.hpp">
       <Filter>头文件\bw\shared\gamer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\othello\gamer\http_gamer.hpp">
+      <Filter>头文件\othello\othello.gamer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\move_server\move_server.hpp">
+      <Filter>头文件\bw\move_server</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -129,14 +129,14 @@ namespace bw::components {
 					SaveButton | vcenter ,
 					ui::TextComp("  "),
 					CancelButton | vcenter,
-					}) | center,
+					}) | center/*,
 				ui::TextComp(gettext(
 					"\"Apply\" means that changes will only \n"
 					"take effect until exiting the program, \n"
 					"while \"Save to local\" means that \n"
 					"changes will be written to the configuration file \n"
 					"and will take effect at a later startup."
-				),center | color(Color::BlueLight)) | center
+				),center | color(Color::BlueLight)) | center*/
 			});
 
 			return layout;

@@ -22,7 +22,7 @@ namespace bw {
 		std::string default_name;
 		bool py_use_embedded_module = true;
 	};
-	REFLECTION(config, 
+	YLT_REFL(config, 
 		locale_id, 
 		locale_path, 
 		default_script_directory, 

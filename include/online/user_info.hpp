@@ -15,5 +15,5 @@ namespace bw::online {
 		virtual ~user_info() = default;
 	};
 	using gamer_info_ptr = std::shared_ptr<user_info>;
-	REFLECTION(user_info, name, id, state, authority);
+	YLT_REFL(user_info, name, id, state, authority);
 }

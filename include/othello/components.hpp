@@ -36,7 +36,7 @@ namespace bw::othello::components {
 			color col;
 			std::string firstr;
 			firstr = "╔";
-			for (int i = 1; i < brd.size; i++)
+			for (int i = 1; i < brd.brd_size(); i++)
 				firstr += "═══╦";
 			firstr += "═══╗ ";
 			auto style = ftxui::color(Color::Black) | bgcolor(Color::Green);
@@ -45,20 +45,20 @@ namespace bw::othello::components {
 			Elements row;
 
 			rowstr1 = "╠";
-			for (int j = 0; j < brd.size - 1; j++)
+			for (int j = 0; j < brd.brd_size() - 1; j++)
 				rowstr1 += "═══╬";
 			rowstr1 += "═══╣ ";
 
 			rowstr2 = "╚";
-			for (int j = 0; j < brd.size - 1; j++)
+			for (int j = 0; j < brd.brd_size() - 1; j++)
 				rowstr2 += "═══╩";
 			rowstr2 += "═══╝ ";
 
-			for (int x = 0; x < brd.size; ++x) {
+			for (int x = 0; x < brd.brd_size(); ++x) {
 				row.clear();
 				row.emplace_back(text("║") | style);
 
-				for (int y = 0; y < brd.size; ++y) {
+				for (int y = 0; y < brd.brd_size(); ++y) {
 					col = brd.get_col({ x,y });
 					if (col == core::none) {
 						if (game_ptr->current_gamer()->is_human() || game_ptr->current_gamer()->gamertype == gamer::online) {
@@ -80,7 +80,7 @@ namespace bw::othello::components {
 				}
 				row.emplace_back(text(" ") | bgcolor(Color::Green));
 				rows.emplace_back(hbox(row));
-				if (x != brd.size - 1) {
+				if (x != brd.brd_size() - 1) {
 					rows.emplace_back(text(rowstr1) | style);
 				}
 				else {
@@ -380,11 +380,16 @@ namespace bw::othello::components {
 					Tabs->Add(bw::components::GamerSetting<python_gamer>(gptr[col]));
 					adv[col] = true;
 					break;
+				case std::to_underlying(detailed_type::http_gamer):
+					gptr[col] = std::make_shared<http_gamer>(pctx, col);
+					Tabs->Add(bw::components::GamerSetting<http_gamer>(gptr[col]));
+					adv[col] = true;
+					break;
 				default:
 					break;
 				}
 			}
-			advanced = adv[col0] || adv[col1];
+			advanced = advanced || adv[col0] || adv[col1];
 			if (!adv[col0] && adv[col1]) {
 				selector = col1;
 			}

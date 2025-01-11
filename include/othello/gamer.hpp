@@ -30,7 +30,7 @@ namespace bw::othello {
 			:basic_gamer(Color, ID, Name, GamerType, core::gameid::othello) {
 		};
 		gamer(const basic_gamer& gamer_info) :basic_gamer(gamer_info) {};
-		virtual boost::cobalt::task<move> get_move(dynamic_brd& brd, std::chrono::seconds limit = std::chrono::seconds(0)) = 0;
+		virtual boost::cobalt::task<move> get_move(const dynamic_brd& brd, std::chrono::seconds limit = std::chrono::seconds(0)) = 0;
 		virtual std::string get_name() = 0;
 		virtual boost::cobalt::task<void> pass_msg(std::string) = 0;
 		virtual boost::cobalt::task<void> pass_move(move mv) = 0;

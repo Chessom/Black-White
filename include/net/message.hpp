@@ -12,7 +12,7 @@ namespace bw {
 		int target_type = n;
 		enum { r, g, n };
 	};
-	REFLECTION(control_msg, type, content, id1, id2, target_type);
+	YLT_REFL(control_msg, type, content, id1, id2, target_type);
 	struct str_msg {
 		std::string content;
 		int target_type = g;//目标类型，g:单独用户，r:整个房间
@@ -20,7 +20,7 @@ namespace bw {
 		std::string name;//发送者名字
 		enum { r, g, n };
 	};
-	REFLECTION(str_msg, content, target_type, id1, id2, name);
+	YLT_REFL(str_msg, content, target_type, id1, id2, name);
 	struct game_msg {
 		enum { create, prepare, start, move, watch, brd, match, end };
 		int type = move;
@@ -36,22 +36,22 @@ namespace bw {
 		//match: 代表在整个服务器随机匹配，其余与prepare相同
 		//end: id代表结束的状态码。
 	};
-	REFLECTION(game_msg, type, id, movestr, board);
+	YLT_REFL(game_msg, type, id, movestr, board);
 	struct get_msg {
 		std::string get_type;
 		std::vector<int> ids;
 	};
-	REFLECTION(get_msg, get_type, ids);
+	YLT_REFL(get_msg, get_type, ids);
 	struct notice_msg {
 		std::string str;
 	};
-	REFLECTION(notice_msg, str);
+	YLT_REFL(notice_msg, str);
 	struct ret_msg {
 		int value = failed;
 		std::string ret_type;
 		std::string ret_str;
 	};
-	REFLECTION(ret_msg, value, ret_type, ret_str);
+	YLT_REFL(ret_msg, value, ret_type, ret_str);
 	
 
 	class message {
@@ -61,7 +61,7 @@ namespace bw {
 		std::string jsonstr;
 		int type = invalid;
 	};
-	REFLECTION(message, jsonstr, type);
+	YLT_REFL(message, jsonstr, type);
 	using msg_t = message;
 	template<typename T>
 	msg_t wrap(T&& obj, int message_type = msg_t::invalid) {

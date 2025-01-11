@@ -7,5 +7,5 @@ namespace bw::tictactoe {
 		core::coord crd = {};
 		core::color col = core::none;
 	};
-	REFLECTION(move, mvtype, crd, col);
+	YLT_REFL(move, mvtype, crd, col);
 }

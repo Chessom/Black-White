@@ -23,7 +23,7 @@ namespace bw::online {
 			.infostate = room_info::outdated,
 		};
 	}
-	REFLECTION(room_info, id, owner, name, state, usersize);
+	YLT_REFL(room_info, id, owner, name, state, usersize);
 	//struct room_info {
 	//public:
 	//	int id = -1, owner = 0;

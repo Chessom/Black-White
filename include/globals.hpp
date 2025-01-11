@@ -35,18 +35,19 @@ namespace bw::othello {
 	private:
 		int stl = symb;
 	};
-	enum class detailed_type :int { human = 0, computer_random, computer_ai, lua_script_gamer, python_script_gamer, remote_tcp_gamer, online, invalid };
+	enum class detailed_type :int { human = 0, computer_random, computer_ai, lua_script_gamer, python_script_gamer, remote_tcp_gamer, http_gamer, online, invalid };
 	inline charmap CharMap{};
 	inline std::vector<std::string> gamer_list;
 	inline std::vector<std::string> size_list = { "4","6","8","10","12","14","16" };
 	inline void initialize_global_variable() {
-		gamer_list.resize(6);
+		gamer_list.resize(std::to_underlying(detailed_type::online) - std::to_underlying(detailed_type::human));
 		gamer_list[std::to_underlying(detailed_type::human)] = gettext("Human");
-		gamer_list[std::to_underlying(detailed_type::computer_random)] = gettext("ComputerRandom");
-		gamer_list[std::to_underlying(detailed_type::computer_ai)] = gettext("ComputerAI");
+		gamer_list[std::to_underlying(detailed_type::computer_random)] = gettext("Computer Random");
+		gamer_list[std::to_underlying(detailed_type::computer_ai)] = gettext("Computer AI");
 		gamer_list[std::to_underlying(detailed_type::lua_script_gamer)] = gettext("Lua Script Gamer");
 		gamer_list[std::to_underlying(detailed_type::python_script_gamer)] = gettext("Python Script Gamer");
-		gamer_list[std::to_underlying(detailed_type::remote_tcp_gamer)] = gettext("RemoteTCPGamer");
+		gamer_list[std::to_underlying(detailed_type::remote_tcp_gamer)] = gettext("Remote TCP Gamer");
+		gamer_list[std::to_underlying(detailed_type::http_gamer)] = gettext("Http Session Gamer");
 	}
 }
 namespace bw::gobang {
@@ -75,11 +76,11 @@ namespace bw::gobang {
 	inline void initialize_global_variable() {
 		gamer_list.resize(6);
 		gamer_list[std::to_underlying(detailed_type::human)] = gettext("Human");
-		gamer_list[std::to_underlying(detailed_type::computer_random)] = gettext("ComputerRandom");
-		gamer_list[std::to_underlying(detailed_type::computer_ai)] = gettext("ComputerAI");
+		gamer_list[std::to_underlying(detailed_type::computer_random)] = gettext("Computer Random");
+		gamer_list[std::to_underlying(detailed_type::computer_ai)] = gettext("Computer AI");
 		gamer_list[std::to_underlying(detailed_type::lua_script_gamer)] = gettext("Lua Script Gamer");
 		gamer_list[std::to_underlying(detailed_type::python_script_gamer)] = gettext("Python Script Gamer");
-		gamer_list[std::to_underlying(detailed_type::remote_tcp_gamer)] = gettext("RemoteTCPGamer");
+		gamer_list[std::to_underlying(detailed_type::remote_tcp_gamer)] = gettext("Remote TCP Gamer");
 	}
 }
 namespace bw::ataxx {

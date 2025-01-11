@@ -75,7 +75,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ExternalIncludePath>$(PythonPath)\include;C:\Program Files %28x86%29\yaLanTingLibs\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>$(PythonPath)\include;$(ExternalIncludePath)</ExternalIncludePath>
     <IncludePath>D:\Projects\CppProjects\BlackWhiteBindPython\include;D:\Projects\CppProjects\BlackWhite\include;$(IncludePath)</IncludePath>
     <SourcePath>D:\Projects\CppProjects\BlackWhiteBindPython\src;D:\Projects\CppProjects\BlackWhite\src;$(SourcePath)</SourcePath>
     <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
@@ -84,7 +84,7 @@
     <ExecutablePath>$(PythonPath);$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ExternalIncludePath>$(PythonPath)\include;C:\Program Files %28x86%29\yaLanTingLibs\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>$(PythonPath)\include;$(ExternalIncludePath)</ExternalIncludePath>
     <IncludePath>D:\Projects\CppProjects\BlackWhiteBindPython\include;D:\Projects\CppProjects\BlackWhite\include;$(IncludePath)</IncludePath>
     <SourcePath>D:\Projects\CppProjects\BlackWhiteBindPython\src;D:\Projects\CppProjects\BlackWhite\src;$(SourcePath)</SourcePath>
     <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
@@ -255,6 +255,7 @@
     <ClInclude Include="include\ipv4.hpp" />
     <ClInclude Include="include\macros.hpp" />
     <ClInclude Include="include\move.hpp" />
+    <ClInclude Include="include\move_server\move_server.hpp" />
     <ClInclude Include="include\net\message.hpp" />
     <ClInclude Include="include\online\basic_online_gamer.hpp" />
     <ClInclude Include="include\online\basic_user.hpp" />
@@ -277,6 +278,7 @@
     <ClInclude Include="include\othello\game.hpp" />
     <ClInclude Include="include\othello\gamer.hpp" />
     <ClInclude Include="include\othello\gamer\computer.hpp" />
+    <ClInclude Include="include\othello\gamer\http_gamer.hpp" />
     <ClInclude Include="include\othello\gamer\human.hpp" />
     <ClInclude Include="include\othello\gamer\lua_gamer.hpp" />
     <ClInclude Include="include\othello\gamer\online.hpp" />

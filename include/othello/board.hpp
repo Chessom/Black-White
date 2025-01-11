@@ -95,13 +95,7 @@ namespace bw::othello {
 			set_col(crd, col);
 		}
 		int countpiece(color col) {
-			int cnt = 0, t = col + 1;
-			for (int x = 0; x < size; ++x) {
-				for (int y = 0; y < size; ++y) {
-					if (mat[x * size + y] == t) ++cnt;
-				}
-			}
-			return cnt;
+			return count(col);
 		}
 		int count(color col)  {
 			int cnt = 0, t = col + 1;
@@ -141,8 +135,8 @@ namespace bw::othello {
 		vector<pos_type>& get_underlying_vector() const {
 			return const_cast<vector<pos_type>&>(mat);
 		}
-		int size = default_size;
 	private:
+		int size = default_size;
 		vector<pos_type> mat;
 	};
 	STRUCT_PACK_REFL(dynamic_brd, get_underlying_vector());
@@ -916,8 +910,8 @@ struct std::formatter<bw::othello::dynamic_brd, CharT> {
 	auto format(const bw::othello::dynamic_brd& brd, FormatContext& fc) const {
 		using namespace bw::othello;
 		auto it = fc.out();
-		for (int x = 0; x < brd.size; ++x) {
-			for (int y = 0; y < brd.size; ++y) {
+		for (int x = 0; x < brd.brd_size(); ++x) {
+			for (int y = 0; y < brd.brd_size(); ++y) {
 				auto str = CharMap[brd.get_col({ x,y })];
 				for (auto& c : str) {
 					it = c;
@@ -929,7 +923,7 @@ struct std::formatter<bw::othello::dynamic_brd, CharT> {
 			it = '\n';
 		}
 		if (linemark) {
-			for (int i = 0; i < brd.size; ++i) {
+			for (int i = 0; i < brd.brd_size(); ++i) {
 				if (right) {
 					it = ' ';
 					it = 'A' + i;

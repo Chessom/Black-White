@@ -171,7 +171,7 @@ namespace bw::core {
 	using coord = _coord<int>;
 	template <std::integral Int>
 	using vec = _coord<Int>;
-	REFLECTION(coord, x, y);
+	YLT_REFL(coord, x, y);
 
 	template<typename T>
 	struct timer_deque_t {

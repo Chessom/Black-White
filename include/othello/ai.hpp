@@ -4,11 +4,11 @@
 #include "ai/mcts.hpp"
 #include <chrono>
 namespace bw::othello::ai {
-	REFLECTION(ai_option, s_mtd, e_mtd, threads, search_depth, device);
+	YLT_REFL(ai_option, s_mtd, e_mtd, threads, search_depth, device);
 	struct solver {
 		solver(color setter_color, int board_size) :setter(setter_color), board_size(board_size) { set_algo(); }
 		coord best_move(const dynamic_brd& brd, color c) {
-			switch (brd.size) {
+			switch (brd.brd_size()) {
 			case 4:return best_move_static<4>(static_brd<4>(brd), c);
 			case 6:return best_move_static<6>(static_brd<6>(brd), c);
 			case 8:return best_move_static<8>(static_brd<8>(brd), c);

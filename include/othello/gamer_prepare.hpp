@@ -4,6 +4,7 @@
 #include"othello/gamer/remote_tcp.hpp"
 #include"othello/gamer/lua_gamer.hpp"
 #include"othello/gamer/python_gamer.hpp"
+#include"othello/gamer/http_gamer.hpp"
 #include"tui/text_editor.hpp"
 #include"tui/components.hpp"
 namespace bw::components {
@@ -506,5 +507,69 @@ namespace bw::components {
 			};
 		};
 		return ftxui::Make<Impl>(_p);
+	}
+
+	template<>
+	ftxui::Component GamerSetting<othello::http_gamer>(basic_gamer_ptr _p) {
+		using namespace ftxui;
+		struct Impl :ftxui::ComponentBase {
+		public:
+			inline std::string gbk2utf8(std::string_view s) {
+				return boost::locale::conv::to_utf<char>(s.data(), "gbk");
+			}
+			Impl(basic_gamer_ptr p) :
+				http_ptr(std::dynamic_pointer_cast<othello::http_gamer>(p))
+			{
+				auto test_connect = Container::Vertical({
+					Container::Horizontal({
+					Renderer([] {
+						return vbox(text(gettext("Server Name:")) | border ,text(gettext("Address:")) | border,text(gettext("Port:")) | border);
+						}),
+					Container::Vertical({
+						Renderer([this] {
+							return text(http_ptr->get_name().empty()
+								? gettext("Anonymous")
+								: http_ptr->get_name())
+								| underlined | border;
+							}),
+						Input(&IP, "localhost") | size(WIDTH,GREATER_THAN,16) | border,
+						Input(&port, "8888") | size(WIDTH,GREATER_THAN,16) | border
+						}),
+					}) | center,
+					Container::Horizontal({
+					Button(gettext("Test Server"),[this] {
+						try {
+							if (http_ptr->connected()) {
+								http_ptr->close();
+							}
+							http_ptr->set_server(IP, std::stoi(port));
+							http_ptr->sync_test_server();
+							http_ptr->refresh_name();
+							ret = true;
+							http_ptr->is_good = true;
+						}
+						catch (const std::exception& e) {
+							ui::msgbox(boost::locale::conv::to_utf<char>(e.what(),"gbk"));
+							ret = false;
+							http_ptr->is_good = false;
+						}
+						},ButtonOption::Animated())
+					}) | center,
+					Renderer([this] {return text(std::format("{}:[{}]",gettext("State"),ret ? gettext("Good") : gettext("Bad"))) | center | border; })
+					});
+				Add(test_connect | center | ui::EnableMessageBox());
+			}
+			Element Render() override {
+				return children_[0]->Render();
+			}
+			bool OnEvent(Event e) override {
+				return ChildAt(0)->OnEvent(e);
+			}
+		private:
+			std::shared_ptr<othello::http_gamer> http_ptr;
+			std::string IP = "localhost", port = "22222";
+			bool ret = false;
+		};
+		return Make<Impl>(_p);
 	}
 }

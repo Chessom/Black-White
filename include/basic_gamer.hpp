@@ -31,5 +31,5 @@ namespace bw {
 	using basic_gamer_ptr = std::shared_ptr<basic_gamer>;
 	using basic_gamer_info = basic_gamer;
 
-	REFLECTION(basic_gamer, name, col, id, gamertype, gametype);
+	YLT_REFL(basic_gamer, name, col, id, gamertype, gametype);
 }
