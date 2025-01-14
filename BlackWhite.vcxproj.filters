@@ -392,6 +392,9 @@
     <ClInclude Include="include\move_server\move_server.hpp">
       <Filter>头文件\bw\move_server</Filter>
     </ClInclude>
+    <ClInclude Include="include\tui\move_server_page.hpp">
+      <Filter>头文件\bw\tui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md">

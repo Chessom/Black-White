@@ -37,6 +37,21 @@ namespace bw::othello::ai {
 			float explore_factor = 4.0;
 			float temp = 1.0f;
 			float fpu = 0.0f;
+			bool operator==(const mcts_option& option) const {
+				return simulations == option.simulations
+					&& explore_factor == option.explore_factor
+					&& temp == option.temp
+					&& fpu == option.fpu;
+			}
 		} mcts_opt;
+		bool operator==(const ai_option& option) const {
+			return s_mtd == option.s_mtd
+				&& e_mtd == option.e_mtd
+				&& device == option.device
+				&& threads == option.threads
+				&& search_depth == option.search_depth
+				&& time_limit == option.time_limit
+				&& mcts_opt == option.mcts_opt;
+		}
 	};
 }

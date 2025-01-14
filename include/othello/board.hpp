@@ -135,6 +135,14 @@ namespace bw::othello {
 		vector<pos_type>& get_underlying_vector() const {
 			return const_cast<vector<pos_type>&>(mat);
 		}
+		template<std::integral Int>
+		void from_vector(const vector<Int>& vec) {
+			mat.resize(vec.size());
+			for (int i = 0; i < vec.size(); ++i) {
+				mat[i] = pos_type(vec[i]);
+			}
+			size = std::sqrt(mat.size());
+		}
 	private:
 		int size = default_size;
 		vector<pos_type> mat;

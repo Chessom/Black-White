@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2025-01-11 20:24+0800\n"
-"PO-Revision-Date: 2025-01-11 20:25+0800\n"
+"POT-Creation-Date: 2025-01-13 22:49+0800\n"
+"PO-Revision-Date: 2025-01-13 22:49+0800\n"
 "Last-Translator: Vemy <chessom@foxmail.com>\n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -49,7 +49,7 @@ msgstr "Http会话玩家"
 msgid "Another round"
 msgstr "再来一局"
 
-#: include/gobang/components.hpp:192 include/tui/ui.hpp:120
+#: include/gobang/components.hpp:192 include/tui/ui.hpp:123
 msgid "Gobang"
 msgstr "五子棋"
 
@@ -100,7 +100,8 @@ msgstr "功能还在开发中"
 #: include/online/components.hpp:50 include/online/components.hpp:174
 #: include/online/components.hpp:573 include/othello/components.hpp:306
 #: include/othello/components.hpp:513 include/tictactoe/components.hpp:195
-#: include/tictactoe/components.hpp:286 include/tui/ui.hpp:95
+#: include/tictactoe/components.hpp:286 include/tui/ui.hpp:56
+#: include/tui/ui.hpp:181
 msgid "Quit"
 msgstr "退出"
 
@@ -193,14 +194,14 @@ msgstr "状态"
 #: include/gobang/components.hpp:462 include/gobang/components.hpp:470
 #: include/othello/components.hpp:329 include/othello/components.hpp:337
 #: include/othello/components.hpp:536 include/othello/components.hpp:544
-#: include/othello/gamer_prepare.hpp:553
+#: include/othello/gamer_prepare.hpp:558
 msgid "Good"
 msgstr "正常"
 
 #: include/gobang/components.hpp:462 include/gobang/components.hpp:470
 #: include/othello/components.hpp:329 include/othello/components.hpp:337
 #: include/othello/components.hpp:536 include/othello/components.hpp:544
-#: include/othello/gamer_prepare.hpp:553
+#: include/othello/gamer_prepare.hpp:558
 msgid "Bad"
 msgstr "错误"
 
@@ -254,7 +255,8 @@ msgstr "载入对局失败！"
 msgid "Unexpected error"
 msgstr "意外错误"
 
-#: include/gobang/gamer/online.hpp:11 include/tictactoe/gamer/online.hpp:11
+#: include/gobang/gamer/online.hpp:11 include/othello/gamer_prepare.hpp:531
+#: include/tictactoe/gamer/online.hpp:11
 msgid "Anonymous"
 msgstr "匿名"
 
@@ -318,7 +320,7 @@ msgstr "人数"
 
 #: include/online/components.hpp:117 include/online/components.hpp:484
 #: include/othello/gamer_prepare.hpp:232 include/othello/gamer_prepare.hpp:303
-#: include/othello/gamer_prepare.hpp:553
+#: include/othello/gamer_prepare.hpp:558
 msgid "State"
 msgstr "状态"
 
@@ -380,12 +382,12 @@ msgid "Chat"
 msgstr "聊天"
 
 #: include/online/components.hpp:347 include/othello/components.hpp:203
-#: include/tui/ui.hpp:101
+#: include/tui/ui.hpp:104
 msgid "Othello"
 msgstr "黑白棋"
 
 #: include/online/components.hpp:348 include/tictactoe/components.hpp:217
-#: include/tui/ui.hpp:109
+#: include/tui/ui.hpp:112
 msgid "TicTacToe"
 msgstr "井字棋"
 
@@ -449,7 +451,7 @@ msgid "Address:"
 msgstr "地址："
 
 #: include/online/components.hpp:559 include/othello/gamer_prepare.hpp:204
-#: include/othello/gamer_prepare.hpp:526
+#: include/othello/gamer_prepare.hpp:526 include/tui/move_server_page.hpp:12
 msgid "Port:"
 msgstr "端口："
 
@@ -558,7 +560,7 @@ msgstr "计算机(随机下)"
 msgid "computer_gamer_ai"
 msgstr "计算机（AI）"
 
-#: include/othello/gamer/http_gamer.hpp:52
+#: include/othello/gamer/http_gamer.hpp:60
 msgid "Invalid move returned by the server!"
 msgstr "服务器返回走棋无效！"
 
@@ -770,7 +772,7 @@ msgstr "高级算法设置"
 msgid "Server Name:"
 msgstr "服务器名称："
 
-#: include/othello/gamer_prepare.hpp:535
+#: include/othello/gamer_prepare.hpp:540
 msgid "Test Server"
 msgstr "测试服务器"
 
@@ -801,6 +803,14 @@ msgstr "玩家名字："
 #: include/tui/game/gamer_prepare.hpp:14 include/tui/game/gamer_prepare.hpp:26
 msgid "Enter name"
 msgstr "输入名字"
+
+#: include/tui/move_server_page.hpp:16
+msgid "Thread Number:"
+msgstr "使用线程数："
+
+#: include/tui/move_server_page.hpp:19
+msgid "Start Server"
+msgstr "启动服务器"
 
 #: include/tui/settings_page.hpp:14
 msgid "Chinese"
@@ -866,85 +876,86 @@ msgstr "语言环境文件路径："
 msgid "Python script use embedded module: "
 msgstr "Python脚本使用内嵌模块："
 
-#: include/tui/settings_page.hpp:134
-msgid ""
-"\"Apply\" means that changes will only \n"
-"take effect until exiting the program, \n"
-"while \"Save to local\" means that \n"
-"changes will be written to the configuration file \n"
-"and will take effect at a later startup."
-msgstr ""
-"“应用”意味着\n"
-"更改只会生效到退出程序，\n"
-"而“保存到本地”意味着\n"
-"更改将会写入配置文件，\n"
-"并在之后的启动中生效。"
-
-#: include/tui/ui.hpp:37
+#: include/tui/ui.hpp:39
 msgid "Developing."
 msgstr "仍在开发中。"
 
-#: include/tui/ui.hpp:48
+#: include/tui/ui.hpp:50
 msgid "Home"
 msgstr "主页"
 
-#: include/tui/ui.hpp:49
+#: include/tui/ui.hpp:51
 msgid "Local battles"
 msgstr "本地对战"
 
-#: include/tui/ui.hpp:50
+#: include/tui/ui.hpp:52
 msgid "Online"
 msgstr "联机"
 
-#: include/tui/ui.hpp:51
+#: include/tui/ui.hpp:53
 msgid "Settings"
 msgstr "设置"
 
-#: include/tui/ui.hpp:52
+#: include/tui/ui.hpp:54
 msgid "Help"
 msgstr "帮助"
 
-#: include/tui/ui.hpp:53
+#: include/tui/ui.hpp:55
 msgid "More"
 msgstr "关于"
 
-#: include/tui/ui.hpp:93
+#: include/tui/ui.hpp:97
 msgid "Black White"
 msgstr "黑白棋"
 
-#: include/tui/ui.hpp:117
+#: include/tui/ui.hpp:120
 msgid "Ataxx"
 msgstr "同化棋"
 
-#: include/tui/ui.hpp:123
+#: include/tui/ui.hpp:126
 msgid " GO "
 msgstr " 围棋 "
 
-#: include/tui/ui.hpp:133
+#: include/tui/ui.hpp:136
 msgid "Online Hall"
 msgstr "联机大厅"
 
-#: include/tui/ui.hpp:136
-msgid "Easy Online Battle"
-msgstr "简易联机"
+#: include/tui/ui.hpp:139
+msgid "Run as move server"
+msgstr "运行走棋HTTP服务器"
 
-#: include/tui/ui.hpp:137
-msgid "These are in developing!"
-msgstr "这些还在开发中！"
-
-#: include/tui/ui.hpp:161
+#: include/tui/ui.hpp:166
 msgid "GitHub url of this project :"
 msgstr "本项目的Github链接："
 
-#: include/tui/ui.hpp:161
+#: include/tui/ui.hpp:166
 msgid "Click to open"
 msgstr "点击打开链接"
 
-#: include/tui/ui.hpp:163
+#: include/tui/ui.hpp:168
 msgid ""
 "This is a TUI(CUI) game set program, you can interact with the program using "
 "a mouse."
 msgstr "这是一个TUI（CUI）游戏程序集，你可以用鼠标与程序交互。"
+
+#~ msgid ""
+#~ "\"Apply\" means that changes will only \n"
+#~ "take effect until exiting the program, \n"
+#~ "while \"Save to local\" means that \n"
+#~ "changes will be written to the configuration file \n"
+#~ "and will take effect at a later startup."
+#~ msgstr ""
+#~ "“应用”意味着\n"
+#~ "更改只会生效到退出程序，\n"
+#~ "而“保存到本地”意味着\n"
+#~ "更改将会写入配置文件，\n"
+#~ "并在之后的启动中生效。"
+
+#~ msgid "Easy Online Battle"
+#~ msgstr "简易联机"
+
+#~ msgid "These are in developing!"
+#~ msgstr "这些还在开发中！"
 
 #~ msgid "ComputerRandom"
 #~ msgstr "计算机(随机下)"

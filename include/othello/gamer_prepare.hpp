@@ -567,7 +567,7 @@ namespace bw::components {
 			}
 		private:
 			std::shared_ptr<othello::http_gamer> http_ptr;
-			std::string IP = "localhost", port = "22222";
+			std::string IP = "localhost", port = "8888";
 			bool ret = false;
 		};
 		return Make<Impl>(_p);

@@ -6,6 +6,7 @@
 #include"bwlocale.hpp"
 #include"tui/components.hpp"
 #include"tui/settings_page.hpp"
+#include"tui/move_server_page.hpp"
 #include"othello/components.hpp"
 #include"online/components.hpp"
 #include"tictactoe/components.hpp"
@@ -28,11 +29,12 @@ namespace bw {
 		ftxui::Component LogoPage();
 		ftxui::Component LocalGamePage();
 		ftxui::Component OnlinePage();
-		void SimpleOnlinePage();
+		void MoveServerPage();
 		void OnlineGameHallPage();
 		ftxui::Component SettingsPage();
 		ftxui::Component HelpPage();
 		ftxui::Component AboutPage();
+		ftxui::Component ExitPage();
 		ftxui::Component InDeveloping() {
 			return ui::TextComp(gettext("Developing.")) | ftxui::center;
 		}
@@ -51,6 +53,7 @@ namespace bw {
 			gettext("Settings"),
 			gettext("Help"),
 			gettext("More"),
+			gettext("Quit")
 		};
 		auto option = MenuOption::HorizontalAnimated();
 		option.underline.SetAnimation(std::chrono::milliseconds(500), animation::easing::ElasticOut);
@@ -71,7 +74,8 @@ namespace bw {
 			OnlinePage(),
 			SettingsPage(),
 			HelpPage(),
-			AboutPage()
+			AboutPage(),
+			ExitPage()
 		}, &selector);
 		auto MainPage = Container::Vertical({
 			PagesMenu,
@@ -91,8 +95,7 @@ namespace bw {
 		auto GameIcon = Renderer([document] {return document; });
 		return Container::Vertical({
 			Renderer([] {return text(gettext("Black White")) | bold | borderRounded | hcenter; }),
-			GameIcon | hcenter,
-			Button(gettext("Quit"),[] {ftxui::ScreenInteractive::Active()->Exit(); },ButtonOption::Animated()) | hcenter
+			GameIcon | hcenter
 			}) | center;
 	}
 	ftxui::Component tui::LocalGamePage() {
@@ -133,16 +136,18 @@ namespace bw {
 			Button(censtr(gettext("Online Hall"),6),[&,this] {
 				OnlineGameHallPage();
 				},ButtonOption::Animated()) | center,
-			Button(censtr(gettext("Easy Online Battle"),6),[&,this] {
-				ui::msgbox(gettext("These are in developing!"));
-				SimpleOnlinePage();
+			Button(censtr(gettext("Run as move server"),6),[&,this] {
+				MoveServerPage();
 				},ButtonOption::Animated()) | center,
 		};
 		auto HBox = Container::Vertical(buttons);
 		return HBox | ui::EnableMessageBox() | center;
 	}
-	void tui::SimpleOnlinePage() {
+	void tui::MoveServerPage() {
 		using namespace ftxui;
+		ScreenInteractive screen = ScreenInteractive::Fullscreen();
+		auto cmp = bw::components::MoveServerComp();
+		screen.Loop(cmp | center | ui::EnableMessageBox());
 	}
 	void tui::OnlineGameHallPage() {
 		using namespace ftxui;
@@ -170,6 +175,10 @@ namespace bw {
 	ftxui::Component tui::AboutPage() {
 		using namespace ftxui;
 		return InDeveloping();
+	}
+	ftxui::Component tui::ExitPage() {
+		using namespace ftxui;
+		return Button(gettext("Quit"), [] {ftxui::ScreenInteractive::Active()->Exit(); }, ButtonOption::Animated(ftxui::Color::Red)) | center;
 	}
 }
 /*void tui::HomePage() {

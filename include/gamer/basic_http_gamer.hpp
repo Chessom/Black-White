@@ -32,18 +32,13 @@ namespace bw {
 			namespace net = boost::asio;
 			using namespace nlohmann;
 			using tcp = net::ip::tcp;
-			net::io_context& ioc = pctx == nullptr ? *(pctx = std::make_shared<context>()) : *pctx;
-
-			tcp::resolver resolver(ioc);
-			beast::tcp_stream stream(ioc);
 			try {
 				sync_connect();
-
-				stream.expires_after(std::chrono::seconds(30));
 
 				http::request<http::string_body> req{ http::verb::get, "/ping", 11 };
 				req.set(http::field::host, server_address);
 				req.set(http::field::user_agent, AGENT_STR);
+				req.set(http::field::cookie, cookie);
 
 				http::write(stream, req);
 
@@ -53,14 +48,12 @@ namespace bw {
 
 				stream.close();
 
-				auto json_field = res_.find("Json");
-
-				if (json_field != res_.end()) {
-					json r = json::parse(json_field->value());
-					if (r["code"].get<int>() == 200 &&
-						r["msg"].get<std::string>() == "pong, bw server!") {
-						return;
-					}
+				auto& body = res_.body();
+				if (auto ck = res_.find(http::field::set_cookie); ck != res_.end()) {
+					cookie = ck->value();
+				}
+				if (body == "pong, bw server!") {
+					return;
 				}
 				throw std::runtime_error("Invalid response");
 			}
@@ -84,6 +77,7 @@ namespace bw {
 				http::request<http::string_body> req{ http::verb::get, "/ping", 11 };
 				req.set(http::field::host, server_address);
 				req.set(http::field::user_agent, AGENT_STR);
+				req.set(http::field::cookie, cookie);
 
 				stream.expires_after(std::chrono::seconds(30));
 				co_await http::async_write(stream, req, boost::cobalt::use_op);
@@ -92,14 +86,16 @@ namespace bw {
 
 				co_await http::async_read(stream, buffer_, res_, boost::cobalt::use_op);
 
-				auto json_field = res_.find("Json");
+				stream.close();
 
-				if (json_field != res_.end()) {
-					json r = json::parse(json_field->value());
-					if (r["code"].get<int>() == 200 &&
-						r["msg"].get<std::string>() == "pong, bw server!") {
-						co_return;
-					}
+				auto body = res_.body();
+				if (auto ck = res_.find(http::field::set_cookie); ck != res_.end()) {
+					cookie = ck->value();
+				}
+				json r = json::parse(body);
+				if (r["code"].get<int>() == 200 &&
+					r["msg"].get<std::string>() == "pong, bw server!") {
+					co_return;
 				}
 				throw std::runtime_error("Invalid response");
 			}
@@ -116,7 +112,8 @@ namespace bw {
 
 		void sync_connect() {
 			auto const results = resolver.resolve(server_address, std::to_string(port));
-			stream.connect(results);
+			auto ep = stream.connect(results);
+			assert(stream.socket().is_open());
 		}
 
 		bool connected() const {
@@ -141,5 +138,6 @@ namespace bw {
 		boost::beast::flat_buffer buffer_;
 		boost::beast::net::ip::tcp::resolver resolver;
 		boost::beast::tcp_stream stream;
+		std::string cookie = "";
 	};
 }
